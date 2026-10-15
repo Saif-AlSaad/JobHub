@@ -1,6 +1,9 @@
 # 🌐 JOB HUB — AI-Powered Smart Placement & Semantic Matching Platform
 
 <p align="center">
+  <a href="https://saif-alsaad.github.io/JobHub/">
+    <img src="https://img.shields.io/badge/🌐_Live_Demo-GitHub_Pages-4F46E5?style=for-the-badge&logo=github&logoColor=white" alt="Live Demo" />
+  </a>
   <img src="https://img.shields.io/badge/FastAPI-0.110+-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/React-19.2+-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
   <img src="https://img.shields.io/badge/Vite-8.3+-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
@@ -9,6 +12,11 @@
   <img src="https://img.shields.io/badge/Database-SQLite%20%7C%20PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="Database" />
   <img src="https://img.shields.io/badge/Realtime-WebSockets-010101?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebSockets" />
 </p>
+
+> [!NOTE]
+> **🚀 Live Web Preview**: Access the interactive static frontend at [https://saif-alsaad.github.io/JobHub/](https://saif-alsaad.github.io/JobHub/).
+>
+> *(To activate GitHub Pages on your repository: open **Settings** > **Pages** > **Build and deployment > Source**, select **"GitHub Actions"**).*
 
 ---
 
