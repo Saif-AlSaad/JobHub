@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Sparkles, User, Building2, Lock, Mail, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function RegisterPage() {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get('role');
+  const initialRole = roleParam === 'recruiter' ? 'RECRUITER' : 'JOB_SEEKER';
 
   const [form, setForm] = useState({
     full_name: '',
     email: '',
     password: '',
-    role: 'JOB_SEEKER',
+    role: initialRole,
     company_name: ''
   });
 
