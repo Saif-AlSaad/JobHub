@@ -22,6 +22,7 @@
 
 ## 📖 Table of Contents
 - [✨ Overview](#-overview)
+- [👥 Team Collaboration & Quick Commands for Each Member](#-team-collaboration--quick-commands-for-each-member)
 - [🚀 Quick Start (How to Run the Project)](#-quick-start-how-to-run-the-project)
   - [Method 1: One-Click Launcher (Windows)](#method-1-one-click-launcher-windows-easiest)
   - [Method 2: Step-by-Step Manual Run](#method-2-step-by-step-manual-run)
@@ -45,6 +46,77 @@
 ## ✨ Overview
 
 **JOB HUB** is an enterprise-grade placement and talent discovery ecosystem designed to bridge job seekers, tech recruiters, and administrators. Powered by a **hybrid AI matching algorithm** (combining TF-IDF semantic vector similarity, weighted skill taxonomy graphs, experience scoring, and geospatial proximity calculations), JobHub delivers instant, transparent match scores and actionable gap analyses.
+
+---
+
+## 👥 Team Collaboration & Quick Commands for Each Member
+
+To keep development organized and track contributions cleanly, each team member has an isolated sub-branch created from `main`:
+
+| Member | Contribution Branch | GitHub Remote Link |
+| :--- | :--- | :--- |
+| **Saif** | [`Saif`](https://github.com/Saif-AlSaad/JobHub/tree/Saif) | [View Saif's Branch](https://github.com/Saif-AlSaad/JobHub/tree/Saif) |
+| **Nadim** | [`Nadim`](https://github.com/Saif-AlSaad/JobHub/tree/Nadim) | [View Nadim's Branch](https://github.com/Saif-AlSaad/JobHub/tree/Nadim) |
+| **Rizvi** | [`Rizvi`](https://github.com/Saif-AlSaad/JobHub/tree/Rizvi) | [View Rizvi's Branch](https://github.com/Saif-AlSaad/JobHub/tree/Rizvi) |
+
+### ⚡ Quick Commands for Each Member
+
+#### 1. Saif
+```bash
+# Switch to your branch
+git checkout Saif
+
+# Work on your changes, then stage and commit
+git add .
+git commit -m "feat: description of work done"
+
+# Push to your remote branch
+git push origin Saif
+```
+
+#### 2. Nadim
+```bash
+# First time setup on your computer
+git fetch origin
+git checkout Nadim
+
+# Work on your changes, then stage and commit
+git add .
+git commit -m "feat: description of work done"
+
+# Push to your remote branch
+git push origin Nadim
+```
+
+#### 3. Rizvi
+```bash
+# First time setup on your computer
+git fetch origin
+git checkout Rizvi
+
+# Work on your changes, then stage and commit
+git add .
+git commit -m "feat: description of work done"
+
+# Push to your remote branch
+git push origin Rizvi
+```
+
+#### 🔄 Keeping Your Branch Updated with `main`
+Before starting new tasks or creating a pull request, sync your branch with `main`:
+```bash
+git checkout <your-branch-name>
+git fetch origin
+git merge origin/main
+git push
+```
+
+#### 🚀 Merging into Main (Pull Requests)
+When a feature is finished and ready to merge into production:
+1. Push your branch commits: `git push origin <your-branch-name>`.
+2. Go to GitHub: **[Create Pull Request](https://github.com/Saif-AlSaad/JobHub/pulls)**.
+3. Set **base: `main`** ➔ **compare: `<your-branch-name>`**.
+4. Review your diff and click **"Create pull request"**.
 
 ---
 
