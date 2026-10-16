@@ -39,18 +39,18 @@ export default function RegisterPage() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-background animate-in fade-in duration-200">
       <div className="max-w-md w-full bg-white rounded-container border border-border p-8 shadow-card space-y-6">
         
-        <div className="text-center space-y-1">
-          <div className="w-11 h-11 rounded-xl bg-primary text-white flex items-center justify-center mx-auto shadow-subtle">
-            <Sparkles className="w-6 h-6 text-brand" />
+        <div className="text-center space-y-2">
+          <div className="w-12 h-12 rounded-2xl bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center mx-auto shadow-xs">
+            <Sparkles className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl font-bold text-primary tracking-tight">Create Account</h2>
-          <p className="text-xs text-secondary">
-            Join JOB HUB to find AI-ranked internships and hire top talent.
+          <h2 className="text-2xl font-bold text-[#1C1917] tracking-tight">Create <span className="text-[#0F766E]">Job</span><span className="text-[#F97316]">Hub</span> Account</h2>
+          <p className="text-xs text-[#78716C]">
+            Join JobHub to discover AI-ranked internships and hire top talent.
           </p>
         </div>
 
         {error && (
-          <div className="p-3 bg-danger-bg border border-danger-border text-danger text-xs rounded-card flex items-center gap-2">
+          <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -60,15 +60,15 @@ export default function RegisterPage() {
           
           {/* Role Selector Tabs */}
           <div>
-            <label className="block text-xs font-semibold text-secondary mb-1.5">Account Role</label>
+            <label className="block text-xs font-semibold text-[#78716C] mb-1.5">Account Role</label>
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setForm({ ...form, role: 'JOB_SEEKER' })}
-                className={`py-2 px-3 text-xs font-semibold rounded-input border transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all flex items-center justify-center gap-2 ${
                   form.role === 'JOB_SEEKER'
-                    ? 'bg-brand text-white border-brand shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-border hover:bg-slate-100'
+                    ? 'bg-[#0F766E] text-white border-[#0F766E] shadow-xs'
+                    : 'bg-[#F3EFEA] text-[#78716C] border-[#E7E5E4] hover:bg-[#FAF8F5]'
                 }`}
               >
                 <User className="w-3.5 h-3.5" />
@@ -78,10 +78,10 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setForm({ ...form, role: 'RECRUITER' })}
-                className={`py-2 px-3 text-xs font-semibold rounded-input border transition-colors flex items-center justify-center gap-2 ${
+                className={`py-2.5 px-3 text-xs font-semibold rounded-xl border transition-all flex items-center justify-center gap-2 ${
                   form.role === 'RECRUITER'
-                    ? 'bg-brand text-white border-brand shadow-xs'
-                    : 'bg-slate-50 text-slate-700 border-border hover:bg-slate-100'
+                    ? 'bg-[#F97316] text-white border-[#F97316] shadow-xs'
+                    : 'bg-[#F3EFEA] text-[#78716C] border-[#E7E5E4] hover:bg-[#FAF8F5]'
                 }`}
               >
                 <Building2 className="w-3.5 h-3.5" />

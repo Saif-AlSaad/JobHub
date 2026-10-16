@@ -53,13 +53,13 @@ export default function Sidebar() {
   if (role === 'ADMIN') links = adminLinks;
 
   return (
-    <aside className="w-64 bg-white border-r border-border min-h-[calc(100vh-4rem)] flex flex-col justify-between py-6 px-4 hidden md:flex">
+    <aside className="w-64 bg-[#F3EFEA] border-r border-[#E7E5E4] min-h-[calc(100vh-4rem)] flex flex-col justify-between py-6 px-4 hidden md:flex transition-colors">
       <div className="space-y-6">
         
         {/* Role Context Tag */}
-        <div className="px-3 py-2 bg-background rounded-lg border border-border/70 flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-brand"></div>
-          <span className="text-xs font-semibold text-secondary uppercase tracking-wider">
+        <div className="px-3.5 py-2 bg-white rounded-lg border border-[#E7E5E4] flex items-center gap-2 shadow-xs">
+          <div className="w-2 h-2 rounded-full bg-[#0F766E] animate-pulse"></div>
+          <span className="text-[11px] font-bold text-[#1C1917] uppercase tracking-wider">
             {role.replace('_', ' ')} PORTAL
           </span>
         </div>
@@ -74,10 +74,10 @@ export default function Sidebar() {
                 to={item.to}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-colors ${
+                  `flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'text-secondary hover:text-primary hover:bg-slate-100'
+                      ? 'bg-[#CCFBF1] text-[#0F766E] font-bold shadow-xs'
+                      : 'text-[#78716C] hover:text-[#0F766E] hover:bg-[#FAF8F5]'
                   }`
                 }
               >
@@ -86,7 +86,7 @@ export default function Sidebar() {
                   <span>{item.label}</span>
                 </div>
                 {item.badge > 0 && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-brand text-white">
+                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[#F97316] text-white shadow-xs">
                     {item.badge}
                   </span>
                 )}
@@ -97,12 +97,12 @@ export default function Sidebar() {
       </div>
 
       {/* Proactive Placement Badge */}
-      <div className="p-3.5 rounded-card bg-brand-light/60 border border-brand/20">
-        <div className="flex items-center gap-2 text-brand font-semibold text-xs mb-1">
-          <MapPin className="w-3.5 h-3.5" />
+      <div className="p-3.5 rounded-[12px] bg-white border border-[#E7E5E4] shadow-xs">
+        <div className="flex items-center gap-2 text-[#0F766E] font-bold text-xs mb-1">
+          <MapPin className="w-3.5 h-3.5 text-[#0F766E]" />
           <span>Location Awareness</span>
         </div>
-        <p className="text-[11px] text-secondary leading-relaxed">
+        <p className="text-[11px] text-[#78716C] leading-relaxed">
           Matches are automatically calculated using your configured radius and skills.
         </p>
       </div>
