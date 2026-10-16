@@ -510,50 +510,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* VIP 1-Click Instant Demo Card */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                1-Click Instant Employer Demo
-              </span>
-              <span className="text-[10px] font-semibold text-[#C2410C] bg-[#FFEDD5] px-2 py-0.5 rounded-full">
-                Verified Recruiter
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleDemo('recruiter')}
-              disabled={loading}
-              className="w-full text-left p-3.5 rounded-2xl border border-[#FED7AA] bg-gradient-to-r from-[#FFEDD5]/40 via-white to-[#FFEDD5]/20 hover:border-[#F97316] hover:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F97316] to-[#FB923C] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
-                  TN
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#F97316] transition-colors">TechNova Labs</p>
-                    <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full">Hiring Team</span>
-                  </div>
-                  <p className="text-[11px] text-[#78716C]">Sabrina Rahman • Lead Technical Recruiter</p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#F97316] group-hover:text-white group-hover:border-[#F97316] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </button>
-          </div>
-
-          {/* Balanced Centered Divider */}
-          <div className="flex items-center gap-3 pt-1">
-            <div className="h-px flex-1 bg-[#E7E5E4]" />
-            <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
-              Or sign in with work credentials
-            </span>
-            <div className="h-px flex-1 bg-[#E7E5E4]" />
-          </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
