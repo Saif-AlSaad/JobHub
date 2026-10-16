@@ -24,6 +24,7 @@ import {
   Award,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import seekerIllustration from '../assets/job-seeker-workspace.jpg';
 
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
@@ -506,116 +507,13 @@ export default function LoginPage() {
 
           </div>
 
-          {/* RIGHT COLUMN: MODERN SAAS WORKSPACE SHOWCASE CANVAS (7 cols on lg) */}
-          <div className="hidden lg:flex lg:col-span-7 bg-[#FAF8F5] border-l border-[#E7E5E4] p-8 lg:p-10 flex-col justify-between relative overflow-hidden">
-            
-            {/* Ambient workspace glows */}
-            <div className="absolute -top-20 -right-20 w-72 h-72 bg-[#CCFBF1]/50 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-[#FFEDD5]/40 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Top Workspace Header */}
-            <div className="flex items-center justify-between relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E7E5E4] shadow-xs text-xs font-semibold text-[#1C1917]">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live Workspace • DIU Savar Placement Radar</span>
-              </div>
-              <span className="text-[11px] font-bold text-[#0F766E] uppercase tracking-wider">
-                Proactive Match Active
-              </span>
-            </div>
-
-            {/* Core Workspace Preview Card (Interactive Mockup) */}
-            <div className="my-auto space-y-4 relative z-10 py-6">
-              
-              {/* Card 1: Top AI Matched Opportunity Card */}
-              <div className="bg-white rounded-2xl border border-[#E7E5E4] p-5 shadow-[0_10px_30px_-5px_rgba(28,25,23,0.06)] space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                      TN
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-[#1C1917]">Junior Backend Engineer</h4>
-                        <span className="badge-pill badge-urgent-featured text-[10px]">Verified Role</span>
-                      </div>
-                      <p className="text-xs text-[#78716C] mt-0.5">TechNova Labs • Savar Hub (Hybrid)</p>
-                    </div>
-                  </div>
-
-                  {/* Radial SVG Gauge Mockup */}
-                  <div className="relative w-14 h-14 flex items-center justify-center">
-                    <svg className="w-14 h-14 -rotate-90" viewBox="0 0 36 36">
-                      <circle
-                        cx="18"
-                        cy="18"
-                        r="15"
-                        fill="none"
-                        className="stroke-[#CCFBF1]"
-                        strokeWidth="3.2"
-                      />
-                      <circle
-                        cx="18"
-                        cy="18"
-                        r="15"
-                        fill="none"
-                        className="stroke-[#0F766E]"
-                        strokeWidth="3.2"
-                        strokeDasharray="94.25"
-                        strokeDashoffset="12.25"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                      <span className="text-[11px] font-extrabold text-[#0F766E] leading-none">87%</span>
-                      <span className="text-[7px] text-[#78716C] font-semibold uppercase">Match</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Skill Breakdown Micro-Widget */}
-                <div className="pt-3 border-t border-[#E7E5E4]/80 space-y-2">
-                  <span className="text-[11px] font-bold text-[#78716C] uppercase tracking-wider block">
-                    Semantic Skill Match Matrix
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="badge-pill badge-salary-verified text-[11px]">Python (95%)</span>
-                    <span className="badge-pill badge-salary-verified text-[11px]">FastAPI (92%)</span>
-                    <span className="badge-pill badge-salary-verified text-[11px]">PostgreSQL (88%)</span>
-                    <span className="badge-pill badge-location-type text-[11px]">+ Docker (+8% boost)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 2: Live Interview Pipeline Alert Notification */}
-              <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-[#99F6E4] p-4 shadow-sm flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-[#CCFBF1] text-[#0F766E] flex items-center justify-center flex-shrink-0">
-                  <Calendar className="w-5 h-5 text-[#0F766E]" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-[#1C1917]">Technical Interview Scheduled</p>
-                    <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Tomorrow, 11:00 AM</span>
-                  </div>
-                  <p className="text-[11px] text-[#78716C] mt-0.5">TechNova Labs invited you for Google Meet interview</p>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Bottom Social Proof */}
-            <div className="pt-4 border-t border-[#E7E5E4] flex items-center justify-between text-xs text-[#78716C] relative z-10">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-[#0F766E] text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">SR</div>
-                  <div className="w-6 h-6 rounded-full bg-[#F97316] text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">TA</div>
-                  <div className="w-6 h-6 rounded-full bg-emerald-600 text-white text-[9px] font-bold flex items-center justify-center border-2 border-white">AK</div>
-                </div>
-                <span className="font-semibold text-[#1C1917]">1,200+ graduates placed</span>
-              </div>
-              <span className="text-[11px] font-medium text-[#78716C]">Dhaka Tech Corridor</span>
-            </div>
-
+          {/* RIGHT COLUMN: JOB SEEKER ILLUSTRATION PANEL (7 cols on lg, no text) */}
+          <div className="hidden lg:flex lg:col-span-7 bg-[#FAF8F5] border-l border-[#E7E5E4] relative overflow-hidden items-center justify-center p-6 lg:p-8">
+            <img
+              src={seekerIllustration}
+              alt=""
+              className="w-full h-full object-contain max-h-[580px] select-none pointer-events-none transition-transform duration-500 hover:scale-[1.01]"
+            />
           </div>
 
         </div>
