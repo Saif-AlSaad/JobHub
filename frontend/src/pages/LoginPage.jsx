@@ -507,12 +507,12 @@ export default function LoginPage() {
 
           </div>
 
-          {/* RIGHT COLUMN: JOB SEEKER ILLUSTRATION PANEL (7 cols on lg, no text) */}
-          <div className="hidden lg:flex lg:col-span-7 bg-[#FAF8F5] border-l border-[#E7E5E4] relative overflow-hidden items-center justify-center p-6 lg:p-8">
+          {/* RIGHT COLUMN: JOB SEEKER ILLUSTRATION PANEL (7 cols on lg, edge-to-edge) */}
+          <div className="hidden lg:block lg:col-span-7 bg-[#FAF8F5] border-l border-[#E7E5E4] relative overflow-hidden min-h-0 h-full">
             <img
               src={seekerIllustration}
-              alt=""
-              className="w-full h-full object-contain max-h-[580px] select-none pointer-events-none transition-transform duration-500 hover:scale-[1.01]"
+              alt="Job Seeker Workspace"
+              className="w-full h-full object-cover object-center block select-none pointer-events-none"
             />
           </div>
 
