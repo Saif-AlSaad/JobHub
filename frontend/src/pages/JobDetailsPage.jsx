@@ -142,12 +142,12 @@ export default function JobDetailsPage() {
   const cultureText = job.benefits || 'Inclusive engineering culture with dedicated mentorship, university graduate onboarding, flexible hybrid schedules, and sponsored professional learning budgets.';
 
   return (
-    <div className="min-h-full bg-[#F8FAFC]">
+    <div className="min-h-full bg-[#FAF8F5]">
       
       {/* Breadcrumb Navigation */}
       <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-2">
-        <Link to="/jobs" className="inline-flex items-center gap-1.5 text-xs font-semibold text-secondary hover:text-primary transition-colors">
-          <ArrowLeft className="w-3.5 h-3.5" />
+        <Link to="/jobs" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#0F766E] transition-colors">
+          <ArrowLeft className="w-3.5 h-3.5 text-[#0F766E]" />
           Back to all opportunities
         </Link>
       </div>
@@ -156,33 +156,33 @@ export default function JobDetailsPage() {
       <main className="max-w-[1280px] mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-start">
         
         {/* COLUMN 1: Aside Company & Quick Apply Card (3.5 cols on desktop) */}
-        <aside className="lg:col-span-4 bg-white border border-[#E2E8F0] rounded-[16px] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-6 box-border">
+        <aside className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
           
           {/* Monogram */}
-          <div className="w-[52px] height-[52px] h-[52px] rounded-[14px] bg-[#E0E7FF] text-[#4F46E5] font-extrabold flex items-center justify-center text-lg">
+          <div className="w-[52px] h-[52px] rounded-[12px] bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] font-extrabold flex items-center justify-center text-lg">
             {companyInitials}
           </div>
 
           {/* Job Title & Subhead */}
-          <h1 className="text-[20px] font-bold text-[#0F172A] mt-4 mb-1 tracking-tight leading-snug">
+          <h1 className="text-[20px] font-bold text-[#1C1917] mt-4 mb-1 tracking-tight leading-snug font-heading">
             {job.title}
           </h1>
-          <div className="text-[#475569] text-sm font-medium">
+          <div className="text-[#78716C] text-sm font-medium">
             {job.company?.name || 'TechNova Labs'} · {job.location_name || 'Savar'}
           </div>
 
           {/* Specs List */}
-          <div className="my-5 grid gap-2.5 text-sm text-[#0F172A]">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span className="text-[#64748B]">Salary</span>
+          <div className="my-5 grid gap-2.5 text-sm text-[#1C1917]">
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-2">
+              <span className="text-[#78716C]">Salary</span>
               <b className="n text-right font-semibold">{salaryDisplay}</b>
             </div>
-            <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-              <span className="text-[#64748B]">Distance</span>
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-2">
+              <span className="text-[#78716C]">Distance</span>
               <b className="n text-right font-semibold">{distanceKm} km · {transitMin} min</b>
             </div>
             <div className="flex items-center justify-between pt-0.5">
-              <span className="text-[#64748B]">Type</span>
+              <span className="text-[#78716C]">Type</span>
               <b className="text-right font-semibold">{job.job_type || 'Full-time'}</b>
             </div>
           </div>
@@ -190,29 +190,29 @@ export default function JobDetailsPage() {
           {/* Action Button */}
           {job.applied_status ? (
             <div className="w-full min-h-[48px] rounded-[10px] bg-[#ECFDF5] border border-[#A7F3D0] text-[#047857] font-bold text-xs flex items-center justify-center gap-2">
-              <Check className="w-4 h-4 text-[#10B981]" />
+              <Check className="w-4 h-4 text-[#047857]" />
               Applied ({job.applied_status.status})
             </div>
           ) : user?.role === 'JOB_SEEKER' ? (
             <div className="space-y-2.5">
               <button
                 onClick={() => setApplyModalOpen(true)}
-                className="w-full min-h-[48px] border-0 rounded-[10px] bg-[#4F46E5] hover:bg-[#4338CA] text-white font-bold text-sm font-inherit cursor-pointer transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full min-h-[48px] border-0 rounded-[10px] bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-sm cursor-pointer shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
               >
                 <Send className="w-4 h-4" />
-                Quick apply
+                Quick Apply Now
               </button>
 
               <button
                 onClick={handleStartChat}
-                className="w-full min-h-[42px] border border-[#E2E8F0] hover:bg-slate-50 text-[#334155] font-semibold text-xs rounded-[10px] transition-colors flex items-center justify-center gap-2"
+                className="w-full min-h-[42px] border border-[#E7E5E4] hover:bg-[#F3EFEA] text-[#1C1917] font-semibold text-xs rounded-[10px] transition-colors flex items-center justify-center gap-2"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-slate-500" />
-                Message hiring manager
+                <MessageSquare className="w-3.5 h-3.5 text-[#0F766E]" />
+                Message Hiring Manager
               </button>
             </div>
           ) : (
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-[10px] text-center text-xs text-secondary font-medium">
+            <div className="p-3 bg-[#F3EFEA] border border-[#E7E5E4] rounded-[10px] text-center text-xs text-[#78716C] font-medium">
               Viewing as {user?.role || 'Guest'}
             </div>
           )}
@@ -220,20 +220,20 @@ export default function JobDetailsPage() {
         </aside>
 
         {/* COLUMN 2: Article Job Details (4.5 cols on desktop) */}
-        <article className="lg:col-span-4 bg-white border border-[#E2E8F0] rounded-[16px] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-6 box-border space-y-5">
+        <article className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border space-y-5">
           
           {/* Overview */}
           <div>
-            <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Overview</h2>
-            <p className="text-[#334155] leading-relaxed text-sm whitespace-pre-line m-0">
+            <h2 className="text-[18px] font-bold text-[#1C1917] mb-2 font-heading">Overview</h2>
+            <p className="text-[#1C1917]/90 leading-relaxed text-sm whitespace-pre-line m-0">
               {job.description}
             </p>
           </div>
 
           {/* Responsibilities */}
           <div>
-            <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Responsibilities</h2>
-            <ul className="text-[#334155] leading-relaxed text-sm space-y-1.5 pl-5 list-disc m-0">
+            <h2 className="text-[18px] font-bold text-[#1C1917] mb-2 font-heading">Responsibilities</h2>
+            <ul className="text-[#1C1917]/90 leading-relaxed text-sm space-y-1.5 pl-5 list-disc m-0">
               {responsibilitiesList.map((resp, i) => (
                 <li key={i}>{resp.replace(/^[•\-\*]\s*/, '')}</li>
               ))}
@@ -242,17 +242,17 @@ export default function JobDetailsPage() {
 
           {/* Culture */}
           <div>
-            <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Culture & Benefits</h2>
-            <p className="text-[#334155] leading-relaxed text-sm m-0">
+            <h2 className="text-[18px] font-bold text-[#1C1917] mb-2 font-heading">Culture & Benefits</h2>
+            <p className="text-[#1C1917]/90 leading-relaxed text-sm m-0">
               {cultureText}
             </p>
           </div>
 
           {/* Academic Prerequisites */}
           {job.academic_prerequisites && (
-            <div className="pt-2 border-t border-slate-100">
-              <h2 className="text-[16px] font-bold text-[#0F172A] mb-1.5">Academic Qualifications</h2>
-              <p className="text-[#334155] text-xs leading-relaxed">
+            <div className="pt-2 border-t border-[#E7E5E4]">
+              <h2 className="text-[16px] font-bold text-[#1C1917] mb-1.5 font-heading">Academic Qualifications</h2>
+              <p className="text-[#78716C] text-xs leading-relaxed">
                 {job.academic_prerequisites}
               </p>
             </div>
@@ -261,7 +261,7 @@ export default function JobDetailsPage() {
         </article>
 
         {/* COLUMN 3: Section Explainable Match (4 cols on desktop) */}
-        <section className="lg:col-span-4 bg-white border border-[#E2E8F0] rounded-[16px] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] p-6 box-border">
+        <section className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
           
           {/* Top Radial Match Gauge & Percentage */}
           <div className="flex items-center gap-4">
@@ -279,7 +279,7 @@ export default function JobDetailsPage() {
                 cy="70" 
                 r="54" 
                 fill="none" 
-                stroke="#E2E8F0" 
+                stroke="#E7E5E4" 
                 strokeWidth="16" 
               />
               {/* Animated Progress ring */}
@@ -288,7 +288,7 @@ export default function JobDetailsPage() {
                 cy="70" 
                 r="54" 
                 fill="none" 
-                stroke="#10B981" 
+                stroke="#0F766E" 
                 strokeWidth="16" 
                 strokeLinecap="round" 
                 strokeDasharray="339.3" 
@@ -298,24 +298,24 @@ export default function JobDetailsPage() {
               />
             </svg>
             <div>
-              <div className="n text-[28px] font-extrabold text-[#0F172A] leading-none">
+              <div className="n text-[28px] font-extrabold text-[#1C1917] leading-none">
                 {matchScore}%
               </div>
-              <div className="text-[13px] text-[#475569] font-medium mt-1">
+              <div className="text-[13px] text-[#78716C] font-medium mt-1">
                 Why this match
               </div>
             </div>
           </div>
 
           {/* Matched Skills */}
-          <h3 className="text-sm font-bold text-[#0F172A] mt-5 mb-2">
-            Matched skills
+          <h3 className="text-sm font-bold text-[#1C1917] mt-5 mb-2 font-heading">
+            Matched Skills
           </h3>
           <div className="flex gap-1.5 flex-wrap">
             {matchedSkills.map((skill, i) => (
               <span 
                 key={i} 
-                className="inline-block px-3 py-1.5 rounded-full text-[13px] font-semibold bg-[#D1FAE5] text-[#047857]"
+                className="badge-pill bg-[#CCFBF1] text-[#0F766E] border-[#99F6E4]"
               >
                 {skill}
               </span>
@@ -323,14 +323,14 @@ export default function JobDetailsPage() {
           </div>
 
           {/* Transferable Skills */}
-          <h3 className="text-sm font-bold text-[#0F172A] mt-4 mb-2">
-            Transferable
+          <h3 className="text-sm font-bold text-[#1C1917] mt-4 mb-2 font-heading">
+            Transferable Skills
           </h3>
           <div className="flex gap-1.5 flex-wrap">
             {transferableSkills.map((skill, i) => (
               <span 
                 key={i} 
-                className="inline-block px-3 py-1.5 rounded-full text-[13px] font-semibold bg-[#CFFAFE] text-[#0E7490]"
+                className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]"
               >
                 {skill}
               </span>
@@ -338,23 +338,23 @@ export default function JobDetailsPage() {
           </div>
 
           {/* Missing Prerequisites */}
-          <h3 className="text-sm font-bold text-[#0F172A] mt-4 mb-2">
-            Missing prerequisites
+          <h3 className="text-sm font-bold text-[#1C1917] mt-4 mb-2 font-heading">
+            Missing Prerequisites
           </h3>
           <div className="flex gap-1.5 flex-wrap">
             {missingSkills.map((skill, i) => (
               <span 
                 key={i} 
-                className="inline-block px-3 py-1.5 rounded-full text-[13px] font-semibold bg-[#FEF3C7] text-[#92400E]"
+                className="badge-pill bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]"
               >
-                {skill}
+                +{skill}
               </span>
             ))}
           </div>
 
           {/* Learning Roadmap */}
-          <h3 className="text-sm font-bold text-[#0F172A] mt-5 mb-2">
-            Learning roadmap
+          <h3 className="text-sm font-bold text-[#1C1917] mt-5 mb-2 font-heading">
+            Learning Roadmap
           </h3>
           <div className="space-y-1">
             {missingSkills.slice(0, 2).map((skill, i) => (
@@ -363,7 +363,7 @@ export default function JobDetailsPage() {
                 href={`https://devdocs.io/${skill.toLowerCase()}`}
                 target="_blank"
                 rel="noreferrer"
-                className="block text-sm text-[#4F46E5] hover:underline leading-relaxed font-medium"
+                className="block text-sm text-[#0F766E] hover:text-[#115E59] hover:underline leading-relaxed font-medium"
               >
                 {skill}: free tutorial →
               </a>
@@ -373,10 +373,10 @@ export default function JobDetailsPage() {
           {/* AI Resume Customizer Button */}
           <button 
             onClick={() => setResumeCustomizerOpen(true)}
-            className="w-full mt-4 min-h-[48px] border border-[#06B6D4] rounded-[10px] bg-[#ECFEFF] hover:bg-[#DDFBFF] text-[#0E7490] font-bold text-sm font-inherit cursor-pointer transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 min-h-[48px] border border-[#99F6E4] rounded-[10px] bg-[#CCFBF1]/50 hover:bg-[#CCFBF1] text-[#0F766E] font-bold text-sm cursor-pointer transition-colors flex items-center justify-center gap-2"
           >
-            <Sparkles className="w-4 h-4 text-[#06B6D4]" />
-            AI resume customizer
+            <Sparkles className="w-4 h-4 text-[#0F766E]" />
+            AI Resume Customizer
           </button>
 
         </section>
@@ -385,16 +385,16 @@ export default function JobDetailsPage() {
 
       {/* QUICK APPLY MODAL */}
       {applyModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-card max-w-lg w-full p-6 shadow-modal border border-border space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-[12px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
               <div>
-                <h3 className="text-base font-bold text-primary">Apply to {job.title}</h3>
-                <p className="text-xs text-secondary">{job.company?.name} • {matchScore}% Profile Match</p>
+                <h3 className="text-base font-bold text-[#1C1917] font-heading">Apply to {job.title}</h3>
+                <p className="text-xs text-[#78716C]">{job.company?.name} • {matchScore}% Profile Match</p>
               </div>
               <button 
                 onClick={() => setApplyModalOpen(false)}
-                className="text-secondary hover:text-primary p-1"
+                className="text-[#78716C] hover:text-[#1C1917] p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -402,7 +402,7 @@ export default function JobDetailsPage() {
 
             <form onSubmit={handleApply} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-secondary mb-1.5">
+                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
                   Tailored Candidate Note / Introduction
                 </label>
                 <textarea
@@ -410,15 +410,15 @@ export default function JobDetailsPage() {
                   value={coverNote}
                   onChange={(e) => setCoverNote(e.target.value)}
                   placeholder={`Hi ${job.company?.name || 'Hiring Team'}, I am excited to apply for the ${job.title} position. My experience in ${matchedSkills.join(', ')} aligns strongly with this opportunity...`}
-                  className="w-full p-3 text-xs rounded-input border border-border focus-ring"
+                  className="w-full p-3 text-xs rounded-[10px] border border-[#E7E5E4] bg-[#FAF8F5] focus-ring text-[#1C1917]"
                 />
               </div>
 
-              <div className="p-3 bg-brand-light/50 border border-brand/20 rounded-input flex items-center gap-3">
-                <FileText className="w-5 h-5 text-brand flex-shrink-0" />
+              <div className="p-3 bg-[#CCFBF1]/30 border border-[#99F6E4] rounded-[10px] flex items-center gap-3">
+                <FileText className="w-5 h-5 text-[#0F766E] flex-shrink-0" />
                 <div className="text-xs">
-                  <p className="font-semibold text-primary">{user?.profile?.resume_filename || 'Sarah_Rahman_Software_Engineering_Resume.pdf'}</p>
-                  <p className="text-[11px] text-secondary">Parsed & Verified AI Placement Profile</p>
+                  <p className="font-semibold text-[#1C1917]">{user?.profile?.resume_filename || 'Sarah_Rahman_Software_Engineering_Resume.pdf'}</p>
+                  <p className="text-[11px] text-[#78716C]">Parsed & Verified AI Placement Profile</p>
                 </div>
               </div>
 
@@ -426,14 +426,14 @@ export default function JobDetailsPage() {
                 <button
                   type="button"
                   onClick={() => setApplyModalOpen(false)}
-                  className="px-4 py-2 rounded-input border border-border text-xs font-semibold text-secondary hover:text-primary"
+                  className="px-4 py-2 rounded-lg border border-[#E7E5E4] text-xs font-semibold text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-input bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-colors flex items-center gap-2"
+                  className="px-5 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all flex items-center gap-2"
                 >
                   {submitting ? 'Submitting...' : 'Submit 1-Click Application'}
                 </button>
@@ -445,30 +445,30 @@ export default function JobDetailsPage() {
 
       {/* AI RESUME CUSTOMIZER MODAL */}
       {resumeCustomizerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-card max-w-lg w-full p-6 shadow-modal border border-border space-y-4">
-            <div className="flex items-center justify-between border-b border-border pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-[12px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
+            <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#ECFEFF] text-[#0E7490] flex items-center justify-center">
-                  <Sparkles className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
+                  <Sparkles className="w-4 h-4 text-[#0F766E]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-primary">AI Resume Tailoring Assistant</h3>
-                  <p className="text-xs text-secondary">Highlights to emphasize for {job.company?.name}</p>
+                  <h3 className="text-base font-bold text-[#1C1917] font-heading">AI Resume Tailoring Assistant</h3>
+                  <p className="text-xs text-[#78716C]">Highlights to emphasize for {job.company?.name}</p>
                 </div>
               </div>
               <button 
                 onClick={() => setResumeCustomizerOpen(false)}
-                className="text-secondary hover:text-primary p-1"
+                className="text-[#78716C] hover:text-[#1C1917] p-1"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-[10px]">
-                <p className="font-bold text-primary mb-1 text-[13px]">Recommended Resume Focus Points:</p>
-                <ul className="space-y-1.5 text-slate-700 pl-4 list-disc">
+              <div className="p-3 bg-[#F3EFEA] border border-[#E7E5E4] rounded-[10px]">
+                <p className="font-bold text-[#1C1917] mb-1 text-[13px]">Recommended Resume Focus Points:</p>
+                <ul className="space-y-1.5 text-[#1C1917]/90 pl-4 list-disc">
                   <li>Prominently feature your <b>{matchedSkills.join(' & ')}</b> projects on GitHub in the first section of your profile.</li>
                   <li>Emphasize your DIU Capstone Project demonstrating real-world backend API latency reductions.</li>
                   <li>Mention your familiarity with <b>{transferableSkills.join(', ')}</b> to demonstrate rapid technical adaptability.</li>
@@ -477,10 +477,10 @@ export default function JobDetailsPage() {
 
               <div className="p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-[10px] text-[#047857]">
                 <p className="font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4 text-[#047857]" />
                   Your Profile Match Score is {matchScore}% (High Tier)
                 </p>
-                <p className="text-[11px] mt-0.5 text-slate-600">
+                <p className="text-[11px] mt-0.5 text-[#78716C]">
                   Applicants with ≥ 80% match receive proactive recruiter prioritization in the candidate pipeline.
                 </p>
               </div>
@@ -492,7 +492,7 @@ export default function JobDetailsPage() {
                   setResumeCustomizerOpen(false);
                   setApplyModalOpen(true);
                 }}
-                className="w-full px-5 py-2.5 rounded-input bg-brand hover:bg-brand-hover text-white text-xs font-bold transition-colors flex items-center justify-center gap-2"
+                className="w-full px-5 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all flex items-center justify-center gap-2"
               >
                 Proceed to Apply With Tailored Profile →
               </button>

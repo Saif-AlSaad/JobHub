@@ -7,6 +7,34 @@
 :root {
   --font-heading: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Nordic Teal & Warm Terracotta Design System Tokens */
+  --bg-main: #FAF8F5;               /* Warm Alabaster Cream */
+  --surface-card: #FFFFFF;          /* Pure White */
+  --surface-subtle: #F3EFEA;        /* Soft Warm Stone */
+  --border-stone: #E7E5E4;          /* Warm Stone Gray */
+
+  --primary-teal: #0F766E;          /* Deep Forest Teal */
+  --primary-teal-hover: #115E59;    /* Darker Pine Teal */
+  --primary-teal-tint: #CCFBF1;     /* Soft Mint Wash */
+  --primary-teal-border: #99F6E4;
+
+  --cta-terracotta: #F97316;        /* Warm Terracotta Coral */
+  --cta-terracotta-hover: #EA580C;  /* Deep Terracotta */
+  --cta-terracotta-tint: #FFEDD5;   /* Soft Terracotta Tint */
+  --cta-terracotta-border: #FED7AA;
+  --cta-terracotta-text: #C2410C;
+
+  --badge-salary-bg: #ECFDF5;
+  --badge-salary-text: #047857;
+  --badge-salary-border: #A7F3D0;
+
+  --badge-urgent-bg: #FEF3C7;
+  --badge-urgent-text: #B45309;
+  --badge-urgent-border: #FDE68A;
+
+  --text-primary: #1C1917;          /* Warm Charcoal */
+  --text-secondary: #78716C;        /* Warm Stone Gray */
 }
 
 .n {
@@ -16,10 +44,12 @@
 @layer base {
   html {
     font-family: var(--font-body);
+    background-color: #FAF8F5;
   }
 
   body {
-    @apply bg-background text-primary antialiased selection:bg-brand-light selection:text-brand;
+    background-color: #FAF8F5;
+    color: #1C1917;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -27,6 +57,11 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: #CCFBF1;
+    color: #0F766E;
   }
 
   /* Poppins: Headings, hero titles, and section titles (600–700 weight) */
@@ -38,7 +73,7 @@
     font-family: var(--font-heading);
     font-weight: 600;
     letter-spacing: -0.025em;
-    color: #0F172A;
+    color: #1C1917;
   }
 
   h1 {
@@ -84,6 +119,7 @@
   label {
     font-family: var(--font-body);
     font-weight: 500;
+    color: #1C1917;
   }
 }
 
@@ -100,6 +136,75 @@
   .font-inter {
     font-family: var(--font-body) !important;
   }
+
+  /* Soft-Tint Pill Badges */
+  .badge-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: 9999px;
+    padding: 4px 12px;
+    font-weight: 500;
+    font-size: 0.75rem;
+    line-height: 1rem;
+    border-width: 1px;
+    border-style: solid;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .badge-job-type {
+    background-color: #CCFBF1;
+    color: #0F766E;
+    border-color: #99F6E4;
+  }
+
+  .badge-location-type {
+    background-color: #FFEDD5;
+    color: #C2410C;
+    border-color: #FED7AA;
+  }
+
+  .badge-salary-verified {
+    background-color: #ECFDF5;
+    color: #047857;
+    border-color: #A7F3D0;
+  }
+
+  .badge-urgent-featured {
+    background-color: #FEF3C7;
+    color: #B45309;
+    border-color: #FDE68A;
+  }
+
+  /* Nordic Job Card Styling */
+  .job-card-nordic {
+    background-color: #FFFFFF;
+    border: 1px solid #E7E5E4;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(28, 25, 23, 0.03);
+    transition: all 0.2s ease-in-out;
+  }
+
+  .job-card-nordic:hover {
+    transform: translateY(-3px);
+    border-color: #0F766E;
+    box-shadow: 0 12px 24px -4px rgba(15, 118, 110, 0.08);
+  }
+
+  /* Focus styles for accessibility with Deep Forest Teal */
+  .focus-ring {
+    outline: none !important;
+    border-color: #0F766E !important;
+    box-shadow: 0 0 0 2px #0F766E !important;
+  }
+
+  /* Seamless Hero with Radial Gradients */
+  .hero-nordic-glow {
+    background-color: #FAF8F5;
+    background-image: 
+      radial-gradient(circle at 15% 20%, rgba(204, 251, 241, 0.3) 0%, transparent 45%),
+      radial-gradient(circle at 85% 30%, rgba(255, 237, 213, 0.3) 0%, transparent 45%);
+  }
 }
 
 /* Custom scrollbars */
@@ -113,20 +218,15 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #D1D5DB;
+  background: #E7E5E4;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9CA3AF;
+  background: #A8A29E;
 }
 
 /* Smooth micro-interaction transitions */
 .transition-smooth {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Focus styles for accessibility */
-.focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-brand/40 focus:border-brand;
 }

@@ -81,38 +81,38 @@ export default function JobSeekerDashboard() {
   const applicationSteps = ['APPLIED', 'VIEWED', 'SHORTLISTED', 'INTERVIEW', 'HIRED'];
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-8 bg-[#FAF8F5]">
       
       {/* 1. Hero Placement Radar & Radial Gauge */}
-      <div className="bg-white rounded-[16px] border border-[#E2E8F0] p-6 sm:p-8 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_2px_6px_rgba(28,25,23,0.03)] flex flex-col lg:flex-row items-center justify-between gap-8">
         
         {/* Left greeting & mission */}
         <div className="space-y-3 flex-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFEFF] text-[#0E7490] border border-[#A5F3FC] text-xs font-bold">
-            <Sparkles className="w-3.5 h-3.5 text-[#06B6D4]" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-xs font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-[#0F766E]" />
             Proactive AI Placement Engine Active
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1917] tracking-tight font-heading">
             Welcome back, {first_name || 'Sarah'}
           </h1>
 
-          <p className="text-sm text-[#475569] leading-relaxed max-w-2xl">
-            JOB HUB is continuously calculating hybrid semantic matches against open software engineering and internship roles within your preferred hub radius.
+          <p className="text-sm text-[#78716C] leading-relaxed max-w-2xl">
+            JobHub is continuously calculating hybrid semantic matches against open software engineering and internship roles within your preferred hub radius.
           </p>
 
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
               to="/jobs"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-[#4F46E5] hover:bg-[#4338CA] text-white text-xs font-bold transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98]"
             >
               <Compass className="w-4 h-4" />
               Explore Matches
             </Link>
             <Link
               to="/profile"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-slate-100 hover:bg-slate-200 text-[#0F172A] text-xs font-bold transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-[#F3EFEA] hover:bg-[#E7E5E4] text-[#1C1917] border border-[#E7E5E4] text-xs font-bold transition-colors"
             >
               Adjust Hub & Skills
             </Link>
@@ -120,7 +120,7 @@ export default function JobSeekerDashboard() {
         </div>
 
         {/* Center / Right Radial Market Readiness Hero Gauge */}
-        <div className="flex items-center gap-6 p-5 rounded-[16px] bg-[#F8FAFC] border border-[#E2E8F0] flex-shrink-0">
+        <div className="flex items-center gap-6 p-5 rounded-[12px] bg-[#F3EFEA] border border-[#E7E5E4] flex-shrink-0">
           <svg 
             width="96" 
             height="96" 
@@ -134,7 +134,7 @@ export default function JobSeekerDashboard() {
               cy="70" 
               r="54" 
               fill="none" 
-              stroke="#E2E8F0" 
+              stroke="#E7E5E4" 
               strokeWidth="16" 
             />
             <circle 
@@ -142,7 +142,7 @@ export default function JobSeekerDashboard() {
               cy="70" 
               r="54" 
               fill="none" 
-              stroke="#10B981" 
+              stroke="#0F766E" 
               strokeWidth="16" 
               strokeLinecap="round" 
               strokeDasharray="339.3" 
@@ -151,16 +151,16 @@ export default function JobSeekerDashboard() {
             />
           </svg>
           <div>
-            <div className="n text-3xl font-extrabold text-[#0F172A] leading-none">
+            <div className="n text-3xl font-extrabold text-[#1C1917] leading-none">
               {overallScore}%
             </div>
-            <div className="text-xs font-bold text-[#0F172A] mt-1">
+            <div className="text-xs font-bold text-[#1C1917] mt-1">
               Profile Placement Readiness
             </div>
             <div className="text-[11px] text-[#047857] font-semibold mt-0.5">
               Top 5% of DIU graduates
             </div>
-            <div className="text-[10px] text-[#64748B] mt-1">
+            <div className="text-[10px] text-[#78716C] mt-1">
               Based on semantic resume vector overlap
             </div>
           </div>
@@ -169,24 +169,24 @@ export default function JobSeekerDashboard() {
       </div>
 
       {/* 2. "Next Best Action" Opportunity Callout Card */}
-      <div className="bg-[#ECFEFF] border border-[#06B6D4] rounded-[16px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+      <div className="bg-[#CCFBF1]/30 border border-[#99F6E4] rounded-[12px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
         <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 rounded-[12px] bg-white border border-[#A5F3FC] text-[#0E7490] flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
-            <Sparkles className="w-5 h-5 text-[#06B6D4]" />
+          <div className="w-10 h-10 rounded-[10px] bg-white border border-[#99F6E4] text-[#0F766E] flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
+            <Sparkles className="w-5 h-5 text-[#0F766E]" />
           </div>
           <div>
-            <p className="text-xs font-bold text-[#0E7490] uppercase tracking-wider">
+            <p className="text-xs font-bold text-[#0F766E] uppercase tracking-wider">
               Next Best Action Recommendation
             </p>
-            <p className="text-sm font-semibold text-[#0F172A] mt-0.5">
-              Add <span className="underline decoration-[#06B6D4] font-bold">Docker & Redis</span> to increase your average placement match score from 87% to 94%.
+            <p className="text-sm font-semibold text-[#1C1917] mt-0.5">
+              Add <span className="underline decoration-[#F97316] font-bold">Docker & Redis</span> to increase your average placement match score from 87% to 94%.
             </p>
           </div>
         </div>
 
         <Link
           to="/profile"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] bg-[#0E7490] hover:bg-[#155E75] text-white text-xs font-bold transition-colors whitespace-nowrap flex-shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all whitespace-nowrap flex-shrink-0 active:scale-[0.98]"
         >
           Update Skills Now
           <ArrowRight className="w-3.5 h-3.5" />
@@ -196,34 +196,34 @@ export default function JobSeekerDashboard() {
       {/* 3. Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="bg-white p-5 rounded-[16px] border border-[#E2E8F0] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <p className="text-xs font-semibold text-[#64748B]">Profile Strength</p>
-          <p className="n text-2xl font-extrabold text-[#0F172A] mt-1">{stats.profile_strength}%</p>
-          <span className="text-[11px] text-[#047857] font-semibold bg-[#D1FAE5] px-2 py-0.5 rounded-full inline-block mt-1">
+        <div className="bg-white p-5 rounded-[12px] border border-[#E7E5E4] shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
+          <p className="text-xs font-semibold text-[#78716C]">Profile Strength</p>
+          <p className="n text-2xl font-extrabold text-[#1C1917] mt-1">{stats.profile_strength}%</p>
+          <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] mt-1.5">
             Verified ATS Ready
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-[16px] border border-[#E2E8F0] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <p className="text-xs font-semibold text-[#64748B]">Active Matches</p>
-          <p className="n text-2xl font-extrabold text-[#4F46E5] mt-1">{stats.new_matches}</p>
-          <span className="text-[11px] text-[#4F46E5] font-semibold bg-[#EEF2FF] px-2 py-0.5 rounded-full inline-block mt-1">
-            Above 70% match threshold
+        <div className="bg-white p-5 rounded-[12px] border border-[#E7E5E4] shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
+          <p className="text-xs font-semibold text-[#78716C]">Active Matches</p>
+          <p className="n text-2xl font-extrabold text-[#0F766E] mt-1">{stats.new_matches}</p>
+          <span className="badge-pill bg-[#CCFBF1] text-[#0F766E] border-[#99F6E4] mt-1.5">
+            ≥ 70% match threshold
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-[16px] border border-[#E2E8F0] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <p className="text-xs font-semibold text-[#64748B]">Applications Sent</p>
-          <p className="n text-2xl font-extrabold text-[#0F172A] mt-1">{stats.applications}</p>
-          <span className="text-[11px] text-[#64748B] font-semibold bg-slate-100 px-2 py-0.5 rounded-full inline-block mt-1">
+        <div className="bg-white p-5 rounded-[12px] border border-[#E7E5E4] shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
+          <p className="text-xs font-semibold text-[#78716C]">Applications Sent</p>
+          <p className="n text-2xl font-extrabold text-[#1C1917] mt-1">{stats.applications}</p>
+          <span className="badge-pill bg-[#F3EFEA] text-[#78716C] border-[#E7E5E4] mt-1.5">
             Actively tracked pipeline
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-[16px] border border-[#E2E8F0] shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)]">
-          <p className="text-xs font-semibold text-[#64748B]">Shortlisted Candidates</p>
-          <p className="n text-2xl font-extrabold text-[#10B981] mt-1">{stats.shortlisted}</p>
-          <span className="text-[11px] text-[#047857] font-semibold bg-[#D1FAE5] px-2 py-0.5 rounded-full inline-block mt-1">
+        <div className="bg-white p-5 rounded-[12px] border border-[#E7E5E4] shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
+          <p className="text-xs font-semibold text-[#78716C]">Shortlisted Roles</p>
+          <p className="n text-2xl font-extrabold text-[#F97316] mt-1">{stats.shortlisted}</p>
+          <span className="badge-pill bg-[#FFEDD5] text-[#C2410C] border-[#FED7AA] mt-1.5">
             Active recruiter interest
           </span>
         </div>
@@ -234,17 +234,17 @@ export default function JobSeekerDashboard() {
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#4F46E5]" />
+            <h2 className="text-lg font-bold text-[#1C1917] flex items-center gap-2 font-heading">
+              <Sparkles className="w-4 h-4 text-[#0F766E]" />
               Top Semantic & AI Matches
             </h2>
-            <p className="text-xs text-[#64748B]">
+            <p className="text-xs text-[#78716C]">
               Ranked dynamically by hybrid vector embeddings and taxonomy overlap.
             </p>
           </div>
           <Link 
             to="/jobs?sort_by=best_match" 
-            className="text-xs font-bold text-[#4F46E5] hover:underline flex items-center gap-1"
+            className="text-xs font-bold text-[#0F766E] hover:text-[#115E59] hover:underline flex items-center gap-1"
           >
             See all matches
             <ArrowRight className="w-3.5 h-3.5" />
@@ -259,30 +259,30 @@ export default function JobSeekerDashboard() {
       </section>
 
       {/* 5. Section: Location-Aware Opportunities with Hub Pills */}
-      <section className="bg-white rounded-[16px] border border-[#E2E8F0] p-6 sm:p-7 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] space-y-5">
+      <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 sm:p-7 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-[#0F172A] flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#10B981]" />
+              <h2 className="text-lg font-bold text-[#1C1917] flex items-center gap-2 font-heading">
+                <MapPin className="w-4 h-4 text-[#0F766E]" />
                 Opportunities Near You
               </h2>
-              <span className="n px-2.5 py-0.5 rounded-full text-xs font-bold bg-[#D1FAE5] text-[#047857] border border-[#A7F3D0]">
+              <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]">
                 {filteredNearby.length} opportunities within {radiusFilter} km
               </span>
             </div>
-            <p className="text-xs text-[#64748B] mt-1">
-              Configured hub: <span className="font-semibold text-[#0F172A]">{data.preferred_location || 'Savar'}</span> · Privacy preserved (no live tracking)
+            <p className="text-xs text-[#78716C] mt-1">
+              Configured hub: <span className="font-semibold text-[#1C1917]">{data.preferred_location || 'Savar'}</span> · Privacy preserved (no live tracking)
             </p>
           </div>
 
           {/* Radius selector */}
           <div className="flex items-center gap-3 text-xs">
-            <span className="text-[#64748B] font-medium hidden sm:inline">Alert Radius:</span>
+            <span className="text-[#78716C] font-medium hidden sm:inline">Alert Radius:</span>
             <select
               value={radiusFilter}
               onChange={(e) => setRadiusFilter(Number(e.target.value))}
-              className="px-3 py-1.5 rounded-[10px] border border-[#E2E8F0] text-xs bg-slate-50 focus-ring font-semibold text-[#0F172A]"
+              className="px-3 py-1.5 rounded-[8px] border border-[#E7E5E4] text-xs bg-[#F3EFEA] focus-ring font-semibold text-[#1C1917]"
             >
               <option value={2}>Within 2 km</option>
               <option value={5}>Within 5 km</option>
@@ -294,15 +294,15 @@ export default function JobSeekerDashboard() {
 
         {/* Hub filter pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <span className="text-xs text-[#64748B] font-semibold mr-1 flex-shrink-0">Bangladesh Hubs:</span>
+          <span className="text-xs text-[#78716C] font-semibold mr-1 flex-shrink-0">Bangladesh Hubs:</span>
           {hubs.map((hub) => (
             <button
               key={hub}
               onClick={() => setSelectedHub(hub)}
               className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors flex-shrink-0 ${
                 selectedHub === hub
-                  ? 'bg-[#0F172A] text-white'
-                  : 'bg-slate-100 text-[#475569] hover:bg-slate-200'
+                  ? 'bg-[#0F766E] text-white'
+                  : 'bg-[#F3EFEA] text-[#78716C] hover:bg-[#E7E5E4] hover:text-[#1C1917]'
               }`}
             >
               {hub}
@@ -312,7 +312,7 @@ export default function JobSeekerDashboard() {
 
         {/* Jobs list in selected radius */}
         {filteredNearby.length === 0 ? (
-          <div className="p-8 text-center text-xs text-[#64748B] bg-[#F8FAFC] rounded-[12px] border border-dashed border-[#CBD5E1]">
+          <div className="p-8 text-center text-xs text-[#78716C] bg-[#FAF8F5] rounded-[12px] border border-dashed border-[#E7E5E4]">
             No roles currently open in {selectedHub !== 'All' ? selectedHub : 'your hub'} within {radiusFilter} km. Try expanding your alert radius to 10 km or 20 km.
           </div>
         ) : (
@@ -325,33 +325,33 @@ export default function JobSeekerDashboard() {
       </section>
 
       {/* 6. Section: Horizontal Application Tracker */}
-      <section className="bg-white rounded-[16px] border border-[#E2E8F0] p-6 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] space-y-4">
+      <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-[#0F172A]">Active Applications Pipeline</h2>
-            <p className="text-xs text-[#64748B]">Real-time transparent stage tracking</p>
+            <h2 className="text-lg font-bold text-[#1C1917] font-heading">Active Applications Pipeline</h2>
+            <p className="text-xs text-[#78716C]">Real-time transparent stage tracking</p>
           </div>
-          <Link to="/applications" className="text-xs font-bold text-[#4F46E5] hover:underline">
+          <Link to="/applications" className="text-xs font-bold text-[#0F766E] hover:text-[#115E59] hover:underline">
             View All Applications →
           </Link>
         </div>
 
         {recent_applications.length === 0 ? (
-          <p className="text-xs text-[#64748B] py-4 text-center">No active applications yet. Apply to your top AI matches above!</p>
+          <p className="text-xs text-[#78716C] py-4 text-center">No active applications yet. Apply to your top AI matches above!</p>
         ) : (
           <div className="space-y-3">
             {recent_applications.slice(0, 3).map((app) => (
               <div 
                 key={app.id} 
-                className="p-4 rounded-[12px] border border-[#E2E8F0] bg-[#F8FAFC] flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-4 rounded-[12px] border border-[#E7E5E4] bg-[#FAF8F5] flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 <div>
-                  <h4 className="text-sm font-bold text-[#0F172A]">{app.job_title}</h4>
-                  <p className="text-xs text-[#64748B] mt-0.5">{app.company_name} · Applied on {new Date(app.created_at).toLocaleDateString()}</p>
+                  <h4 className="text-sm font-bold text-[#1C1917]">{app.job_title}</h4>
+                  <p className="text-xs text-[#78716C] mt-0.5">{app.company_name} · Applied on {new Date(app.created_at).toLocaleDateString()}</p>
                 </div>
 
-                {/* Horizontal Step Tracker */}
-                <div className="flex items-center gap-1.5">
+                {/* Horizontal Step Tracker with soft pills */}
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {applicationSteps.map((step, idx) => {
                     const currentIdx = applicationSteps.indexOf(app.status);
                     const isPassed = idx <= currentIdx;
@@ -359,13 +359,13 @@ export default function JobSeekerDashboard() {
                       <div key={step} className="flex items-center gap-1.5">
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
                           isPassed 
-                            ? 'bg-[#D1FAE5] text-[#047857]' 
-                            : 'bg-slate-200 text-slate-500'
+                            ? 'bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]' 
+                            : 'bg-[#F3EFEA] text-[#78716C] border border-[#E7E5E4]'
                         }`}>
                           {step}
                         </span>
                         {idx < applicationSteps.length - 1 && (
-                          <span className="text-slate-300">→</span>
+                          <span className="text-[#E7E5E4]">→</span>
                         )}
                       </div>
                     );

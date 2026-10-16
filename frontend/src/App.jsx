@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
+import Footer from './components/Footer';
 
 // Pages
 import LoginPage from './pages/LoginPage';
@@ -33,7 +34,7 @@ function ProtectedLayout({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-xs font-semibold text-secondary">
-        Initializing JOB HUB...
+        Initializing JobHub...
       </div>
     );
   }
@@ -48,6 +49,7 @@ function ProtectedLayout({ children }) {
       <main className="flex-1 w-full">
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

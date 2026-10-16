@@ -1,3 +1,27 @@
+:root {
+  --bg-main: #FAF8F5;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F3EFEA;
+  --border-stone: #E7E5E4;
+  --primary-teal: #0F766E;
+  --primary-teal-hover: #115E59;
+  --primary-teal-tint: #CCFBF1;
+  --primary-teal-border: #99F6E4;
+  --cta-terracotta: #F97316;
+  --cta-terracotta-hover: #EA580C;
+  --cta-terracotta-tint: #FFEDD5;
+  --cta-terracotta-border: #FED7AA;
+  --cta-terracotta-text: #C2410C;
+  --badge-salary-bg: #ECFDF5;
+  --badge-salary-text: #047857;
+  --badge-salary-border: #A7F3D0;
+  --badge-urgent-bg: #FEF3C7;
+  --badge-urgent-text: #B45309;
+  --badge-urgent-border: #FDE68A;
+  --text-primary: #1C1917;
+  --text-secondary: #78716C;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
