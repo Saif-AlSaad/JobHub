@@ -18,13 +18,8 @@ import {
   FileText,
   Compass,
   ShieldCheck,
-  Calendar,
-  Zap,
-  MapPin,
-  Award,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import seekerIllustration from '../assets/job-seeker-workspace.jpg';
 
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
@@ -293,573 +288,420 @@ export default function LoginPage() {
       )}
 
       {/* =========================================================================
-          PAGE 2 (OPTION A): MODERN SAAS WORKSPACE - CANDIDATE PORTAL
+          PAGE 2 (OPTION A): DESTINATED JOB SEEKER LOGIN (Clean & Professional)
           ========================================================================= */}
       {currentRole === 'seeker' && (
         <div
-          key="seeker-workspace"
-          className="max-w-6xl w-full mx-auto bg-white rounded-[28px] border border-[#E7E5E4] shadow-[0_25px_60px_-15px_rgba(28,25,23,0.08)] grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative z-10 animate-in fade-in duration-300"
+          key="seeker-portal"
+          className="max-w-[440px] w-full bg-white/95 backdrop-blur-xl rounded-[28px] border border-[#E7E5E4] p-7 sm:p-9 shadow-[0_20px_50px_-12px_rgba(15,118,110,0.1),0_1px_3px_rgba(28,25,23,0.05)] ring-1 ring-black/[0.03] space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-250"
         >
-          {/* LEFT COLUMN: AUTHENTICATION FORM (5 cols on lg) */}
-          <div className="lg:col-span-5 p-7 sm:p-9 flex flex-col justify-between space-y-6">
-            
-            {/* Top Bar: Change Portal & Workspace Switcher */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E5E4]/80">
+          {/* Top Bar: Back Button + Quick Segmented Switcher */}
+          <div className="flex items-center justify-between pb-4 border-b border-[#E7E5E4]/80">
+            <button
+              type="button"
+              onClick={clearRole}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-all py-1.5 px-2.5 -ml-2 rounded-lg hover:bg-[#F3EFEA] active:scale-95 group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Change Portal</span>
+            </button>
+
+            {/* Segmented Toggle with Smooth iOS/macOS look */}
+            <div className="inline-flex p-1 rounded-xl bg-[#F3EFEA] border border-[#E7E5E4]/80 text-xs font-semibold">
               <button
                 type="button"
-                onClick={clearRole}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-all py-1.5 px-2.5 -ml-2 rounded-lg hover:bg-[#F3EFEA] active:scale-95 group"
+                className="px-3 py-1.5 rounded-lg bg-white text-[#0F766E] shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-bold transition-all"
               >
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-                <span>All Portals</span>
+                Job Seeker
               </button>
-
-              {/* Segmented Workspace Controller */}
-              <div className="inline-flex p-1 rounded-xl bg-[#F3EFEA] border border-[#E7E5E4]/80 text-xs font-semibold">
-                <button
-                  type="button"
-                  className="px-3 py-1.5 rounded-lg bg-white text-[#0F766E] shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-bold transition-all flex items-center gap-1.5"
-                >
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  <span>Candidate</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => selectRole('recruiter')}
-                  className="px-3 py-1.5 rounded-lg text-[#78716C] hover:text-[#1C1917] hover:bg-white/50 transition-all flex items-center gap-1.5"
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Recruiter</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => selectRole('recruiter')}
+                className="px-3 py-1.5 rounded-lg text-[#78716C] hover:text-[#1C1917] hover:bg-white/50 transition-all"
+              >
+                Recruiter
+              </button>
             </div>
+          </div>
 
-            {/* Header Identity */}
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-[11px] font-bold">
+          {/* Hero Header */}
+          <div className="text-center space-y-2 pt-1">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#CCFBF1] to-[#E6FFFA] border border-[#99F6E4] text-[#0F766E] flex items-center justify-center mx-auto shadow-[0_4px_14px_rgba(15,118,110,0.15)] ring-4 ring-[#CCFBF1]/40">
+              <GraduationCap className="w-7 h-7" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-[#1C1917] tracking-tight">
+              Job Seeker Sign In
+            </h2>
+            <p className="text-xs text-[#78716C] leading-relaxed max-w-[320px] mx-auto">
+              Enter your student or candidate credentials to access your placement dashboard.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* VIP 1-Click Instant Demo Card */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Candidate Placement Workspace</span>
-              </div>
-              <h2 className="text-2xl sm:text-[26px] font-extrabold text-[#1C1917] tracking-tight">
-                Sign In to Your Workspace
-              </h2>
-              <p className="text-xs text-[#78716C] leading-relaxed">
-                Access your proactive AI match radar, skill gap recommendations, and direct company interview pipeline.
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* VIP 1-Click Instant Demo Card */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-[#0F766E]" />
-                  1-Click Instant Demo Persona
-                </span>
-                <span className="text-[10px] font-semibold text-[#0F766E] bg-[#CCFBF1] px-2 py-0.5 rounded-full">
-                  87% Top Match
-                </span>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => handleDemo('seeker')}
-                disabled={loading}
-                className="w-full text-left p-3.5 rounded-2xl border border-[#99F6E4] bg-gradient-to-r from-[#CCFBF1]/40 via-white to-[#CCFBF1]/20 hover:border-[#0F766E] hover:shadow-[0_8px_20px_-4px_rgba(15,118,110,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
-                    SR
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#0F766E] transition-colors">Sarah Rahman</p>
-                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">Active Graduate</span>
-                    </div>
-                    <p className="text-[11px] text-[#78716C]">DIU Software Engineering • Savar Hub</p>
-                  </div>
-                </div>
-                <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#0F766E] group-hover:text-white group-hover:border-[#0F766E] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </button>
-            </div>
-
-            {/* Balanced Centered Divider */}
-            <div className="flex items-center gap-3 pt-1">
-              <div className="h-px flex-1 bg-[#E7E5E4]" />
-              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
-                Or sign in with email
+                1-Click Instant Demo Access
               </span>
-              <div className="h-px flex-1 bg-[#E7E5E4]" />
+              <span className="text-[10px] font-semibold text-[#0F766E] bg-[#CCFBF1] px-2 py-0.5 rounded-full">
+                Active Student
+              </span>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#1C1917]">Student Email Address</label>
-                  <button
-                    type="button"
-                    onClick={() => prefill('sarah.rahman@jobhub.io', 'password123')}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F766E] hover:text-[#115E59] bg-[#CCFBF1]/50 hover:bg-[#CCFBF1] px-2 py-0.5 rounded-md transition-all active:scale-95"
-                  >
-                    {prefilled ? (
-                      <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        <span className="text-emerald-700">Credentials filled!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3 h-3 text-[#0F766E]" />
-                        <span>Fill demo credentials</span>
-                      </>
-                    )}
-                  </button>
+            <button
+              type="button"
+              onClick={() => handleDemo('seeker')}
+              disabled={loading}
+              className="w-full text-left p-3.5 rounded-2xl border border-[#99F6E4] bg-gradient-to-r from-[#CCFBF1]/40 via-white to-[#CCFBF1]/20 hover:border-[#0F766E] hover:shadow-[0_8px_20px_-4px_rgba(15,118,110,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
+                  SR
                 </div>
-                <div className="relative group">
-                  <Mail className="w-4 h-4 text-[#78716C] group-focus-within:text-[#0F766E] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="sarah.rahman@jobhub.io"
-                    className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#0F766E] focus:outline-none focus:ring-4 focus:ring-[#0F766E]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
-                  />
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#0F766E] transition-colors">Sarah Rahman</p>
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">87% Match</span>
+                  </div>
+                  <p className="text-[11px] text-[#78716C]">DIU Graduate • Savar Corridor</p>
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#1C1917]">Password</label>
-                  <span className="text-[11px] text-[#78716C] font-normal">Default: <code className="bg-[#F3EFEA] px-1.5 py-0.5 rounded text-[#1C1917] font-semibold text-[11px]">password123</code></span>
-                </div>
-                <div className="relative group">
-                  <Lock className="w-4 h-4 text-[#78716C] group-focus-within:text-[#0F766E] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#0F766E] focus:outline-none focus:ring-4 focus:ring-[#0F766E]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] rounded-lg transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+              <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#0F766E] group-hover:text-white group-hover:border-[#0F766E] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
+            </button>
+          </div>
 
-              {/* Remember Me & Help */}
-              <div className="flex items-center justify-between text-xs pt-0.5">
-                <label className="flex items-center gap-2 text-[#78716C] hover:text-[#1C1917] font-medium cursor-pointer select-none transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#E7E5E4] text-[#0F766E] focus:ring-[#0F766E] focus:ring-offset-0 cursor-pointer accent-[#0F766E]"
-                  />
-                  <span>Remember me for 30 days</span>
-                </label>
+          {/* Balanced Centered Divider */}
+          <div className="flex items-center gap-3 pt-1">
+            <div className="h-px flex-1 bg-[#E7E5E4]" />
+            <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
+              Or sign in with email
+            </span>
+            <div className="h-px flex-1 bg-[#E7E5E4]" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1C1917]">Student Email Address</label>
                 <button
                   type="button"
                   onClick={() => prefill('sarah.rahman@jobhub.io', 'password123')}
-                  className="text-[11px] text-[#78716C] hover:text-[#0F766E] font-medium transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0F766E] hover:text-[#115E59] bg-[#CCFBF1]/50 hover:bg-[#CCFBF1] px-2 py-0.5 rounded-md transition-all active:scale-95"
                 >
-                  Reset demo
+                  {prefilled ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="text-emerald-700">Credentials filled!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3 h-3 text-[#0F766E]" />
+                      <span>Fill demo credentials</span>
+                    </>
+                  )}
                 </button>
               </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#0F766E] to-[#115E59] hover:from-[#115E59] hover:to-[#0F766E] active:scale-[0.99] text-white text-xs sm:text-sm font-bold transition-all shadow-[0_4px_16px_rgba(15,118,110,0.25)] hover:shadow-[0_8px_24px_rgba(15,118,110,0.35)] disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
-              >
-                <span>{loading ? 'Accessing Workspace...' : 'Sign In as Job Seeker'}</span>
-                {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
-              </button>
-            </form>
-
-            {/* Footer Register Link */}
-            <div className="text-center pt-2 border-t border-[#E7E5E4]/80 text-xs text-[#78716C] space-y-2">
-              <p>
-                New candidate on JobHub?{' '}
-                <Link to="/register?role=seeker" className="font-bold text-[#0F766E] hover:text-[#115E59] hover:underline">
-                  Create Free Seeker Account
-                </Link>
-              </p>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#78716C]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Protected by 256-bit encrypted authentication</span>
+              <div className="relative group">
+                <Mail className="w-4 h-4 text-[#78716C] group-focus-within:text-[#0F766E] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="sarah.rahman@jobhub.io"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#0F766E] focus:outline-none focus:ring-4 focus:ring-[#0F766E]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
+                />
               </div>
             </div>
 
-          </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1C1917]">Password</label>
+                <span className="text-[11px] text-[#78716C] font-normal">Default: <code className="bg-[#F3EFEA] px-1.5 py-0.5 rounded text-[#1C1917] font-semibold text-[11px]">password123</code></span>
+              </div>
+              <div className="relative group">
+                <Lock className="w-4 h-4 text-[#78716C] group-focus-within:text-[#0F766E] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#0F766E] focus:outline-none focus:ring-4 focus:ring-[#0F766E]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] rounded-lg transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-          {/* RIGHT COLUMN: JOB SEEKER ILLUSTRATION PANEL (7 cols on lg, perfectly centered) */}
-          <div className="hidden lg:flex lg:col-span-7 bg-gradient-to-br from-[#FAFBF7] via-[#F4F9F6] to-[#EBF6F2] border-l border-[#E7E5E4] relative overflow-hidden items-center justify-center p-8 lg:p-10 min-h-0">
-            <img
-              src={seekerIllustration}
-              alt="Job Seeker Workspace"
-              className="w-full h-full max-h-[500px] object-contain object-center select-none pointer-events-none transition-transform duration-500 hover:scale-[1.01]"
-            />
+            {/* Remember Me & Help */}
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <label className="flex items-center gap-2 text-[#78716C] hover:text-[#1C1917] font-medium cursor-pointer select-none transition-colors">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#E7E5E4] text-[#0F766E] focus:ring-[#0F766E] focus:ring-offset-0 cursor-pointer accent-[#0F766E]"
+                />
+                <span>Remember me for 30 days</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => prefill('sarah.rahman@jobhub.io', 'password123')}
+                className="text-[11px] text-[#78716C] hover:text-[#0F766E] font-medium transition-colors"
+              >
+                Reset demo
+              </button>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#0F766E] to-[#115E59] hover:from-[#115E59] hover:to-[#0F766E] active:scale-[0.99] text-white text-xs sm:text-sm font-bold transition-all shadow-[0_4px_16px_rgba(15,118,110,0.25)] hover:shadow-[0_8px_24px_rgba(15,118,110,0.35)] disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              <span>{loading ? 'Signing In...' : 'Sign In as Job Seeker'}</span>
+              {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
+            </button>
+          </form>
+
+          {/* Footer Register Link */}
+          <div className="text-center pt-2 border-t border-[#E7E5E4]/80 text-xs text-[#78716C] space-y-2">
+            <p>
+              New candidate on JobHub?{' '}
+              <Link to="/register?role=seeker" className="font-bold text-[#0F766E] hover:text-[#115E59] hover:underline">
+                Create Free Seeker Account
+              </Link>
+            </p>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#78716C]">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Protected by 256-bit encrypted authentication</span>
+            </div>
           </div>
 
         </div>
       )}
 
       {/* =========================================================================
-          PAGE 2 (OPTION B): DESTINATED JOB RECRUITER LOGIN (Modern SaaS Workspace)
+          PAGE 2 (OPTION B): DESTINATED JOB RECRUITER LOGIN (Clean & Professional)
           ========================================================================= */}
       {currentRole === 'recruiter' && (
         <div
-          key="recruiter-workspace"
-          className="max-w-6xl w-full mx-auto bg-white rounded-[28px] border border-[#E7E5E4] shadow-[0_25px_60px_-15px_rgba(249,115,22,0.08)] grid grid-cols-1 lg:grid-cols-12 overflow-hidden relative z-10 animate-in fade-in duration-300"
+          key="recruiter-portal"
+          className="max-w-[440px] w-full bg-white/95 backdrop-blur-xl rounded-[28px] border border-[#E7E5E4] p-7 sm:p-9 shadow-[0_20px_50px_-12px_rgba(249,115,22,0.1),0_1px_3px_rgba(28,25,23,0.05)] ring-1 ring-black/[0.03] space-y-6 relative z-10 animate-in fade-in zoom-in-95 duration-250"
         >
-          {/* LEFT COLUMN: AUTHENTICATION FORM (5 cols on lg) */}
-          <div className="lg:col-span-5 p-7 sm:p-9 flex flex-col justify-between space-y-6">
-            
-            {/* Top Bar: Change Portal & Workspace Switcher */}
-            <div className="flex items-center justify-between pb-4 border-b border-[#E7E5E4]/80">
+          {/* Top Bar: Back Button + Quick Segmented Switcher */}
+          <div className="flex items-center justify-between pb-4 border-b border-[#E7E5E4]/80">
+            <button
+              type="button"
+              onClick={clearRole}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-all py-1.5 px-2.5 -ml-2 rounded-lg hover:bg-[#F3EFEA] active:scale-95 group"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
+              <span>Change Portal</span>
+            </button>
+
+            {/* Segmented Toggle with Smooth iOS/macOS look */}
+            <div className="inline-flex p-1 rounded-xl bg-[#F3EFEA] border border-[#E7E5E4]/80 text-xs font-semibold">
               <button
                 type="button"
-                onClick={clearRole}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#1C1917] transition-all py-1.5 px-2.5 -ml-2 rounded-lg hover:bg-[#F3EFEA] active:scale-95 group"
+                onClick={() => selectRole('seeker')}
+                className="px-3 py-1.5 rounded-lg text-[#78716C] hover:text-[#1C1917] hover:bg-white/50 transition-all"
               >
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform" />
-                <span>All Portals</span>
+                Job Seeker
               </button>
-
-              {/* Segmented Workspace Controller */}
-              <div className="inline-flex p-1 rounded-xl bg-[#F3EFEA] border border-[#E7E5E4]/80 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => selectRole('seeker')}
-                  className="px-3 py-1.5 rounded-lg text-[#78716C] hover:text-[#1C1917] hover:bg-white/50 transition-all flex items-center gap-1.5"
-                >
-                  <GraduationCap className="w-3.5 h-3.5" />
-                  <span>Candidate</span>
-                </button>
-                <button
-                  type="button"
-                  className="px-3 py-1.5 rounded-lg bg-white text-[#F97316] shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-bold transition-all flex items-center gap-1.5"
-                >
-                  <Building2 className="w-3.5 h-3.5" />
-                  <span>Recruiter</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Header Identity */}
-            <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA] text-[11px] font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] animate-pulse" />
-                <span>Enterprise Talent Workspace</span>
-              </div>
-              <h2 className="text-2xl sm:text-[26px] font-extrabold text-[#1C1917] tracking-tight">
-                Sign In to Employer Workspace
-              </h2>
-              <p className="text-xs text-[#78716C] leading-relaxed">
-                Source top university talent across the Dhaka corridor, review AI semantic applicant rankings, and schedule interviews.
-              </p>
-            </div>
-
-            {error && (
-              <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
-                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {/* VIP 1-Click Instant Demo Card */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between px-1">
-                <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
-                  <Zap className="w-3 h-3 text-[#F97316]" />
-                  1-Click Instant Employer Demo
-                </span>
-                <span className="text-[10px] font-semibold text-[#C2410C] bg-[#FFEDD5] px-2 py-0.5 rounded-full">
-                  Verified Recruiter
-                </span>
-              </div>
-
               <button
                 type="button"
-                onClick={() => handleDemo('recruiter')}
-                disabled={loading}
-                className="w-full text-left p-3.5 rounded-2xl border border-[#FED7AA] bg-gradient-to-r from-[#FFEDD5]/40 via-white to-[#FFEDD5]/20 hover:border-[#F97316] hover:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
+                className="px-3 py-1.5 rounded-lg bg-white text-[#F97316] shadow-[0_2px_8px_rgba(0,0,0,0.06)] font-bold transition-all"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F97316] to-[#FB923C] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
-                    TN
-                  </div>
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#F97316] transition-colors">TechNova Labs</p>
-                      <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full">Hiring Team</span>
-                    </div>
-                    <p className="text-[11px] text-[#78716C]">Sabrina Rahman • Lead Technical Recruiter</p>
-                  </div>
-                </div>
-                <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#F97316] group-hover:text-white group-hover:border-[#F97316] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
+                Recruiter
               </button>
             </div>
+          </div>
 
-            {/* Balanced Centered Divider */}
-            <div className="flex items-center gap-3 pt-1">
-              <div className="h-px flex-1 bg-[#E7E5E4]" />
-              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
-                Or sign in with work credentials
+          {/* Hero Header */}
+          <div className="text-center space-y-2 pt-1">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-b from-[#FFEDD5] to-[#FFF7ED] border border-[#FED7AA] text-[#C2410C] flex items-center justify-center mx-auto shadow-[0_4px_14px_rgba(249,115,22,0.15)] ring-4 ring-[#FFEDD5]/40">
+              <Building2 className="w-7 h-7" />
+            </div>
+            <h2 className="text-2xl font-extrabold text-[#1C1917] tracking-tight">
+              Recruiter & Employer Sign In
+            </h2>
+            <p className="text-xs text-[#78716C] leading-relaxed max-w-[320px] mx-auto">
+              Sign in with your corporate credentials to manage postings, rankings, and applicants.
+            </p>
+          </div>
+
+          {error && (
+            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* VIP 1-Click Instant Demo Card */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                1-Click Instant Employer Demo
               </span>
-              <div className="h-px flex-1 bg-[#E7E5E4]" />
+              <span className="text-[10px] font-semibold text-[#C2410C] bg-[#FFEDD5] px-2 py-0.5 rounded-full">
+                Verified Recruiter
+              </span>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#1C1917]">Corporate Work Email</label>
-                  <button
-                    type="button"
-                    onClick={() => prefill('recruiter@technova.io', 'password123')}
-                    className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#F97316] hover:text-[#EA580C] bg-[#FFEDD5]/50 hover:bg-[#FFEDD5] px-2 py-0.5 rounded-md transition-all active:scale-95"
-                  >
-                    {prefilled ? (
-                      <>
-                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                        <span className="text-emerald-700">Credentials filled!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-3 h-3 text-[#F97316]" />
-                        <span>Fill demo credentials</span>
-                      </>
-                    )}
-                  </button>
+            <button
+              type="button"
+              onClick={() => handleDemo('recruiter')}
+              disabled={loading}
+              className="w-full text-left p-3.5 rounded-2xl border border-[#FED7AA] bg-gradient-to-r from-[#FFEDD5]/40 via-white to-[#FFEDD5]/20 hover:border-[#F97316] hover:shadow-[0_8px_20px_-4px_rgba(249,115,22,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#F97316] to-[#FB923C] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
+                  TN
                 </div>
-                <div className="relative group">
-                  <Mail className="w-4 h-4 text-[#78716C] group-focus-within:text-[#F97316] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="recruiter@technova.io"
-                    className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#F97316] focus:outline-none focus:ring-4 focus:ring-[#F97316]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
-                  />
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#F97316] transition-colors">TechNova Labs</p>
+                    <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full">Hiring Team</span>
+                  </div>
+                  <p className="text-[11px] text-[#78716C]">Sabrina Rahman • Lead Technical Recruiter</p>
                 </div>
               </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#1C1917]">Password</label>
-                  <span className="text-[11px] text-[#78716C] font-normal">Default: <code className="bg-[#F3EFEA] px-1.5 py-0.5 rounded text-[#1C1917] font-semibold text-[11px]">password123</code></span>
-                </div>
-                <div className="relative group">
-                  <Lock className="w-4 h-4 text-[#78716C] group-focus-within:text-[#F97316] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#F97316] focus:outline-none focus:ring-4 focus:ring-[#F97316]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] rounded-lg transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+              <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#F97316] group-hover:text-white group-hover:border-[#F97316] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
+                <ArrowRight className="w-3.5 h-3.5" />
               </div>
+            </button>
+          </div>
 
-              {/* Remember Me & Help */}
-              <div className="flex items-center justify-between text-xs pt-0.5">
-                <label className="flex items-center gap-2 text-[#78716C] hover:text-[#1C1917] font-medium cursor-pointer select-none transition-colors">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded border-[#E7E5E4] text-[#F97316] focus:ring-[#F97316] focus:ring-offset-0 cursor-pointer accent-[#F97316]"
-                  />
-                  <span>Remember me for 30 days</span>
-                </label>
+          {/* Balanced Centered Divider */}
+          <div className="flex items-center gap-3 pt-1">
+            <div className="h-px flex-1 bg-[#E7E5E4]" />
+            <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
+              Or sign in with work credentials
+            </span>
+            <div className="h-px flex-1 bg-[#E7E5E4]" />
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1C1917]">Corporate Work Email</label>
                 <button
                   type="button"
                   onClick={() => prefill('recruiter@technova.io', 'password123')}
-                  className="text-[11px] text-[#78716C] hover:text-[#F97316] font-medium transition-colors"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#F97316] hover:text-[#EA580C] bg-[#FFEDD5]/50 hover:bg-[#FFEDD5] px-2 py-0.5 rounded-md transition-all active:scale-95"
                 >
-                  Reset demo
+                  {prefilled ? (
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="text-emerald-700">Credentials filled!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3 h-3 text-[#F97316]" />
+                      <span>Fill demo credentials</span>
+                    </>
+                  )}
                 </button>
               </div>
+              <div className="relative group">
+                <Mail className="w-4 h-4 text-[#78716C] group-focus-within:text-[#F97316] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="recruiter@technova.io"
+                  className="w-full pl-10 pr-3.5 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#F97316] focus:outline-none focus:ring-4 focus:ring-[#F97316]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
+                />
+              </div>
+            </div>
 
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-[#1C1917]">Password</label>
+                <span className="text-[11px] text-[#78716C] font-normal">Default: <code className="bg-[#F3EFEA] px-1.5 py-0.5 rounded text-[#1C1917] font-semibold text-[11px]">password123</code></span>
+              </div>
+              <div className="relative group">
+                <Lock className="w-4 h-4 text-[#78716C] group-focus-within:text-[#F97316] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-10 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:border-[#F97316] focus:outline-none focus:ring-4 focus:ring-[#F97316]/10 transition-all duration-200 placeholder:text-[#78716C]/60"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] rounded-lg transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Remember Me & Help */}
+            <div className="flex items-center justify-between text-xs pt-0.5">
+              <label className="flex items-center gap-2 text-[#78716C] hover:text-[#1C1917] font-medium cursor-pointer select-none transition-colors">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-4 h-4 rounded border-[#E7E5E4] text-[#F97316] focus:ring-[#F97316] focus:ring-offset-0 cursor-pointer accent-[#F97316]"
+                />
+                <span>Remember me for 30 days</span>
+              </label>
               <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#F97316] active:scale-[0.99] text-white text-xs sm:text-sm font-bold transition-all shadow-[0_4px_16px_rgba(249,115,22,0.25)] hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
+                type="button"
+                onClick={() => prefill('recruiter@technova.io', 'password123')}
+                className="text-[11px] text-[#78716C] hover:text-[#F97316] font-medium transition-colors"
               >
-                <span>{loading ? 'Accessing Workspace...' : 'Sign In as Job Recruiter'}</span>
-                {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
+                Reset demo
               </button>
-            </form>
-
-            {/* Footer Register Link */}
-            <div className="text-center pt-2 border-t border-[#E7E5E4]/80 text-xs text-[#78716C] space-y-2">
-              <p>
-                Looking to hire top software graduates?{' '}
-                <Link to="/register?role=recruiter" className="font-bold text-[#F97316] hover:text-[#EA580C] hover:underline">
-                  Register your Company
-                </Link>
-              </p>
-              <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#78716C]">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>Protected by 256-bit encrypted authentication</span>
-              </div>
             </div>
 
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#F97316] active:scale-[0.99] text-white text-xs sm:text-sm font-bold transition-all shadow-[0_4px_16px_rgba(249,115,22,0.25)] hover:shadow-[0_8px_24px_rgba(249,115,22,0.35)] disabled:opacity-50 flex items-center justify-center gap-2 group cursor-pointer"
+            >
+              <span>{loading ? 'Signing In...' : 'Sign In as Job Recruiter'}</span>
+              {!loading && <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />}
+            </button>
+          </form>
 
-          {/* RIGHT COLUMN: MODERN SAAS WORKSPACE SHOWCASE CANVAS (7 cols on lg) */}
-          <div className="hidden lg:flex lg:col-span-7 bg-[#FAF8F5] border-l border-[#E7E5E4] p-8 lg:p-10 flex-col justify-between relative overflow-hidden">
-            
-            {/* Ambient workspace glows */}
-            <div className="absolute -top-20 -right-20 w-72 h-72 bg-[#FFEDD5]/50 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 w-72 h-72 bg-[#CCFBF1]/40 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Top Workspace Header */}
-            <div className="flex items-center justify-between relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E7E5E4] shadow-xs text-xs font-semibold text-[#1C1917]">
-                <span className="w-2 h-2 rounded-full bg-[#F97316] animate-pulse" />
-                <span>Live Workspace • Enterprise Talent Pipeline</span>
-              </div>
-              <span className="text-[11px] font-bold text-[#C2410C] bg-[#FFEDD5] border border-[#FED7AA] px-2.5 py-1 rounded-full">
-                Savar Corridor AI Matching
-              </span>
+          {/* Footer Register Link */}
+          <div className="text-center pt-2 border-t border-[#E7E5E4]/80 text-xs text-[#78716C] space-y-2">
+            <p>
+              Looking to hire top software graduates?{' '}
+              <Link to="/register?role=recruiter" className="font-bold text-[#F97316] hover:text-[#EA580C] hover:underline">
+                Register your Company
+              </Link>
+            </p>
+            <div className="flex items-center justify-center gap-1.5 text-[11px] text-[#78716C]">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Protected by 256-bit encrypted authentication</span>
             </div>
-
-            {/* Workspace Interactive Mock Canvas */}
-            <div className="space-y-4 my-auto py-6 relative z-10">
-              
-              {/* Card 1: AI Candidate Leaderboard & Match Ranking */}
-              <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-[#E7E5E4] p-5 shadow-[0_12px_28px_rgba(28,25,23,0.06)] space-y-3.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[#FFEDD5] text-[#C2410C] flex items-center justify-center font-bold text-xs">
-                      <Users className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#1C1917]">Applicant Semantic Rankings</p>
-                      <p className="text-[11px] text-[#78716C]">Junior Full Stack Engineer • 48 Applicants</p>
-                    </div>
-                  </div>
-                  <span className="badge-pill badge-primary text-[10px] font-bold">Top Matched</span>
-                </div>
-
-                {/* Candidate Rows */}
-                <div className="space-y-2 pt-1">
-                  
-                  {/* Candidate 1 */}
-                  <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E7E5E4] flex items-center justify-between hover:bg-white hover:border-[#0F766E]/40 transition-all">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#0F766E] text-white flex items-center justify-center font-bold text-[11px] shadow-xs">
-                        SR
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-[#1C1917]">Sarah Rahman</span>
-                          <span className="text-[9px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded-full border border-emerald-200">CGPA 3.82</span>
-                        </div>
-                        <p className="text-[10px] text-[#78716C]">DIU SE '24 • Python, FastAPI, Docker</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="badge-pill badge-salary-verified text-[11px] font-bold">
-                        96% AI Fit
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Candidate 2 */}
-                  <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E7E5E4] flex items-center justify-between hover:bg-white hover:border-[#F97316]/40 transition-all">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#F97316] text-white flex items-center justify-center font-bold text-[11px] shadow-xs">
-                        TA
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-xs font-bold text-[#1C1917]">Tanvir Ahmed</span>
-                          <span className="text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.2 rounded-full border border-blue-200">CGPA 3.75</span>
-                        </div>
-                        <p className="text-[10px] text-[#78716C]">BRAC CS '24 • React, Node.js, Next.js</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className="badge-pill badge-location-type text-[11px] font-bold">
-                        89% AI Fit
-                      </span>
-                    </div>
-                  </div>
-
-                </div>
-
-                {/* Corridor Speed & Accuracy Stats */}
-                <div className="pt-2 border-t border-[#E7E5E4] grid grid-cols-3 gap-2 text-center">
-                  <div className="p-1.5 bg-[#F3EFEA]/70 rounded-lg">
-                    <p className="text-xs font-bold text-[#1C1917]">48h</p>
-                    <p className="text-[9px] text-[#78716C]">Avg Shortlist</p>
-                  </div>
-                  <div className="p-1.5 bg-[#F3EFEA]/70 rounded-lg">
-                    <p className="text-xs font-bold text-[#0F766E]">94%</p>
-                    <p className="text-[9px] text-[#78716C]">Fit Accuracy</p>
-                  </div>
-                  <div className="p-1.5 bg-[#F3EFEA]/70 rounded-lg">
-                    <p className="text-xs font-bold text-[#F97316]">35+ Min</p>
-                    <p className="text-[9px] text-[#78716C]">Commute Fit</p>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Card 2: Corridor Pipeline Quick Action Bar */}
-              <div className="bg-white/90 backdrop-blur-md rounded-2xl border border-[#FED7AA] p-4 shadow-sm flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-[#FFEDD5] text-[#C2410C] flex items-center justify-center flex-shrink-0">
-                  <Briefcase className="w-5 h-5 text-[#C2410C]" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs font-bold text-[#1C1917]">Direct University Corridor Pipeline</p>
-                    <span className="text-[10px] text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">Active Campus Drive</span>
-                  </div>
-                  <p className="text-[11px] text-[#78716C] mt-0.5">Connecting employers with top 10% graduates from DIU, BRAC & JU</p>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Bottom Social Proof */}
-            <div className="pt-4 border-t border-[#E7E5E4] flex items-center justify-between text-xs text-[#78716C] relative z-10">
-              <div className="flex items-center gap-2">
-                <span className="font-semibold text-[#1C1917]">Hiring teams from:</span>
-                <span className="text-[11px] font-medium text-[#78716C]">TechNova • Brain Station 23 • Chaldal</span>
-              </div>
-              <span className="text-[11px] font-bold text-[#F97316] bg-[#FFEDD5] px-2 py-0.5 rounded-md">Enterprise Ready</span>
-            </div>
-
           </div>
 
         </div>
