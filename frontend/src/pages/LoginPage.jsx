@@ -344,50 +344,6 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* VIP 1-Click Instant Demo Card */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider inline-flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                1-Click Instant Demo Access
-              </span>
-              <span className="text-[10px] font-semibold text-[#0F766E] bg-[#CCFBF1] px-2 py-0.5 rounded-full">
-                Active Student
-              </span>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => handleDemo('seeker')}
-              disabled={loading}
-              className="w-full text-left p-3.5 rounded-2xl border border-[#99F6E4] bg-gradient-to-r from-[#CCFBF1]/40 via-white to-[#CCFBF1]/20 hover:border-[#0F766E] hover:shadow-[0_8px_20px_-4px_rgba(15,118,110,0.15)] hover:-translate-y-0.5 active:scale-[0.99] transition-all duration-200 flex items-center justify-between group shadow-xs disabled:opacity-50 cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0F766E] to-[#14B8A6] text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white">
-                  SR
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-bold text-[#1C1917] group-hover:text-[#0F766E] transition-colors">Sarah Rahman</p>
-                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">87% Match</span>
-                  </div>
-                  <p className="text-[11px] text-[#78716C]">DIU Graduate • Savar Corridor</p>
-                </div>
-              </div>
-              <div className="w-7 h-7 rounded-lg bg-white border border-[#E7E5E4] text-[#78716C] flex items-center justify-center group-hover:bg-[#0F766E] group-hover:text-white group-hover:border-[#0F766E] group-hover:translate-x-0.5 shadow-xs transition-all duration-200">
-                <ArrowRight className="w-3.5 h-3.5" />
-              </div>
-            </button>
-          </div>
-
-          {/* Balanced Centered Divider */}
-          <div className="flex items-center gap-3 pt-1">
-            <div className="h-px flex-1 bg-[#E7E5E4]" />
-            <span className="text-[10px] font-bold text-[#78716C] uppercase tracking-wider whitespace-nowrap">
-              Or sign in with email
-            </span>
-            <div className="h-px flex-1 bg-[#E7E5E4]" />
-          </div>
 
           {/* Form */}
           <form onSubmit={handleLogin} className="space-y-4">
