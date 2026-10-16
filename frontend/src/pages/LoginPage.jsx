@@ -89,7 +89,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center py-10 px-4 sm:px-6 lg:px-8 bg-[#FAF8F5] relative overflow-hidden">
-      
+
       {/* Decorative ambient background glows */}
       <div className="absolute top-1/4 left-1/3 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-[#CCFBF1]/40 blur-3xl pointer-events-none rounded-full" />
       <div className="absolute bottom-1/4 right-1/3 translate-x-1/2 translate-y-1/2 w-[600px] h-[400px] bg-[#FFEDD5]/40 blur-3xl pointer-events-none rounded-full" />
@@ -100,7 +100,7 @@ export default function LoginPage() {
           ========================================================================= */}
       {!currentRole && (
         <div className="max-w-4xl w-full mx-auto space-y-10 relative z-10 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          
+
           {/* Header & Brand Identity */}
           <div className="text-center space-y-3.5 max-w-xl mx-auto">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#E7E5E4] shadow-xs text-xs font-semibold text-[#1C1917]">
@@ -119,7 +119,7 @@ export default function LoginPage() {
 
           {/* 2-Column Portal Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-            
+
             {/* CARD 1: JOB SEEKER PORTAL */}
             <div
               onClick={() => selectRole('seeker')}
@@ -605,7 +605,7 @@ export default function LoginPage() {
           {/* Footer Register Link */}
           <div className="text-center pt-2 border-t border-[#E7E5E4]/80 text-xs text-[#78716C] space-y-2">
             <p>
-              Looking to hire top software graduates?{' '}
+              Looking to hire top graduates?{' '}
               <Link to="/register?role=recruiter" className="font-bold text-[#F97316] hover:text-[#EA580C] hover:underline">
                 Register your Company
               </Link>
