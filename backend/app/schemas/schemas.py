@@ -76,6 +76,7 @@ class JobSeekerProfileUpdate(BaseModel):
     projects: Optional[List[Dict[str, Any]]] = None
     certifications: Optional[List[Dict[str, Any]]] = None
     skills: Optional[List[str]] = None
+    avatar_url: Optional[str] = None
     profile_completed: Optional[bool] = None
 
 class JobSeekerProfileResponse(BaseModel):

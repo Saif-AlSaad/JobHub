@@ -115,7 +115,8 @@ class JobSeekerProfile(Base):
     certifications = Column(Text, default='[]') # list of {title, issuer, year}
     skills = Column(Text, default='[]')     # list of strings: ["Python", "React", ...]
     
-    # Resume storage
+    # Resume & avatar storage
+    avatar_url = Column(Text, nullable=True)
     resume_url = Column(String(500), nullable=True)
     resume_filename = Column(String(255), nullable=True)
     resume_raw_text = Column(Text, nullable=True)

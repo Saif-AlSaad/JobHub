@@ -284,16 +284,33 @@ export default function Navbar() {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setProfileOpen(!profileOpen)}
-              className="w-9 h-9 rounded-[10px] border border-[#99F6E4] bg-[#CCFBF1] hover:bg-[#99F6E4] text-[#0F766E] flex items-center justify-center font-bold text-xs transition-colors shadow-xs"
+              className="w-9 h-9 rounded-[10px] border border-[#99F6E4] bg-[#CCFBF1] hover:bg-[#99F6E4] text-[#0F766E] flex items-center justify-center font-bold text-xs transition-colors shadow-xs overflow-hidden"
             >
-              {role === 'JOB_SEEKER' ? 'SR' : role === 'RECRUITER' ? 'TN' : 'AD'}
+              {(user?.profile?.avatar_url || user?.avatar_url || localStorage.getItem('jobhub_user_avatar')) ? (
+                <img
+                  src={user?.profile?.avatar_url || user?.avatar_url || localStorage.getItem('jobhub_user_avatar')}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                role === 'JOB_SEEKER' ? 'SR' : role === 'RECRUITER' ? 'TN' : 'AD'
+              )}
             </button>
 
             {profileOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white text-[#1C1917] rounded-[12px] shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] py-1.5 z-50 animate-in fade-in duration-150">
-                <div className="px-3.5 py-2.5 border-b border-[#E7E5E4] bg-[#F3EFEA]/50">
-                  <p className="font-bold text-xs text-[#1C1917]">{user?.profile?.full_name || user?.email}</p>
-                  <p className="text-[11px] text-[#78716C] truncate">{user?.email}</p>
+                <div className="px-3.5 py-2.5 border-b border-[#E7E5E4] bg-[#F3EFEA]/50 flex items-center gap-2.5">
+                  {(user?.profile?.avatar_url || user?.avatar_url || localStorage.getItem('jobhub_user_avatar')) ? (
+                    <img
+                      src={user?.profile?.avatar_url || user?.avatar_url || localStorage.getItem('jobhub_user_avatar')}
+                      alt="Avatar"
+                      className="w-8 h-8 rounded-full object-cover border border-[#99F6E4] flex-shrink-0"
+                    />
+                  ) : null}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-xs text-[#1C1917] truncate">{user?.profile?.full_name || user?.email}</p>
+                    <p className="text-[11px] text-[#78716C] truncate">{user?.email}</p>
+                  </div>
                 </div>
 
                 <Link
