@@ -31,6 +31,7 @@ def get_profile(seeker: JobSeekerProfile = Depends(get_current_seeker)):
         "preferred_longitude": seeker.preferred_longitude,
         "alert_radius_km": seeker.alert_radius_km or 10.0,
         "min_match_score": seeker.min_match_score or 70.0,
+        "avatar_url": seeker.avatar_url,
         "resume_url": seeker.resume_url,
         "resume_filename": seeker.resume_filename,
         "profile_completed": seeker.profile_completed
@@ -73,6 +74,8 @@ def update_profile(
         seeker.projects = json.dumps(update_data.projects)
     if update_data.certifications is not None:
         seeker.certifications = json.dumps(update_data.certifications)
+    if update_data.avatar_url is not None:
+        seeker.avatar_url = update_data.avatar_url
         
     db.commit()
     db.refresh(seeker)

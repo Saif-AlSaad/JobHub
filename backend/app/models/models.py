@@ -77,6 +77,7 @@ class RecruiterProfile(Base):
     full_name = Column(String(255), nullable=False)
     designation = Column(String(150), default="Talent Acquisition Specialist")
     phone = Column(String(50), nullable=True)
+    avatar_url = Column(Text, nullable=True)
     is_approved = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
@@ -115,7 +116,8 @@ class JobSeekerProfile(Base):
     certifications = Column(Text, default='[]') # list of {title, issuer, year}
     skills = Column(Text, default='[]')     # list of strings: ["Python", "React", ...]
     
-    # Resume storage
+    # Resume & avatar storage
+    avatar_url = Column(Text, nullable=True)
     resume_url = Column(String(500), nullable=True)
     resume_filename = Column(String(255), nullable=True)
     resume_raw_text = Column(Text, nullable=True)

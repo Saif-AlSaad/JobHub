@@ -171,6 +171,7 @@ def get_current_user_profile(
                 "min_match_score": p.min_match_score,
                 "resume_url": p.resume_url,
                 "resume_filename": p.resume_filename,
+                "avatar_url": p.avatar_url,
                 "profile_completed": p.profile_completed
             }
     elif user.role == UserRole.RECRUITER:
@@ -181,6 +182,7 @@ def get_current_user_profile(
                 "full_name": p.full_name,
                 "designation": p.designation,
                 "phone": p.phone,
+                "avatar_url": p.avatar_url,
                 "is_approved": p.is_approved,
                 "company": {
                     "id": p.company.id,

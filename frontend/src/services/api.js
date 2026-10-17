@@ -103,6 +103,10 @@ function getMockFallbackResponse(config) {
     const savedUser = localStorage.getItem('jobhub_mock_user');
     return { data: savedUser ? JSON.parse(savedUser) : MOCK_USERS.JOB_SEEKER };
   }
+  if (url.includes('/recruiter/profile')) {
+    const savedUser = localStorage.getItem('jobhub_mock_user');
+    return { data: savedUser ? JSON.parse(savedUser) : MOCK_USERS.RECRUITER };
+  }
 
   return null;
 }
