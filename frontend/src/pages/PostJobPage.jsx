@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { Sparkles, Check, Plus, X, ArrowRight, Building2, Send, MapPin } from 'lucide-react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 export default function PostJobPage() {
+  const { user } = useAuth();
   const navigate = useNavigate();
+
+  if (user && user.role === 'JOB_SEEKER') {
+    return <Navigate to="/" replace />;
+  }
 
   const [form, setForm] = useState({
     title: '',

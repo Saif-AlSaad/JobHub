@@ -46,13 +46,19 @@ export default function Navbar() {
     setNotifOpen(!notifOpen);
   };
 
-  const handleDemoSwitch = async (role) => {
+  const role = user?.role || 'JOB_SEEKER';
+
+  const handleDemoSwitch = async (targetRole) => {
+    if (role === 'JOB_SEEKER' && targetRole === 'recruiter') {
+      return;
+    }
+    if (role === 'RECRUITER' && targetRole === 'seeker') {
+      return;
+    }
     setDemoOpen(false);
-    await demoLogin(role);
+    await demoLogin(targetRole);
     navigate('/');
   };
-
-  const role = user?.role || 'JOB_SEEKER';
 
   const seekerNav = [
     { to: '/', label: 'Dashboard', end: true },
@@ -125,14 +131,16 @@ export default function Navbar() {
         {/* Right Actions & Telemetry */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           
-          {/* High-Conversion "Post a Job" CTA Button */}
-          <Link
-            to="/recruiter/post-job"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-semibold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all duration-150 active:scale-[0.98]"
-          >
-            <span>+</span>
-            <span>Post a Job</span>
-          </Link>
+          {/* High-Conversion "Post a Job" CTA Button (Recruiters & Admins Only) */}
+          {role !== 'JOB_SEEKER' && (
+            <Link
+              to="/recruiter/post-job"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-semibold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all duration-150 active:scale-[0.98]"
+            >
+              <span>+</span>
+              <span>Post a Job</span>
+            </Link>
+          )}
 
           {/* Active Location Hub Pill */}
           {role === 'JOB_SEEKER' && (
@@ -164,44 +172,48 @@ export default function Navbar() {
             {demoOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white text-[#1C1917] rounded-[12px] shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3.5 py-1.5 border-b border-[#E7E5E4] text-[11px] font-semibold text-[#78716C] uppercase tracking-wider">
-                  Switch Active Persona
+                  {role === 'ADMIN' ? 'Switch Active Persona' : 'Active Persona'}
                 </div>
                 
-                <button
-                  onClick={() => handleDemoSwitch('seeker')}
-                  className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F3EFEA] flex items-center justify-between transition-colors ${
-                    role === 'JOB_SEEKER' ? 'bg-[#CCFBF1]/60 font-semibold text-[#0F766E]' : 'text-[#1C1917]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center font-bold text-xs">
-                      SR
+                {role !== 'RECRUITER' && (
+                  <button
+                    onClick={() => (role === 'JOB_SEEKER' ? setDemoOpen(false) : handleDemoSwitch('seeker'))}
+                    className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F3EFEA] flex items-center justify-between transition-colors ${
+                      role === 'JOB_SEEKER' ? 'bg-[#CCFBF1]/60 font-semibold text-[#0F766E]' : 'text-[#1C1917]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center font-bold text-xs">
+                        SR
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#1C1917]">Sarah Rahman</p>
+                        <p className="text-[11px] text-[#78716C]">Job Seeker • DIU SE Graduate</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-[#1C1917]">Sarah Rahman</p>
-                      <p className="text-[11px] text-[#78716C]">Job Seeker • DIU SE Graduate</p>
-                    </div>
-                  </div>
-                  {role === 'JOB_SEEKER' && <Check className="w-4 h-4 text-[#0F766E]" />}
-                </button>
+                    {role === 'JOB_SEEKER' && <Check className="w-4 h-4 text-[#0F766E]" />}
+                  </button>
+                )}
 
-                <button
-                  onClick={() => handleDemoSwitch('recruiter')}
-                  className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F3EFEA] flex items-center justify-between transition-colors ${
-                    role === 'RECRUITER' ? 'bg-[#CCFBF1]/60 font-semibold text-[#0F766E]' : 'text-[#1C1917]'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA] flex items-center justify-center font-bold text-xs">
-                      TN
+                {role !== 'JOB_SEEKER' && (
+                  <button
+                    onClick={() => (role === 'RECRUITER' ? setDemoOpen(false) : handleDemoSwitch('recruiter'))}
+                    className={`w-full text-left px-3.5 py-2.5 text-xs hover:bg-[#F3EFEA] flex items-center justify-between transition-colors ${
+                      role === 'RECRUITER' ? 'bg-[#CCFBF1]/60 font-semibold text-[#0F766E]' : 'text-[#1C1917]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA] flex items-center justify-center font-bold text-xs">
+                        TN
+                      </div>
+                      <div>
+                        <p className="font-semibold text-[#1C1917]">TechNova Labs</p>
+                        <p className="text-[11px] text-[#78716C]">Employer & Technical Recruiter</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-semibold text-[#1C1917]">TechNova Labs</p>
-                      <p className="text-[11px] text-[#78716C]">Employer & Technical Recruiter</p>
-                    </div>
-                  </div>
-                  {role === 'RECRUITER' && <Check className="w-4 h-4 text-[#0F766E]" />}
-                </button>
+                    {role === 'RECRUITER' && <Check className="w-4 h-4 text-[#0F766E]" />}
+                  </button>
+                )}
               </div>
             )}
           </div>

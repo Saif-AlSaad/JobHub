@@ -28,6 +28,14 @@ function RoleBasedHome() {
   return <JobSeekerDashboard />;
 }
 
+function RecruiterOnlyRoute({ children }) {
+  const { user } = useAuth();
+  if (user && user.role === 'JOB_SEEKER') {
+    return <Navigate to="/" replace />;
+  }
+  return children;
+}
+
 function ProtectedLayout({ children }) {
   const { user, loading } = useAuth();
 
@@ -132,7 +140,9 @@ export default function App() {
               path="/recruiter/post-job"
               element={
                 <ProtectedLayout>
-                  <PostJobPage />
+                  <RecruiterOnlyRoute>
+                    <PostJobPage />
+                  </RecruiterOnlyRoute>
                 </ProtectedLayout>
               }
             />
