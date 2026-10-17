@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import RecruiterProfile, Job, Application, Company, JobSeekerProfile
 from app.auth.deps import get_current_recruiter
+from app.schemas.schemas import RecruiterProfileUpdate
 
 router = APIRouter(prefix="/recruiter", tags=["Recruiter"])
 
@@ -80,3 +81,80 @@ def get_recruiter_dashboard(
         "active_jobs": active_jobs_data,
         "top_candidates": ranked_candidates[:10]
     }
+
+@router.get("/profile")
+def get_recruiter_profile(
+    recruiter: RecruiterProfile = Depends(get_current_recruiter),
+    db: Session = Depends(get_db)
+):
+    company = recruiter.company
+    return {
+        "id": recruiter.id,
+        "user_id": recruiter.user_id,
+        "full_name": recruiter.full_name,
+        "designation": recruiter.designation or "Lead Technical Talent Partner",
+        "phone": recruiter.phone or "+880 1819-876543",
+        "avatar_url": recruiter.avatar_url,
+        "company": {
+            "id": company.id if company else None,
+            "name": company.name if company else "TechNova Labs",
+            "industry": company.industry if company else "Software Engineering & Cloud AI",
+            "location_name": company.location_name if company else "Banani Tech Corridor, Dhaka",
+            "logo_url": company.logo_url if company else None,
+            "website": company.website if company else "https://technova.io",
+            "description": company.description if company else "Fast-growing AI and engineering solutions company.",
+            "size": company.size if company else "50-200 employees",
+            "founded_year": company.founded_year if company else 2018,
+            "is_verified": company.is_verified if company else True,
+        } if company else {
+            "name": "TechNova Labs",
+            "industry": "Software Engineering & Cloud AI",
+            "location_name": "Banani Tech Corridor, Dhaka",
+            "website": "https://technova.io",
+            "description": "Fast-growing AI and engineering solutions company.",
+            "size": "50-200 employees",
+            "founded_year": 2018,
+            "is_verified": True
+        }
+    }
+
+@router.put("/profile")
+def update_recruiter_profile(
+    update_data: RecruiterProfileUpdate,
+    recruiter: RecruiterProfile = Depends(get_current_recruiter),
+    db: Session = Depends(get_db)
+):
+    if update_data.full_name is not None:
+        recruiter.full_name = update_data.full_name
+    if update_data.designation is not None:
+        recruiter.designation = update_data.designation
+    if update_data.phone is not None:
+        recruiter.phone = update_data.phone
+    if update_data.avatar_url is not None:
+        recruiter.avatar_url = update_data.avatar_url
+
+    company = recruiter.company
+    if not company and update_data.company_name:
+        company = Company(name=update_data.company_name)
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+        recruiter.company_id = company.id
+
+    if company:
+        if update_data.company_name is not None:
+            company.name = update_data.company_name
+        if update_data.company_website is not None:
+            company.website = update_data.company_website
+        if update_data.company_industry is not None:
+            company.industry = update_data.company_industry
+        if update_data.company_location is not None:
+            company.location_name = update_data.company_location
+        if update_data.company_description is not None:
+            company.description = update_data.company_description
+        if update_data.company_size is not None:
+            company.size = update_data.company_size
+
+    db.commit()
+    db.refresh(recruiter)
+    return {"status": "success", "message": "Recruiter profile updated successfully"}

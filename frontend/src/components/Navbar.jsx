@@ -67,6 +67,7 @@ export default function Navbar() {
     { to: '/recruiter/post-job', label: 'Post Job' },
     { to: '/jobs', label: 'Explore' },
     { to: '/messages', label: 'Messages' },
+    { to: '/profile', label: 'Company Profile' },
   ];
 
   const adminNav = [

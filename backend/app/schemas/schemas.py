@@ -107,6 +107,18 @@ class JobSeekerProfileResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class RecruiterProfileUpdate(BaseModel):
+    full_name: Optional[str] = None
+    designation: Optional[str] = None
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    company_name: Optional[str] = None
+    company_website: Optional[str] = None
+    company_industry: Optional[str] = None
+    company_location: Optional[str] = None
+    company_description: Optional[str] = None
+    company_size: Optional[str] = None
+
 class RecruiterProfileResponse(BaseModel):
     id: int
     user_id: int
@@ -114,6 +126,7 @@ class RecruiterProfileResponse(BaseModel):
     full_name: str
     designation: str
     phone: Optional[str]
+    avatar_url: Optional[str] = None
     is_approved: bool
     company: Optional[CompanyResponse] = None
 

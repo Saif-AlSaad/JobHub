@@ -77,6 +77,7 @@ class RecruiterProfile(Base):
     full_name = Column(String(255), nullable=False)
     designation = Column(String(150), default="Talent Acquisition Specialist")
     phone = Column(String(50), nullable=True)
+    avatar_url = Column(Text, nullable=True)
     is_approved = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

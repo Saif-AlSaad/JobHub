@@ -182,6 +182,7 @@ def get_current_user_profile(
                 "full_name": p.full_name,
                 "designation": p.designation,
                 "phone": p.phone,
+                "avatar_url": p.avatar_url,
                 "is_approved": p.is_approved,
                 "company": {
                     "id": p.company.id,
