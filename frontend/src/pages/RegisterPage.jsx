@@ -33,6 +33,8 @@ export default function RegisterPage() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -89,6 +91,7 @@ export default function RegisterPage() {
         password: 'password123',
         role: 'RECRUITER',
       });
+      setConfirmPassword('password123');
     } else {
       setForm({
         full_name: 'Sarah Rahman',
@@ -97,6 +100,7 @@ export default function RegisterPage() {
         password: 'password123',
         role: 'JOB_SEEKER',
       });
+      setConfirmPassword('password123');
     }
     setPrefilled(true);
     setTimeout(() => setPrefilled(false), 2200);
@@ -106,6 +110,10 @@ export default function RegisterPage() {
     e.preventDefault();
     if (!agreeTerms) {
       setError('Please agree to the Terms of Service and Privacy Policy.');
+      return;
+    }
+    if (form.password !== confirmPassword) {
+      setError('Passwords do not match. Please ensure both passwords are identical.');
       return;
     }
     setLoading(true);
@@ -169,16 +177,11 @@ export default function RegisterPage() {
             )}
           </div>
 
-          {/* Title & Description */}
-          <div className="space-y-1">
+          {/* Title */}
+          <div>
             <h1 className="text-2xl sm:text-[26px] font-extrabold text-[#1C1917] tracking-tight">
               Create <span className="text-[#0F766E]">Job</span><span className="text-[#F97316]">Hub</span> Account
             </h1>
-            <p className="text-xs text-[#78716C] leading-relaxed max-w-[340px] mx-auto font-normal">
-              {isRecruiter
-                ? 'Join leading tech companies discovering and hiring top university talent through AI-ranked pipelines.'
-                : 'Join JobHub to discover AI-ranked internships, track applications, and accelerate your career.'}
-            </p>
           </div>
         </div>
 
@@ -384,6 +387,48 @@ export default function RegisterPage() {
                 </p>
               </div>
             )}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-[#1C1917]">Confirm Password</label>
+              {confirmPassword && (
+                <span
+                  className={`text-[11px] font-semibold ${
+                    form.password === confirmPassword ? 'text-emerald-600' : 'text-red-500'
+                  }`}
+                >
+                  {form.password === confirmPassword ? '✓ Passwords match' : '✕ Passwords do not match'}
+                </span>
+              )}
+            </div>
+            <div className="relative group">
+              <Lock
+                className={`w-4 h-4 text-[#78716C] absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors pointer-events-none ${
+                  isRecruiter ? 'group-focus-within:text-[#F97316]' : 'group-focus-within:text-[#0F766E]'
+                }`}
+              />
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className={`w-full pl-10 pr-10 py-2.5 text-xs sm:text-[13px] font-medium text-[#1C1917] bg-[#FAF8F5]/80 hover:bg-white focus:bg-white rounded-xl border border-[#E7E5E4] hover:border-[#78716C]/40 focus:outline-none focus:ring-4 transition-all duration-200 placeholder:text-[#78716C]/60 ${
+                  isRecruiter
+                    ? 'focus:border-[#F97316] focus:ring-[#F97316]/10'
+                    : 'focus:border-[#0F766E] focus:ring-[#0F766E]/10'
+                }`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] rounded-lg transition-colors cursor-pointer"
+              >
+                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Terms Agreement Checkbox */}
