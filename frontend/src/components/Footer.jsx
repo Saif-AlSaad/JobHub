@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, MapPin, Heart, ArrowUpRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Footer() {
+  const { user } = useAuth();
+  const isSeeker = user?.role === 'JOB_SEEKER';
   return (
     <footer className="bg-[#F3EFEA] border-t border-[#E7E5E4] text-[#1C1917] mt-auto transition-colors">
       <div className="max-w-[1280px] mx-auto px-6 py-12">
@@ -53,29 +56,57 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Quick Links: Employers */}
+          {/* Quick Links: Candidate Hub (Seekers) or For Employers (Recruiters) */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold text-[#1C1917] uppercase tracking-wider font-heading">
-              For Employers
+              {isSeeker ? 'Candidate Hub' : 'For Employers'}
             </h4>
             <ul className="space-y-2 text-xs text-[#78716C]">
-              <li>
-                <Link to="/recruiter/post-job" className="text-[#F97316] font-semibold hover:text-[#EA580C] transition-colors flex items-center gap-1">
-                  <span>+ Post a New Role</span>
-                  <ArrowUpRight className="w-3 h-3" />
-                </Link>
-              </li>
-              <li>
-                <Link to="/messages" className="hover:text-[#0F766E] transition-colors">
-                  Candidate Direct Chat
-                </Link>
-              </li>
-              <li>
-                <span className="text-[#78716C]">Automated Skill Matching</span>
-              </li>
-              <li>
-                <span className="text-[#78716C]">Campus Recruitment Partner</span>
-              </li>
+              {isSeeker ? (
+                <>
+                  <li>
+                    <Link to="/profile" className="hover:text-[#0F766E] transition-colors flex items-center gap-1">
+                      <span>My Profile & Skills</span>
+                      <ArrowUpRight className="w-3 h-3 text-[#A8A29E]" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/applications" className="hover:text-[#0F766E] transition-colors">
+                      Active Applications
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/messages" className="hover:text-[#0F766E] transition-colors">
+                      Recruiter Direct Messages
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/notifications" className="hover:text-[#0F766E] transition-colors">
+                      Placement Alerts
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link to="/recruiter/post-job" className="text-[#F97316] font-semibold hover:text-[#EA580C] transition-colors flex items-center gap-1">
+                      <span>+ Post a New Role</span>
+                      <ArrowUpRight className="w-3 h-3" />
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/messages" className="hover:text-[#0F766E] transition-colors">
+                      Candidate Direct Chat
+                    </Link>
+                  </li>
+                  <li>
+                    <span className="text-[#78716C]">Automated Skill Matching</span>
+                  </li>
+                  <li>
+                    <span className="text-[#78716C]">Campus Recruitment Partner</span>
+                  </li>
+                </>
+              )}
             </ul>
           </div>
 

@@ -125,14 +125,16 @@ export default function Navbar() {
         {/* Right Actions & Telemetry */}
         <div className="flex items-center gap-2.5 sm:gap-3">
           
-          {/* High-Conversion "Post a Job" CTA Button */}
-          <Link
-            to="/recruiter/post-job"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-semibold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all duration-150 active:scale-[0.98]"
-          >
-            <span>+</span>
-            <span>Post a Job</span>
-          </Link>
+          {/* High-Conversion "Post a Job" CTA Button (Recruiters & Admins Only) */}
+          {role !== 'JOB_SEEKER' && (
+            <Link
+              to="/recruiter/post-job"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-semibold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all duration-150 active:scale-[0.98]"
+            >
+              <span>+</span>
+              <span>Post a Job</span>
+            </Link>
+          )}
 
           {/* Active Location Hub Pill */}
           {role === 'JOB_SEEKER' && (
