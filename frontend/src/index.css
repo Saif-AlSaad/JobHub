@@ -192,10 +192,11 @@
   }
 
   /* Focus styles for accessibility with Deep Forest Teal */
-  .focus-ring {
+  .focus-ring:focus,
+  .focus-ring:focus-within {
     outline: none !important;
     border-color: #0F766E !important;
-    box-shadow: 0 0 0 2px #0F766E !important;
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18) !important;
   }
 
   /* Seamless Hero with Radial Gradients */
