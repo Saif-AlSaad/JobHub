@@ -237,7 +237,7 @@ export default function Navbar() {
               <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white text-[#1C1917] rounded-[12px] shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] z-50 overflow-hidden animate-in fade-in duration-150">
                 <div className="p-3.5 border-b border-[#E7E5E4] flex items-center justify-between bg-[#F3EFEA]">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-xs text-[#1C1917]">Alerts & Placements</span>
+                    <span className="font-bold text-xs text-[#1C1917]">{role === 'RECRUITER' ? 'Candidate & Listing Alerts' : 'Alerts & Placements'}</span>
                     {unreadCount > 0 && (
                       <span className="px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-[10px] font-bold">
                         {unreadCount} new
@@ -257,13 +257,19 @@ export default function Navbar() {
                 <div className="max-h-80 overflow-y-auto divide-y divide-[#E7E5E4]">
                   {notifications.length === 0 ? (
                     <div className="p-6 text-center text-xs text-[#78716C]">
-                      No notifications yet. Matches in your hub radius will alert here!
+                      {role === 'RECRUITER' ? 'No notifications yet. Candidate submissions and top match drops will alert here!' : 'No notifications yet. Matches in your hub radius will alert here!'}
                     </div>
                   ) : (
                     notifications.map((item) => (
                       <div
                         key={item.id}
-                        onClick={() => markAsRead(item.id)}
+                        onClick={() => {
+                          if (!item.is_read) markAsRead(item.id);
+                          if (item.link) {
+                            navigate(item.link);
+                            setNotifOpen(false);
+                          }
+                        }}
                         className={`p-3 text-xs hover:bg-[#F3EFEA] cursor-pointer transition-colors ${
                           !item.is_read ? 'bg-[#CCFBF1]/20' : ''
                         }`}

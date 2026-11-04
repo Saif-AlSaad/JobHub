@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 import { 
   Building2, 
   Briefcase, 
@@ -12,7 +13,8 @@ import {
   CheckCircle2,
   X,
   MapPin,
-  GraduationCap
+  GraduationCap,
+  Bell
 } from 'lucide-react';
 import api from '../services/api';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
@@ -22,6 +24,8 @@ export default function RecruiterDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead, fetchNotifications } = useNotifications();
 
   const fetchDashboard = async () => {
     setLoading(true);
@@ -37,7 +41,8 @@ export default function RecruiterDashboard() {
 
   useEffect(() => {
     fetchDashboard();
-  }, []);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const handleUpdateStatus = async (appId, newStatus) => {
     setStatusUpdating(true);
@@ -128,6 +133,80 @@ export default function RecruiterDashboard() {
         </div>
 
       </div>
+
+      {/* Candidate Activity & Notifications Section */}
+      {notifications.length > 0 && (
+        <section className="bg-white rounded-[16px] border border-[#E7E5E4] p-5 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
+                <Bell className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-[#1C1917] font-heading flex items-center gap-2">
+                  Candidate Alerts & Activity
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-[10px] font-bold">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </h2>
+              </div>
+            </div>
+            <Link 
+              to="/notifications" 
+              className="text-xs font-bold text-[#0F766E] hover:text-[#115E59] hover:underline flex items-center gap-1"
+            >
+              All Candidate Alerts ({notifications.length})
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            {notifications.slice(0, 3).map((notif) => (
+              <div
+                key={notif.id}
+                onClick={() => {
+                  if (!notif.is_read) markAsRead(notif.id);
+                  if (notif.link) navigate(notif.link);
+                }}
+                className={`p-3.5 rounded-xl border border-[#E7E5E4] hover:border-[#0F766E] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
+                  !notif.is_read ? 'bg-[#CCFBF1]/20' : 'bg-[#FAF8F5]'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      notif.type?.includes('MATCH') 
+                        ? 'bg-[#CCFBF1] text-[#0F766E]' 
+                        : notif.type === 'MESSAGE' 
+                          ? 'bg-[#EEF2FF] text-[#4F46E5]' 
+                          : notif.type === 'INTERVIEW'
+                            ? 'bg-[#FFF7ED] text-[#EA580C]'
+                            : 'bg-[#EFF6FF] text-[#2563EB]'
+                    }`}>
+                      {notif.type?.replace('_', ' ') || 'CANDIDATE'}
+                    </span>
+                    {!notif.is_read && (
+                      <span className="w-2 h-2 rounded-full bg-[#F97316]" />
+                    )}
+                  </div>
+                  <h4 className="text-xs font-bold text-[#1C1917] line-clamp-1">{notif.title}</h4>
+                  <p className="text-[11px] text-[#78716C] mt-1 line-clamp-2 leading-relaxed">
+                    {notif.message}
+                  </p>
+                </div>
+                <div className="pt-2 mt-2 border-t border-[#E7E5E4] flex items-center justify-between text-[10px] text-[#78716C]">
+                  <span>{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="font-bold text-[#0F766E] flex items-center gap-0.5">
+                    Review →
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Ranked Candidate Leaderboard */}
       <section className="bg-white rounded-[16px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
