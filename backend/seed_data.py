@@ -841,53 +841,93 @@ def run_seed():
             db.add(app)
         db.commit()
 
-        # 8. Create Realistic Notifications for Sarah
-        notifications_data = [
-            (
-                NotificationType.HIGH_MATCH,
-                "New 87% match found",
-                "Backend Engineering Intern at TechNova Labs is a strong match for your profile • 3.4 km away.",
-                f"/jobs/{tech_nova_backend_job.id}",
-                {"job_id": tech_nova_backend_job.id, "match_score": 87.5}
-            ),
+        # 8. Create Realistic Demo Notifications for Both Job Seeker and Recruiter
+        # 8a. Job Seeker (Sarah Rahman) Notifications
+        sarah_notifications = [
             (
                 NotificationType.SHORTLISTED,
                 "You've Been Shortlisted!",
-                "Great news! TechNova Labs has shortlisted your profile for Backend Engineering Intern.",
+                "Great news! TechNova Labs has shortlisted your profile for Backend Engineering Intern in Savar.",
                 "/applications",
-                {"application_id": 1}
+                {"application_id": 1, "job_id": tech_nova_backend_job.id, "company_name": "TechNova Labs"},
+                False,
+                now - datetime.timedelta(minutes=20)
+            ),
+            (
+                NotificationType.MESSAGE,
+                "Recruiter Message: Tanvir Ahmed",
+                "Tanvir Ahmed (TechNova Labs): 'Are you available for a brief technical walkthrough next Tuesday at 11:00 AM?'",
+                "/messages",
+                {"sender": "Tanvir Ahmed", "company": "TechNova Labs", "job_id": tech_nova_backend_job.id},
+                False,
+                now - datetime.timedelta(minutes=25)
+            ),
+            (
+                NotificationType.HIGH_MATCH,
+                "New 88% Match Found",
+                "Backend Engineering Intern at TechNova Labs is an 88% match for your profile • 3.4 km away in Savar.",
+                f"/jobs/{tech_nova_backend_job.id}",
+                {"job_id": tech_nova_backend_job.id, "match_score": 87.5, "distance_km": 3.4},
+                False,
+                now - datetime.timedelta(hours=1)
+            ),
+            (
+                NotificationType.INTERVIEW,
+                "Interview Invitation Confirmed",
+                "TechNova Labs scheduled your Technical Walkthrough for Backend Engineering Intern on Tuesday at 11:00 AM.",
+                "/messages",
+                {"application_id": 1, "company_name": "TechNova Labs", "time": "Tuesday, 11:00 AM"},
+                False,
+                now - datetime.timedelta(hours=2)
             ),
             (
                 NotificationType.JOB_MATCH,
                 "Nearby Opportunity Alert",
-                "Chaldal posted Full Stack Engineering Intern in Daffodil Smart City, Savar • 2.8 km away.",
+                "Chaldal posted Full Stack Engineering Intern in Daffodil Smart City, Savar • 2.8 km away (89% Match).",
                 f"/jobs/{created_jobs[17].id}",
-                {"job_id": created_jobs[17].id, "match_score": 89.0}
-            ),
-            (
-                NotificationType.MESSAGE,
-                "Recruiter Message",
-                "Tanvir Ahmed from TechNova Labs sent you a message regarding your Backend Engineering application.",
-                "/messages",
-                {}
+                {"job_id": created_jobs[17].id, "match_score": 89.0, "distance_km": 2.8},
+                True,
+                now - datetime.timedelta(hours=4)
             ),
             (
                 NotificationType.APPLICATION_VIEWED,
-                "Application Viewed",
-                "TechNova Labs reviewed your application for Junior Full Stack Developer.",
+                "Application Viewed by Employer",
+                "TechNova Labs reviewed your application and GitHub portfolio for Junior Full Stack Developer.",
                 "/applications",
-                {}
+                {"job_id": created_jobs[1].id, "company_name": "TechNova Labs"},
+                True,
+                now - datetime.timedelta(hours=6)
+            ),
+            (
+                NotificationType.APPLICATION_SUBMITTED,
+                "Application Successfully Submitted",
+                "Your application for AI & Machine Learning Intern at TechNova Labs was received and entered into candidate ranking.",
+                "/applications",
+                {"job_id": created_jobs[2].id, "company_name": "TechNova Labs"},
+                True,
+                now - datetime.timedelta(hours=8)
+            ),
+            (
+                NotificationType.HIGH_MATCH,
+                "High Match Alert: 91% Match",
+                "Brain Station 23 is hiring Frontend React Developer Intern in Mohakhali (91% match with your React & Tailwind projects).",
+                f"/jobs/{created_jobs[4].id}",
+                {"job_id": created_jobs[4].id, "match_score": 91.0},
+                True,
+                now - datetime.timedelta(hours=14)
             ),
             (
                 NotificationType.PROFILE_REMINDER,
-                "Profile Strength: 87%",
-                "Adding Docker or AWS to your projects can boost your match score for 12 target engineering jobs.",
+                "Profile Strength: 87% (AI Placement Coach)",
+                "Adding Docker containerization or CI/CD to your projects can boost your match score for 12 target engineering jobs.",
                 "/profile",
-                {}
+                {"profile_strength": 87},
+                True,
+                now - datetime.timedelta(days=1)
             )
         ]
 
-        for ntype, title, msg, link, djson in notifications_data:
+        for ntype, title, msg, link, djson, is_read, ctime in sarah_notifications:
             notif = Notification(
                 user_id=sarah.user_id,
                 type=ntype,
@@ -895,10 +935,138 @@ def run_seed():
                 message=msg,
                 link=link,
                 data_json=json.dumps(djson),
-                is_read=False,
-                created_at=now - datetime.timedelta(hours=4)
+                is_read=is_read,
+                created_at=ctime
             )
             db.add(notif)
+
+        # 8b. Recruiter (Tanvir Ahmed - TechNova Labs) Notifications
+        recruiter_notifications = [
+            (
+                NotificationType.APPLICATION_SUBMITTED,
+                "New Candidate: Sarah Rahman (88% Match)",
+                "Sarah Rahman (DIU, CGPA 3.82) applied for Backend Engineering Intern with an 88% hybrid match score in Savar.",
+                "/",
+                {"candidate_name": "Sarah Rahman", "job_id": tech_nova_backend_job.id, "match_score": 87.5, "status": "SHORTLISTED"},
+                False,
+                now - datetime.timedelta(minutes=15)
+            ),
+            (
+                NotificationType.MESSAGE,
+                "Candidate Message: Sarah Rahman",
+                "Sarah Rahman replied: 'Yes, Tuesday at 11:00 AM works perfectly for me! Should I prepare anything specific?'",
+                "/messages",
+                {"sender": "Sarah Rahman", "job_title": "Backend Engineering Intern"},
+                False,
+                now - datetime.timedelta(minutes=24)
+            ),
+            (
+                NotificationType.HIGH_MATCH,
+                "Top Match Alert: Nafisa Anjum (91% Match)",
+                "AI matching engine identified Nafisa Anjum (BUET CSE, 3.91 CGPA, NLP & PyTorch) as a 91% match for AI & Machine Learning Intern.",
+                "/",
+                {"candidate_name": "Nafisa Anjum", "job_id": created_jobs[2].id, "match_score": 91.2},
+                False,
+                now - datetime.timedelta(hours=1, minutes=10)
+            ),
+            (
+                NotificationType.INTERVIEW,
+                "Interview Confirmed: Sarah Rahman",
+                "Technical Walkthrough confirmed with Sarah Rahman for Tuesday at 11:00 AM (Backend Engineering Intern).",
+                "/messages",
+                {"candidate_name": "Sarah Rahman", "time": "Tuesday, 11:00 AM", "job_id": tech_nova_backend_job.id},
+                False,
+                now - datetime.timedelta(hours=2)
+            ),
+            (
+                NotificationType.APPLICATION_SUBMITTED,
+                "New Candidate: Kazi Tanvir (64% Match)",
+                "Kazi Tanvir applied for Backend Engineering Intern. Verified skills: Linux, Docker, Python, Git (DIU, Savar).",
+                "/",
+                {"candidate_name": "Kazi Tanvir", "job_id": tech_nova_backend_job.id, "match_score": 64.3},
+                True,
+                now - datetime.timedelta(hours=3)
+            ),
+            (
+                NotificationType.APPLICATION_SUBMITTED,
+                "New Candidate: Arif Hossain (52% Match)",
+                "Arif Hossain (DIU Graduate, MERN Stack) submitted an application for Backend Engineering Intern.",
+                "/",
+                {"candidate_name": "Arif Hossain", "job_id": tech_nova_backend_job.id, "match_score": 51.9},
+                True,
+                now - datetime.timedelta(hours=5)
+            ),
+            (
+                NotificationType.APPLICATION_SUBMITTED,
+                "New Application: Sarah Rahman (84% Match)",
+                "Sarah Rahman submitted an application for Junior Full Stack Developer (React, FastAPI, PostgreSQL).",
+                "/",
+                {"candidate_name": "Sarah Rahman", "job_id": created_jobs[1].id, "match_score": 84.0},
+                True,
+                now - datetime.timedelta(hours=10)
+            ),
+            (
+                NotificationType.PROFILE_REMINDER,
+                "Listing Milestone: 10 Qualified Applicants",
+                "Your active listing 'Backend Engineering Intern' in Savar has received 10 applicant profiles with an average match score of 62%.",
+                "/",
+                {"job_id": tech_nova_backend_job.id, "applicant_count": 10},
+                True,
+                now - datetime.timedelta(days=1)
+            )
+        ]
+
+        for ntype, title, msg, link, djson, is_read, ctime in recruiter_notifications:
+            notif = Notification(
+                user_id=demo_recruiter_user.id,
+                type=ntype,
+                title=title,
+                message=msg,
+                link=link,
+                data_json=json.dumps(djson),
+                is_read=is_read,
+                created_at=ctime
+            )
+            db.add(notif)
+
+        # 8c. Other Seekers Sample Notifications
+        if len(created_seekers) > 2:
+            arif = created_seekers[1]
+            nafisa = created_seekers[2]
+            other_notifications = [
+                (
+                    arif.user_id,
+                    NotificationType.APPLICATION_SUBMITTED,
+                    "Application Received by TechNova Labs",
+                    "Your application for Backend Engineering Intern has been received and added to the candidate queue.",
+                    "/applications",
+                    {"company_name": "TechNova Labs"},
+                    False,
+                    now - datetime.timedelta(hours=5)
+                ),
+                (
+                    nafisa.user_id,
+                    NotificationType.HIGH_MATCH,
+                    "AI Opportunity Match: 91%",
+                    "TechNova Labs is actively recruiting an AI & Machine Learning Intern matching your NLP research.",
+                    f"/jobs/{created_jobs[2].id}",
+                    {"company_name": "TechNova Labs", "match_score": 91.2},
+                    False,
+                    now - datetime.timedelta(hours=2)
+                )
+            ]
+            for uid, ntype, title, msg, link, djson, is_read, ctime in other_notifications:
+                db.add(Notification(
+                    user_id=uid,
+                    type=ntype,
+                    title=title,
+                    message=msg,
+                    link=link,
+                    data_json=json.dumps(djson),
+                    is_read=is_read,
+                    created_at=ctime
+                ))
+
         db.commit()
 
         # 9. Create Active Conversation and Messages between Tanvir (TechNova) and Sarah

@@ -4,6 +4,8 @@ import {
   MOCK_JOBS,
   MOCK_APPLICATIONS,
   MOCK_NOTIFICATIONS,
+  MOCK_JOB_SEEKER_NOTIFICATIONS,
+  MOCK_RECRUITER_NOTIFICATIONS,
   MOCK_CONVERSATIONS,
   MOCK_DASHBOARD_SUMMARY,
   MOCK_RECRUITER_SUMMARY,
@@ -90,7 +92,27 @@ function getMockFallbackResponse(config) {
 
   // Notifications
   if (url.includes('/notifications')) {
-    return { data: MOCK_NOTIFICATIONS };
+    const savedUser = localStorage.getItem('jobhub_mock_user');
+    const user = savedUser ? JSON.parse(savedUser) : MOCK_USERS.JOB_SEEKER;
+    const isRecruiter = user?.role === 'RECRUITER';
+    const notifs = isRecruiter ? MOCK_RECRUITER_NOTIFICATIONS : MOCK_JOB_SEEKER_NOTIFICATIONS;
+
+    if (url.includes('/unread-count')) {
+      const count = notifs.filter((n) => !n.is_read).length;
+      return { data: { unread_count: count } };
+    }
+    if (url.includes('/mark-all-read')) {
+      notifs.forEach((n) => { n.is_read = true; });
+      return { data: { status: 'success', message: 'All notifications marked as read' } };
+    }
+    const readMatch = url.match(/\/notifications\/(\d+)\/read/);
+    if (readMatch) {
+      const id = parseInt(readMatch[1], 10);
+      const targetNotif = notifs.find((n) => n.id === id);
+      if (targetNotif) targetNotif.is_read = true;
+      return { data: { status: 'success', id, is_read: true } };
+    }
+    return { data: notifs };
   }
 
   // Messages & Chat

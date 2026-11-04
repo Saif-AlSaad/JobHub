@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useNotifications } from '../context/NotificationContext';
 import { 
   Sparkles, 
   MapPin, 
@@ -11,7 +12,8 @@ import {
   Navigation,
   BookOpen,
   Check,
-  Building2
+  Building2,
+  Bell
 } from 'lucide-react';
 import api from '../services/api';
 import JobCard from '../components/JobCard';
@@ -24,6 +26,8 @@ export default function JobSeekerDashboard() {
   const [error, setError] = useState('');
   const [selectedHub, setSelectedHub] = useState('All');
   const [radiusFilter, setRadiusFilter] = useState(5);
+  const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead, fetchNotifications } = useNotifications();
 
   const fetchDashboardData = async () => {
     try {
@@ -39,7 +43,8 @@ export default function JobSeekerDashboard() {
 
   useEffect(() => {
     fetchDashboardData();
-  }, []);
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   if (loading) {
     return (
@@ -229,6 +234,78 @@ export default function JobSeekerDashboard() {
         </div>
 
       </div>
+
+      {/* Placement Alerts & Activity Section */}
+      {notifications.length > 0 && (
+        <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-5 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
+                <Bell className="w-3.5 h-3.5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-[#1C1917] font-heading flex items-center gap-2">
+                  Placement Alerts & Activity
+                  {unreadCount > 0 && (
+                    <span className="px-2 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-[10px] font-bold">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </h2>
+              </div>
+            </div>
+            <Link 
+              to="/notifications" 
+              className="text-xs font-bold text-[#0F766E] hover:text-[#115E59] hover:underline flex items-center gap-1"
+            >
+              All Alerts ({notifications.length})
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+            {notifications.slice(0, 3).map((notif) => (
+              <div
+                key={notif.id}
+                onClick={() => {
+                  if (!notif.is_read) markAsRead(notif.id);
+                  if (notif.link) navigate(notif.link);
+                }}
+                className={`p-3.5 rounded-xl border border-[#E7E5E4] hover:border-[#0F766E] hover:shadow-xs transition-all cursor-pointer flex flex-col justify-between ${
+                  !notif.is_read ? 'bg-[#CCFBF1]/20' : 'bg-[#FAF8F5]'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      notif.type?.includes('MATCH') 
+                        ? 'bg-[#CCFBF1] text-[#0F766E]' 
+                        : notif.type === 'MESSAGE' 
+                          ? 'bg-[#EEF2FF] text-[#4F46E5]' 
+                          : 'bg-[#ECFDF5] text-[#047857]'
+                    }`}>
+                      {notif.type?.replace('_', ' ') || 'ALERT'}
+                    </span>
+                    {!notif.is_read && (
+                      <span className="w-2 h-2 rounded-full bg-[#F97316]" />
+                    )}
+                  </div>
+                  <h4 className="text-xs font-bold text-[#1C1917] line-clamp-1">{notif.title}</h4>
+                  <p className="text-[11px] text-[#78716C] mt-1 line-clamp-2 leading-relaxed">
+                    {notif.message}
+                  </p>
+                </div>
+                <div className="pt-2 mt-2 border-t border-[#E7E5E4] flex items-center justify-between text-[10px] text-[#78716C]">
+                  <span>{new Date(notif.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span className="font-bold text-[#0F766E] flex items-center gap-0.5">
+                    View →
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 4. Section: Top AI Placement Matches */}
       <section className="space-y-4">
