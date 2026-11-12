@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SE331 Continuous Assessment 1 (CA1) — Nadim</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --bg: #FAF8F5;
+      --card-bg: #FFFFFF;
+      --text-main: #1C1917;
+      --text-muted: #57534E;
+      --teal-primary: #0F766E;
+      --teal-light: #CCFBF1;
+      --orange-accent: #EA580C;
+      --border: #E7E5E4;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--card-bg);
+      padding: 48px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border);
+    }
+
+    header {
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 24px;
+      margin-bottom: 32px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: var(--teal-light);
+      color: var(--teal-primary);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .meta-table, .division-table, .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+      font-size: 13px;
+    }
+
+    .meta-table th, .meta-table td,
+    .division-table th, .division-table td,
+    .spec-table th, .spec-table td {
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      text-align: left;
+    }
+
+    .meta-table th, .division-table th, .spec-table th {
+      background: #F5F5F4;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    h2 {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--teal-primary);
+      margin: 36px 0 14px;
+      border-left: 4px solid var(--teal-primary);
+      padding-left: 12px;
+    }
+
+    h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin: 20px 0 8px;
+    }
+
+    p, li {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 16px;
+    }
+
+    .feature-list li {
+      margin-bottom: 6px;
+    }
+
+    .feature-list strong {
+      color: var(--text-main);
+    }
+
+    .figure-card {
+      background: #FAFAF9;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin: 24px 0;
+    }
+
+    .figure-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .figure-caption {
+      margin-top: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      text-align: center;
+    }
+
+    .figure-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 2px;
+    }
+
+    .pill {
+      display: inline-block;
+      background: #F5F5F4;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--teal-primary);
+      font-weight: 600;
+    }
+
+    .links-box {
+      background: #F0FDFA;
+      border: 1px solid #99F6E4;
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+
+    .links-box a {
+      color: var(--teal-primary);
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+      .figure-card { page-break-inside: avoid; }
+      h2 { page-break-after: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <span class="badge">SE331 Continuous Assessment 1 (CA1)</span>
+      <h1>Individual Prototype & UI/UX Design Submission</h1>
+      <p class="subtitle">Assigned Pages: User Registration, Profile Management & Authentication Hub</p>
+    </header>
+
+    <h2>1. Student & Project Metadata</h2>
+    <table class="meta-table">
+      <tr>
+        <th style="width: 30%;">Student Name</th>
+        <td><strong>Nadim</strong></td>
+      </tr>
+      <tr>
+        <th>Student ID</th>
+        <td><code>[Insert Your Student ID — e.g. 211-35-XXXX]</code></td>
+      </tr>
+      <tr>
+        <th>Course Code & Title</th>
+        <td>SE331 – Software Engineering</td>
+      </tr>
+      <tr>
+        <th>Project Name</th>
+        <td><strong>JOB HUB</strong> — AI-Powered Smart Placement & Semantic Matching Platform</td>
+      </tr>
+      <tr>
+        <th>Assigned Branch</th>
+        <td><a href="https://github.com/Saif-AlSaad/JobHub/tree/Nadim">https://github.com/Saif-AlSaad/JobHub/tree/Nadim</a></td>
+      </tr>
+      <tr>
+        <th>Live Interactive Demo</th>
+        <td><a href="https://saif-alsaad.github.io/JobHub/">https://saif-alsaad.github.io/JobHub/</a></td>
+      </tr>
+    </table>
+
+    <h2>2. Group Discussion & Page Division Summary</h2>
+    <p>
+      During the team collaboration discussion, our group (<em>Saif, Nadim, Rizvi</em>) mapped out all the core functional workflows and partitioned the screens equally:
+    </p>
+    <table class="division-table">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Assigned Module & Screens</th>
+          <th>Design Responsibilities</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="background: #F0FDFA;">
+          <td><strong>Nadim (Me)</strong></td>
+          <td>
+            <strong>User Onboarding & Profile Hub</strong><br>
+            • Sign Up / Registration Page (<span class="pill">/register</span>)<br>
+            • Profile & Resume Studio (<span class="pill">/profile</span>)<br>
+            • Role Gateway & Sign In (<span class="pill">/login</span>)
+          </td>
+          <td>Dual-role registration, dynamic password strength entropy meter, avatar manager modal, AI resume parser studio, interactive skill tag taxonomy, academic metrics, and geospatial placement radar.</td>
+        </tr>
+        <tr>
+          <td><strong>Saif</strong></td>
+          <td>
+            <strong>Analytics & Dashboards</strong><br>
+            • Candidate Dashboard (<span class="pill">/</span>)<br>
+            • Recruiter Pipeline (<span class="pill">/recruiter</span>)<br>
+            • Admin Governance (<span class="pill">/admin</span>)
+          </td>
+          <td>Placement metrics scorecards, candidate Kanban pipelines, activity feeds, and platform administration.</td>
+        </tr>
+        <tr>
+          <td><strong>Rizvi</strong></td>
+          <td>
+            <strong>Job Discovery & Tracking</strong><br>
+            • Jobs Search & Filters (<span class="pill">/jobs</span>)<br>
+            • Job Details & Match (<span class="pill">/jobs/:id</span>)<br>
+            • Applications Tracker (<span class="pill">/applications</span>)
+          </td>
+          <td>Search filtering, match score breakdown card, application timeline tracking, and applicant review.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>3. Assigned Pages Architecture & Feature Breakdown</h2>
+
+    <h3>3.1 Screen 1: Registration Page (<span class="pill">/register</span>)</h3>
+    <ul class="feature-list">
+      <li><strong>Dual-Role Onboarding Switcher:</strong> Direct toggle between <em>Job Seeker / Student</em> and <em>Recruiter / Employer</em> without page reload. Automatically adapts labels and inputs (e.g., switches <em>Full Name</em> to <em>Company Name</em>).</li>
+      <li><strong>Dynamic Password Entropy Meter:</strong> Real-time password complexity evaluation across 4 discrete tiers: <em>Weak, Fair, Good, Strong</em>, accompanied by a dynamic progress bar and color transition.</li>
+      <li><strong>Form Security & Validation:</strong> Show/hide password toggles, confirm password equality check, and integrated Terms of Service consent.</li>
+      <li><strong>Rapid Evaluation Helper:</strong> Built-in <em>"Fill sample info"</em> button enabling one-click test population for demonstrators.</li>
+    </ul>
+
+    <h3>3.2 Screen 2: Candidate Profile & Credentials Management (<span class="pill">/profile</span>)</h3>
+    <ul class="feature-list">
+      <li><strong>Interactive Avatar Management Studio:</strong> Supports custom image upload with client-side HTML5 canvas compression (sub-100 KB payload) and an interactive <em>"Choose Sample Avatar"</em> modal with professional headshot presets.</li>
+      <li><strong>AI Resume Parser Studio:</strong> File upload zone for PDF/DOCX (up to 5 MB) with automated parsing of academic degree, CGPA, graduation data, and technical skills into the profile.</li>
+      <li><strong>Dynamic Skills Taxonomy Manager:</strong> Interactive skill chips with deletion (<span class="pill">×</span>), custom skill entry with keyboard <kbd>Enter</kbd> support, and one-click suggested presets (e.g., <span class="pill">+ TypeScript</span>, <span class="pill">+ AWS</span>).</li>
+      <li><strong>Academic Background & CGPA Metrics:</strong> Direct inputs for University/Institute, Degree/Major, Cumulative CGPA spinbutton, and professional headline.</li>
+      <li><strong>Geospatial Placement Radar:</strong> Campus/urban hub anchor selection (<span class="pill">Savar Smart City</span>, <span class="pill">Banani</span>, etc.) and distance radius filter (<span class="pill">2 km</span>, <span class="pill">5 km</span>, <span class="pill">10 km</span>, <span class="pill">20 km</span>) with Haversine distance privacy protection.</li>
+      <li><strong>Dual Recruiter Mode:</strong> Authenticating as an employer seamlessly converts the profile into a corporate company management view (company size, industry, corporate website, Banani office anchor).</li>
+    </ul>
+
+    <h2>4. UI/UX Design System Specification</h2>
+    <table class="spec-table">
+      <tr>
+        <th style="width: 25%;">Design Principle</th>
+        <td><strong>Nordic Clean Minimalism & Human-Centric Clarity</strong></td>
+      </tr>
+      <tr>
+        <th>Color Palette</th>
+        <td>
+          Warm Canvas Paper (<code>#FAF8F5</code>), Deep Charcoal Text (<code>#1C1917</code>), Muted Slate (<code>#57534E</code> / <code>#E7E5E4</code>),<br>
+          Primary Candidate Teal (<code>#0F766E</code>), Primary Recruiter Amber (<code>#EA580C</code>), Success Emerald (<code>#059669</code>).
+        </td>
+      </tr>
+      <tr>
+        <th>Typography</th>
+        <td>Modern Sans-Serif hierarchy: H1 (24-26px bold), H2 (18-20px semibold), Body (13-14px regular), Microcopy (11-12px medium).</td>
+      </tr>
+      <tr>
+        <th>Micro-Interactions</th>
+        <td>Active button scale compression (<code>active:scale-95</code>), smooth CSS transitions (<code>200ms</code>), focus ring outlines for accessibility.</td>
+      </tr>
+      <tr>
+        <th>Accessibility</th>
+        <td>Full compliance with WCAG 2.1 AA color contrast and keyboard navigation focus states.</td>
+      </tr>
+    </table>
+
+    <h2>5. Visual Gallery & High-Resolution Screenshots</h2>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/01_register_seeker.png" alt="Candidate Registration Screen">
+      <div class="figure-caption">Figure 1: User Registration Page — Job Seeker / Student View</div>
+      <div class="figure-desc">Dual role selector, clean input styling, and Nordic paper aesthetics.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/02_register_seeker_filled_strength.png" alt="Registration with Password Strength Meter">
+      <div class="figure-caption">Figure 2: User Registration Page — Dynamic Password Strength Meter</div>
+      <div class="figure-desc">Real-time entropy score, visual strength indicator, and terms consent.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/03_register_recruiter.png" alt="Recruiter Registration Screen">
+      <div class="figure-caption">Figure 3: User Registration Page — Recruiter / Employer View</div>
+      <div class="figure-desc">Dynamic input adaptation: 'Full Name' switches to 'Company Name' and corporate work email.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/04_login_page.png" alt="Authentication Portal">
+      <div class="figure-caption">Figure 4: Sign In Authentication Gateway</div>
+      <div class="figure-desc">Role-based candidate and employer login portal with quick prefill assistance.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/05_seeker_profile_full.png" alt="Candidate Profile Page">
+      <div class="figure-caption">Figure 5: Complete Candidate Profile Management Screen (/profile)</div>
+      <div class="figure-desc">AI Resume Studio, Academic Credentials (DIU, BSc SWE, CGPA 3.82), Skills Taxonomy, and Geospatial Placement Radar.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/06_avatar_modal.png" alt="Avatar Chooser Modal">
+      <div class="figure-caption">Figure 6: Interactive Avatar Chooser Modal</div>
+      <div class="figure-desc">Modal dialog with curated professional avatar presets and instant profile picture update.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/07_recruiter_profile_full.png" alt="Recruiter Profile Screen">
+      <div class="figure-caption">Figure 7: Recruiter Corporate Profile Screen (/profile)</div>
+      <div class="figure-desc">Corporate Organization view featuring company size, industry classification, website, Banani office anchor, and hiring tech stack.</div>
+    </div>
+
+    <div class="figure-card">
+      <img src="assessment1_screenshots/08_interactive_skills_chips.png" alt="Interactive Skills Taxonomy">
+      <div class="figure-caption">Figure 8: Interactive Skills Taxonomy Management</div>
+      <div class="figure-desc">Dynamic chip addition (+ TypeScript, + AWS), tag removal buttons, and live taxonomy count indicator.</div>
+    </div>
+
+    <h2>6. Interactive Prototype Access Links</h2>
+    <div class="links-box">
+      <p><strong>🌐 Live Cloud Prototype:</strong> <a href="https://saif-alsaad.github.io/JobHub/" target="_blank">https://saif-alsaad.github.io/JobHub/</a> (Accessible instantly via any web browser)</p>
+      <p><strong>📂 GitHub Sub-Branch:</strong> <a href="https://github.com/Saif-AlSaad/JobHub/tree/Nadim" target="_blank">https://github.com/Saif-AlSaad/JobHub/tree/Nadim</a></p>
+      <p><strong>🔑 Demo Accounts for Evaluation:</strong></p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li><strong>Job Seeker:</strong> <code>sarah.rahman@jobhub.io</code> / <code>password123</code></li>
+        <li><strong>Recruiter:</strong> <code>recruiter@technova.io</code> / <code>password123</code></li>
+        <li><strong>Administrator:</strong> <code>admin@jobhub.io</code> / <code>password123</code></li>
+      </ul>
+    </div>
+
+  </div>
+
+</body>
+</html>
+
