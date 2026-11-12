@@ -90,6 +90,19 @@ function getMockFallbackResponse(config) {
     return { data: MOCK_APPLICATIONS };
   }
 
+  // Notification Preferences
+  if (url.includes('/notifications/preferences')) {
+    const defaultPrefs = { email_alerts: true, in_app_alerts: true, min_match_score: 70, alert_radius_km: 10 };
+    if (method === 'put' && config.data) {
+      const incoming = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+      const merged = { ...defaultPrefs, ...JSON.parse(localStorage.getItem('jobhub_mock_prefs') || '{}'), ...incoming };
+      localStorage.setItem('jobhub_mock_prefs', JSON.stringify(merged));
+      return { data: { status: 'success', message: 'Notification preferences updated' } };
+    }
+    const stored = localStorage.getItem('jobhub_mock_prefs');
+    return { data: stored ? JSON.parse(stored) : defaultPrefs };
+  }
+
   // Notifications
   if (url.includes('/notifications')) {
     const savedUser = localStorage.getItem('jobhub_mock_user');
@@ -121,13 +134,22 @@ function getMockFallbackResponse(config) {
   }
 
   // Profiles
-  if (url.includes('/seekers/profile')) {
+  if (url.includes('/seekers/profile') || url.includes('/recruiter/profile')) {
+    const isRecruiterEndpoint = url.includes('/recruiter/profile');
     const savedUser = localStorage.getItem('jobhub_mock_user');
-    return { data: savedUser ? JSON.parse(savedUser) : MOCK_USERS.JOB_SEEKER };
-  }
-  if (url.includes('/recruiter/profile')) {
-    const savedUser = localStorage.getItem('jobhub_mock_user');
-    return { data: savedUser ? JSON.parse(savedUser) : MOCK_USERS.RECRUITER };
+    const current = savedUser
+      ? JSON.parse(savedUser)
+      : isRecruiterEndpoint
+        ? MOCK_USERS.RECRUITER
+        : MOCK_USERS.JOB_SEEKER;
+
+    if (method === 'put' && config.data) {
+      const incoming = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
+      const updated = { ...current, ...incoming };
+      localStorage.setItem('jobhub_mock_user', JSON.stringify(updated));
+      return { data: { status: 'success', message: 'Profile updated successfully' } };
+    }
+    return { data: current };
   }
 
   return null;
