@@ -1,25 +1,41 @@
-import React, { useState } from 'react';
-import { X, Check, Plus, Trash2, Sparkles, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Check, Plus, Sparkles, AlertCircle } from 'lucide-react';
 import api from '../services/api';
 
 export default function ResumeReviewModal({ isOpen, onClose, extractedData, onConfirmed }) {
-  if (!isOpen || !extractedData) return null;
-
   const [formData, setFormData] = useState({
-    full_name: extractedData.full_name || '',
-    headline: extractedData.headline || '',
-    phone: extractedData.phone || '',
-    preferred_location_name: extractedData.preferred_location_name || 'Dhaka, Bangladesh',
-    skills: extractedData.skills || [],
-    education: extractedData.education || [],
-    experience: extractedData.experience || [],
-    projects: extractedData.projects || [],
-    certifications: extractedData.certifications || []
+    full_name: '',
+    headline: '',
+    phone: '',
+    preferred_location_name: 'Dhaka, Bangladesh',
+    skills: [],
+    education: [],
+    experience: [],
+    projects: [],
+    certifications: []
   });
 
   const [newSkill, setNewSkill] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (extractedData) {
+      setFormData({
+        full_name: extractedData.full_name || '',
+        headline: extractedData.headline || '',
+        phone: extractedData.phone || '',
+        preferred_location_name: extractedData.preferred_location_name || 'Dhaka, Bangladesh',
+        skills: extractedData.skills || [],
+        education: extractedData.education || [],
+        experience: extractedData.experience || [],
+        projects: extractedData.projects || [],
+        certifications: extractedData.certifications || []
+      });
+    }
+  }, [extractedData]);
+
+  if (!isOpen || !extractedData) return null;
 
   const handleAddSkill = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Bell, 
@@ -12,7 +12,9 @@ import {
   Eye, 
   Award,
   Check,
-  Clock
+  Clock,
+  Search,
+  X
 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
@@ -26,6 +28,7 @@ export default function NotificationsPage() {
   const isRecruiter = user?.role === 'RECRUITER';
 
   const [activeTab, setActiveTab] = useState('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchNotifications();
@@ -35,21 +38,30 @@ export default function NotificationsPage() {
     ? ['ALL', 'UNREAD', 'APPLICANTS', 'MATCHES', 'MESSAGES']
     : ['ALL', 'UNREAD', 'MATCHES', 'APPLICATIONS', 'MESSAGES'];
 
-  const filteredNotifications = notifications.filter((n) => {
-    if (activeTab === 'UNREAD') return !n.is_read;
-    if (activeTab === 'MATCHES') return n.type === 'JOB_MATCH' || n.type === 'HIGH_MATCH';
-    if (activeTab === 'APPLICATIONS' || activeTab === 'APPLICANTS') {
-      return (
-        n.type?.startsWith('APPLICATION') || 
-        n.type === 'SHORTLISTED' || 
-        n.type === 'INTERVIEW' || 
-        n.type === 'HIRED' || 
-        n.type === 'REJECTED'
-      );
-    }
-    if (activeTab === 'MESSAGES') return n.type === 'MESSAGE';
-    return true;
-  });
+  const filteredNotifications = useMemo(() => {
+    return notifications.filter((n) => {
+      const title = (n.title || '').toLowerCase();
+      const message = (n.message || '').toLowerCase();
+      const query = searchTerm.toLowerCase();
+      const matchesSearch = title.includes(query) || message.includes(query);
+
+      if (!matchesSearch) return false;
+
+      if (activeTab === 'UNREAD') return !n.is_read;
+      if (activeTab === 'MATCHES') return n.type === 'JOB_MATCH' || n.type === 'HIGH_MATCH';
+      if (activeTab === 'APPLICATIONS' || activeTab === 'APPLICANTS') {
+        return (
+          n.type?.startsWith('APPLICATION') || 
+          n.type === 'SHORTLISTED' || 
+          n.type === 'INTERVIEW' || 
+          n.type === 'HIRED' || 
+          n.type === 'REJECTED'
+        );
+      }
+      if (activeTab === 'MESSAGES') return n.type === 'MESSAGE';
+      return true;
+    });
+  }, [notifications, activeTab, searchTerm]);
 
   const getNotificationIcon = (type = '') => {
     if (type === 'HIGH_MATCH' || type === 'JOB_MATCH') {
@@ -103,25 +115,21 @@ export default function NotificationsPage() {
 
   const formatNotificationTime = (dateStr) => {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-
-    if (diffMins < 1) return 'Just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return 'Recently';
+    }
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-6">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 space-y-6">
       
       {/* Header */}
       <div className="bg-white rounded-[16px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="badge-pill badge-job-type">
+          <span className="badge-pill bg-[#CCFBF1] text-[#0F766E] border-[#99F6E4] font-bold">
             {isRecruiter ? 'Recruitment Hub Notifications' : 'Student & Candidate Alerts'}
           </span>
           <h1 className="text-2xl font-extrabold text-[#1C1917] tracking-tight mt-1.5 font-heading">
@@ -137,7 +145,7 @@ export default function NotificationsPage() {
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#E7E5E4] bg-[#FAF8F5] hover:bg-[#F3EFEA] text-xs font-bold text-[#1C1917] transition-colors self-start sm:self-auto shadow-xs"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-[#E7E5E4] bg-[#FAF8F5] hover:bg-[#F3EFEA] text-xs font-bold text-[#1C1917] transition-colors self-start sm:self-auto shadow-xs cursor-pointer"
           >
             <Check className="w-3.5 h-3.5 text-[#0F766E]" />
             Mark All as Read ({unreadCount})
@@ -145,65 +153,90 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-[#E7E5E4] pb-3 text-xs overflow-x-auto">
-        {tabs.map((tab) => {
-          let count = 0;
-          if (tab === 'UNREAD') count = unreadCount;
-          if (tab === 'MATCHES') count = notifications.filter((n) => n.type === 'JOB_MATCH' || n.type === 'HIGH_MATCH').length;
-          if (tab === 'APPLICATIONS' || tab === 'APPLICANTS') {
-            count = notifications.filter((n) => 
-              n.type?.startsWith('APPLICATION') || 
-              n.type === 'SHORTLISTED' || 
-              n.type === 'INTERVIEW' || 
-              n.type === 'HIRED' || 
-              n.type === 'REJECTED'
-            ).length;
-          }
-          if (tab === 'MESSAGES') count = notifications.filter((n) => n.type === 'MESSAGE').length;
-
-          return (
+      {/* SEARCH AND FILTER BAR */}
+      <div className="bg-white p-3.5 rounded-xl border border-[#E7E5E4] shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        
+        {/* Search */}
+        <div className="relative flex-1 max-w-sm">
+          <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search notifications..."
+            className="w-full pl-8 pr-3 py-1.5 text-xs rounded-lg border border-stone-200 bg-[#FAF8F5] text-[#1C1917] focus:outline-none focus:border-[#0F766E]"
+          />
+          {searchTerm && (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-3.5 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap ${
-                activeTab === tab
-                  ? 'bg-[#0F766E] text-white shadow-xs'
-                  : 'text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA]'
-              }`}
+              onClick={() => setSearchTerm('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
             >
-              <span>{tab}</span>
-              {tab === 'UNREAD' && unreadCount > 0 && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
-                  activeTab === tab ? 'bg-white text-[#0F766E]' : 'bg-[#F97316] text-white'
-                }`}>
-                  {unreadCount}
-                </span>
-              )}
-              {tab !== 'UNREAD' && count > 0 && (
-                <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
-                  activeTab === tab ? 'bg-white/20 text-white' : 'bg-[#E7E5E4] text-[#78716C]'
-                }`}>
-                  {count}
-                </span>
-              )}
+              <X className="w-3 h-3" />
             </button>
-          );
-        })}
+          )}
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {tabs.map((tab) => {
+            let count = 0;
+            if (tab === 'UNREAD') count = unreadCount;
+            if (tab === 'MATCHES') count = notifications.filter((n) => n.type === 'JOB_MATCH' || n.type === 'HIGH_MATCH').length;
+            if (tab === 'APPLICATIONS' || tab === 'APPLICANTS') {
+              count = notifications.filter((n) => 
+                n.type?.startsWith('APPLICATION') || 
+                n.type === 'SHORTLISTED' || 
+                n.type === 'INTERVIEW' || 
+                n.type === 'HIRED' || 
+                n.type === 'REJECTED'
+              ).length;
+            }
+            if (tab === 'MESSAGES') count = notifications.filter((n) => n.type === 'MESSAGE').length;
+
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  activeTab === tab
+                    ? 'bg-[#0F766E] text-white shadow-2xs'
+                    : 'text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA]'
+                }`}
+              >
+                <span>{tab}</span>
+                {tab === 'UNREAD' && unreadCount > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    activeTab === tab ? 'bg-white text-[#0F766E]' : 'bg-[#F97316] text-white'
+                  }`}>
+                    {unreadCount}
+                  </span>
+                )}
+                {tab !== 'UNREAD' && count > 0 && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-semibold ${
+                    activeTab === tab ? 'bg-white/20 text-white' : 'bg-[#E7E5E4] text-[#78716C]'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
       </div>
 
       {/* Notifications List */}
       {filteredNotifications.length === 0 ? (
         <EmptyState
           icon={Bell}
-          title={activeTab === 'UNREAD' ? "You're All Caught Up" : "No Notifications in this Filter"}
+          title={activeTab === 'UNREAD' ? "You're All Caught Up" : "No Notifications Found"}
           description={
             isRecruiter
               ? "New candidate applications and talent match alerts will appear here."
               : "Matches and employer updates for your jobs will appear here."
           }
           actionLabel="View All Alerts"
-          onAction={() => setActiveTab('ALL')}
+          onAction={() => { setActiveTab('ALL'); setSearchTerm(''); }}
         />
       ) : (
         <div className="bg-white rounded-[16px] border border-[#E7E5E4] divide-y divide-[#E7E5E4] shadow-[0_2px_6px_rgba(28,25,23,0.03)] overflow-hidden">
@@ -224,7 +257,7 @@ export default function NotificationsPage() {
               >
                 <div className="flex items-start gap-4">
                   {/* Category Icon */}
-                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 shadow-xs ${config.bg}`}>
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-xs ${config.bg}`}>
                     <IconComponent className="w-5 h-5" />
                   </div>
 
@@ -247,7 +280,7 @@ export default function NotificationsPage() {
                 </div>
 
                 {/* Right metadata & Action */}
-                <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E7E5E4]">
+                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E7E5E4]">
                   <div className="flex items-center gap-1.5 text-[11px] text-[#78716C]">
                     <Clock className="w-3.5 h-3.5 text-[#A8A29E]" />
                     <span className="n font-medium">{formatNotificationTime(notif.created_at)}</span>

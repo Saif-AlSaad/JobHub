@@ -1,29 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import { 
-  Building2, 
-  Briefcase, 
-  Users, 
   Sparkles, 
   PlusCircle, 
   ArrowRight,
   MessageSquare,
   Clock,
-  CheckCircle2,
   X,
-  MapPin,
-  GraduationCap,
-  Bell
+  Bell,
+  Search,
+  Download
 } from 'lucide-react';
 import api from '../services/api';
 import { DashboardSkeleton } from '../components/SkeletonLoader';
+import EmptyState from '../components/EmptyState';
 
 export default function RecruiterDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [candidateSearch, setCandidateSearch] = useState('');
+  const [stageFilter, setStageFilter] = useState('ALL');
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, fetchNotifications } = useNotifications();
 
@@ -59,6 +58,39 @@ export default function RecruiterDashboard() {
     }
   };
 
+  // Export candidate pipeline CSV
+  const handleExportCandidates = () => {
+    if (!data?.top_candidates?.length) return;
+    const header = ['Candidate Name', 'University', 'Role Applied', 'CGPA', 'Match Score %', 'Status'].join(',');
+    const rows = data.top_candidates.map(c => 
+      `"${c.candidate_name}","${c.university || 'DIU Graduate'}","${c.job_title}","${c.cgpa || 3.8}","${Math.round(c.match_score)}%","${c.status}"`
+    );
+    const csvContent = 'data:text/csv;charset=utf-8,' + [header, ...rows].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `${data.company_name || 'JobHub'}_Candidate_Pipeline.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Filtered candidate list
+  const filteredCandidates = useMemo(() => {
+    if (!data?.top_candidates) return [];
+    return data.top_candidates.filter(c => {
+      const name = (c.candidate_name || '').toLowerCase();
+      const role = (c.job_title || '').toLowerCase();
+      const uni = (c.university || '').toLowerCase();
+      const query = candidateSearch.toLowerCase();
+      const matchesQuery = name.includes(query) || role.includes(query) || uni.includes(query);
+
+      if (!matchesQuery) return false;
+      if (stageFilter === 'ALL') return true;
+      return c.status === stageFilter;
+    });
+  }, [data, candidateSearch, stageFilter]);
+
   if (loading) {
     return (
       <div className="max-w-[1280px] mx-auto px-6 py-10">
@@ -67,34 +99,57 @@ export default function RecruiterDashboard() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <div className="max-w-[1280px] mx-auto px-6 py-16">
+        <EmptyState
+          title="Could not load recruitment dashboard"
+          description="Please check your network or sign in again to review candidates."
+          actionLabel="Retry Loading"
+          onAction={fetchDashboard}
+        />
+      </div>
+    );
+  }
 
   const { company_name, recruiter_name, stats, active_jobs, top_candidates } = data;
 
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-8">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 space-y-8">
       
       {/* Top Header Card */}
       <div className="bg-white rounded-[16px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_4px_20px_-2px_rgba(28,25,23,0.05)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <span className="badge-pill badge-job-type">
+          <span className="badge-pill bg-[#CCFBF1] text-[#0F766E] border-[#99F6E4] font-bold">
             Employer Placement Portal • {company_name}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1917] tracking-tight mt-2">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1917] tracking-tight mt-2 font-heading">
             Welcome back, {recruiter_name}
           </h1>
           <p className="text-sm text-[#78716C] mt-1">
-            Candidates are dynamically scored and ranked using our hybrid 4-factor matching engine.
+            Candidates are dynamically scored and ranked using our hybrid semantic 4-factor matching engine.
           </p>
         </div>
 
-        <Link
-          to="/recruiter/post-job"
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all self-start sm:self-auto"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Post New Role
-        </Link>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={handleExportCandidates}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg border border-[#E7E5E4] bg-white hover:bg-stone-50 text-xs font-bold text-stone-700 shadow-2xs transition-colors cursor-pointer"
+            title="Download applicant leaderboard as CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-[#0F766E]" />
+            <span>Export CSV</span>
+          </button>
+
+          <Link
+            to="/recruiter/post-job"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all cursor-pointer"
+          >
+            <PlusCircle className="w-4 h-4" />
+            Post New Role
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -210,9 +265,11 @@ export default function RecruiterDashboard() {
 
       {/* Ranked Candidate Leaderboard */}
       <section className="bg-white rounded-[16px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
-        <div className="flex items-center justify-between">
+        
+        {/* Header & Candidate Search */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-[#1C1917] flex items-center gap-2">
+            <h2 className="text-lg font-bold text-[#1C1917] flex items-center gap-2 font-heading">
               <Sparkles className="w-4 h-4 text-[#F97316]" />
               Ranked Candidate Pipeline
             </h2>
@@ -220,11 +277,42 @@ export default function RecruiterDashboard() {
               Ordered dynamically by match percentage. AI never automatically rejects applicants.
             </p>
           </div>
+
+          {/* Search & Stage Filter Bar */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={candidateSearch}
+                onChange={(e) => setCandidateSearch(e.target.value)}
+                placeholder="Search candidates..."
+                className="pl-8 pr-3 py-1.5 text-xs rounded-lg border border-stone-200 bg-[#FAF8F5] focus:bg-white text-stone-900 focus:outline-none focus:border-[#0F766E]"
+              />
+            </div>
+
+            <div className="flex items-center gap-1">
+              {['ALL', 'APPLIED', 'SHORTLISTED', 'INTERVIEW'].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setStageFilter(st)}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-colors cursor-pointer ${
+                    stageFilter === st
+                      ? 'bg-[#0F766E] text-white shadow-2xs'
+                      : 'bg-stone-100 hover:bg-stone-200 text-stone-600'
+                  }`}
+                >
+                  {st}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {top_candidates.length === 0 ? (
-          <div className="py-8 text-center text-xs text-[#78716C]">
-            No applications received yet. Students matching your jobs will be ranked here.
+        {filteredCandidates.length === 0 ? (
+          <div className="py-8 text-center text-xs text-[#78716C] bg-stone-50 rounded-xl border border-dashed border-stone-200">
+            No candidates found matching your search and filter criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -236,11 +324,11 @@ export default function RecruiterDashboard() {
                   <th className="py-3 px-4">Academic CGPA</th>
                   <th className="py-3 px-4">AI Match</th>
                   <th className="py-3 px-4">Pipeline Stage</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-3 px-4 text-right">Quick Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E7E5E4]">
-                {top_candidates.map((cand) => {
+                {filteredCandidates.map((cand) => {
                   const match = Math.round(cand.match_score);
                   return (
                     <tr key={cand.application_id} className="hover:bg-[#FAF8F5] transition-colors">
@@ -255,7 +343,7 @@ export default function RecruiterDashboard() {
                         {cand.cgpa ? `${cand.cgpa} / 4.00` : '3.82 / 4.00'}
                       </td>
                       <td className="py-3.5 px-4">
-                        <span className="badge-pill badge-salary-verified">
+                        <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] font-bold">
                           {match}% Match
                         </span>
                       </td>
@@ -264,7 +352,7 @@ export default function RecruiterDashboard() {
                           value={cand.status}
                           disabled={statusUpdating}
                           onChange={(e) => handleUpdateStatus(cand.application_id, e.target.value)}
-                          className="px-2.5 py-1 rounded-lg border border-[#E7E5E4] bg-white font-bold text-xs text-[#1C1917] focus-ring"
+                          className="px-2.5 py-1 rounded-lg border border-[#E7E5E4] bg-white font-bold text-xs text-[#1C1917] focus:outline-none focus:border-[#0F766E] cursor-pointer"
                         >
                           <option value="APPLIED">APPLIED</option>
                           <option value="VIEWED">VIEWED</option>
@@ -275,12 +363,24 @@ export default function RecruiterDashboard() {
                         </select>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => setSelectedCandidate(cand)}
-                          className="px-3 py-1.5 rounded-lg bg-[#CCFBF1] text-[#0F766E] font-bold text-xs hover:bg-[#99F6E4] transition-colors"
-                        >
-                          Review Profile
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {cand.status !== 'SHORTLISTED' && cand.status !== 'INTERVIEW' && (
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateStatus(cand.application_id, 'SHORTLISTED')}
+                              className="px-2.5 py-1 rounded-md bg-teal-50 hover:bg-teal-100 text-[#0F766E] font-bold text-[11px] border border-teal-200 transition-colors cursor-pointer"
+                              title="1-Click Shortlist"
+                            >
+                              Shortlist
+                            </button>
+                          )}
+                          <button
+                            onClick={() => setSelectedCandidate(cand)}
+                            className="px-3 py-1.5 rounded-lg bg-[#CCFBF1] text-[#0F766E] font-bold text-xs hover:bg-[#99F6E4] transition-colors cursor-pointer"
+                          >
+                            Review Profile
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -293,7 +393,7 @@ export default function RecruiterDashboard() {
 
       {/* Active Listings Grid */}
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-[#1C1917]">Your Active Job Postings</h2>
+        <h2 className="text-lg font-bold text-[#1C1917] font-heading">Your Active Job Postings</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {active_jobs.map((job) => (
@@ -302,7 +402,7 @@ export default function RecruiterDashboard() {
               className="bg-white rounded-[16px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] hover:border-[#0F766E] hover:shadow-[0_12px_24px_-4px_rgba(15,118,110,0.08)] transition-all space-y-4"
             >
               <div>
-                <h4 className="text-base font-bold text-[#1C1917]">{job.title}</h4>
+                <h4 className="text-base font-bold text-[#1C1917] font-heading">{job.title}</h4>
                 <p className="text-xs text-[#78716C] mt-0.5">{job.location_name} · {job.job_type}</p>
               </div>
 
@@ -312,7 +412,7 @@ export default function RecruiterDashboard() {
               </div>
 
               <div className="flex items-center justify-between pt-1">
-                <span className="badge-pill badge-salary-verified">
+                <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]">
                   Status: Published
                 </span>
                 <Link
@@ -333,12 +433,12 @@ export default function RecruiterDashboard() {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-modal border border-[#E7E5E4] space-y-5">
             <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
               <div>
-                <h3 className="text-base font-bold text-[#1C1917]">{selectedCandidate.candidate_name}</h3>
+                <h3 className="text-base font-bold text-[#1C1917] font-heading">{selectedCandidate.candidate_name}</h3>
                 <p className="text-xs text-[#78716C]">{selectedCandidate.university || 'Daffodil International University'}</p>
               </div>
               <button 
                 onClick={() => setSelectedCandidate(null)}
-                className="text-[#78716C] hover:text-[#1C1917] p-1"
+                className="text-[#78716C] hover:text-[#1C1917] p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -364,9 +464,30 @@ export default function RecruiterDashboard() {
                 <span className="font-bold text-[#1C1917] block mb-1.5">Candidate Skills:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {(selectedCandidate.skills || ['Python', 'FastAPI', 'PostgreSQL', 'Docker', 'Git']).map((sk) => (
-                    <span key={sk} className="badge-pill badge-salary-verified">
+                    <span key={sk} className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0]">
                       {sk}
                     </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Status Action inside Modal */}
+              <div className="pt-2">
+                <span className="font-bold text-[#1C1917] block mb-1.5">Change Pipeline Status:</span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {['SHORTLISTED', 'INTERVIEW', 'HIRED', 'REJECTED'].map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => handleUpdateStatus(selectedCandidate.application_id, st)}
+                      className={`px-3 py-1 rounded-md text-xs font-bold border transition-colors cursor-pointer ${
+                        selectedCandidate.status === st
+                          ? 'bg-[#0F766E] text-white border-[#0F766E]'
+                          : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200'
+                      }`}
+                    >
+                      {st}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -383,7 +504,7 @@ export default function RecruiterDashboard() {
 
               <button
                 onClick={() => setSelectedCandidate(null)}
-                className="px-4 py-2 rounded-lg border border-[#E7E5E4] text-xs font-bold text-[#78716C] hover:bg-[#F3EFEA] transition-colors"
+                className="px-4 py-2 rounded-lg border border-[#E7E5E4] text-xs font-bold text-[#78716C] hover:bg-[#F3EFEA] transition-colors cursor-pointer"
               >
                 Close
               </button>

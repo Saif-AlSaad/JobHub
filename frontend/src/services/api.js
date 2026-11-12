@@ -3,7 +3,6 @@ import {
   MOCK_USERS,
   MOCK_JOBS,
   MOCK_APPLICATIONS,
-  MOCK_NOTIFICATIONS,
   MOCK_JOB_SEEKER_NOTIFICATIONS,
   MOCK_RECRUITER_NOTIFICATIONS,
   MOCK_CONVERSATIONS,
@@ -64,7 +63,7 @@ function getMockFallbackResponse(config) {
   if (url.includes('/seekers/dashboard-summary')) {
     return { data: MOCK_DASHBOARD_SUMMARY };
   }
-  if (url.includes('/recruiters/dashboard-summary')) {
+  if (url.includes('/recruiter/dashboard') || url.includes('/recruiters/dashboard-summary')) {
     return { data: MOCK_RECRUITER_SUMMARY };
   }
   if (url.includes('/admin/analytics') || url.includes('/admin/stats')) {

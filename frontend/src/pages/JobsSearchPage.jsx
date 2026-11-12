@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, MapPin, Sparkles, X, SlidersHorizontal, Briefcase, Navigation, ChevronDown, RotateCcw } from 'lucide-react';
+import { 
+  Search, 
+  MapPin, 
+  Sparkles, 
+  X, 
+  SlidersHorizontal, 
+  Briefcase, 
+  Navigation, 
+  ChevronDown, 
+  RotateCcw, 
+  LayoutGrid, 
+  List, 
+  BookmarkCheck, 
+  Wifi, 
+  Filter
+} from 'lucide-react';
 import api from '../services/api';
 import JobCard from '../components/JobCard';
 import { CardSkeleton } from '../components/SkeletonLoader';
-import EmptyState from '../components/EmptyState';
 
 export default function JobsSearchPage() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +31,27 @@ export default function JobsSearchPage() {
   const [sortBy, setSortBy] = useState(searchParams.get('sort_by') || 'best_match');
   const [minMatch, setMinMatch] = useState(searchParams.get('min_match') || '');
   const [radiusKm, setRadiusKm] = useState(searchParams.get('radius_km') || '');
+  const [remoteOnly, setRemoteOnly] = useState(searchParams.get('remote') === 'true');
+  const [savedOnly, setSavedOnly] = useState(false);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'
+  const [savedJobIds, setSavedJobIds] = useState([]);
+
+  // Load saved job IDs from localStorage
+  const loadSavedIds = useCallback(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem('jobhub_saved_jobs') || '[]');
+      setSavedJobIds(ids);
+    } catch {
+      setSavedJobIds([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadSavedIds();
+    const handleSavedChange = () => loadSavedIds();
+    window.addEventListener('jobhub_saved_updated', handleSavedChange);
+    return () => window.removeEventListener('jobhub_saved_updated', handleSavedChange);
+  }, [loadSavedIds]);
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -28,6 +63,7 @@ export default function JobsSearchPage() {
       if (sortBy) params.sort_by = sortBy;
       if (minMatch) params.min_match = minMatch;
       if (radiusKm) params.radius_km = radiusKm;
+      if (remoteOnly) params.is_remote = true;
 
       const res = await api.get('/jobs/', { params });
       setJobs(res.data.jobs || []);
@@ -40,10 +76,10 @@ export default function JobsSearchPage() {
 
   useEffect(() => {
     fetchJobs();
-  }, [location, jobType, sortBy, minMatch, radiusKm]);
+  }, [location, jobType, sortBy, minMatch, radiusKm, remoteOnly]);
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     fetchJobs();
   };
 
@@ -53,10 +89,14 @@ export default function JobsSearchPage() {
     setJobType('');
     setMinMatch('');
     setRadiusKm('');
+    setRemoteOnly(false);
+    setSavedOnly(false);
     setSortBy('best_match');
   };
 
-  const hasActiveFilters = Boolean(searchQuery || location || jobType || minMatch || radiusKm);
+  const hasActiveFilters = Boolean(
+    searchQuery || location || jobType || minMatch || radiusKm || remoteOnly || savedOnly
+  );
 
   const quickPills = [
     { label: 'Junior Backend', query: 'Backend' },
@@ -65,6 +105,21 @@ export default function JobsSearchPage() {
     { label: 'Savar Smart City', loc: 'Savar' },
     { label: 'Banani Tech Hub', loc: 'Banani' },
   ];
+
+  // Apply client-side filters like savedOnly or remoteOnly fallback
+  const displayedJobs = useMemo(() => {
+    let result = [...jobs];
+
+    if (savedOnly) {
+      result = result.filter(j => savedJobIds.includes(j.id));
+    }
+
+    if (remoteOnly) {
+      result = result.filter(j => j.is_remote);
+    }
+
+    return result;
+  }, [jobs, savedOnly, savedJobIds, remoteOnly]);
 
   return (
     <div className="min-h-screen bg-[#FAF8F5]">
@@ -114,7 +169,9 @@ export default function JobsSearchPage() {
                 {searchQuery && (
                   <button
                     type="button"
-                    onClick={() => setSearchQuery('')}
+                    onClick={() => {
+                      setSearchQuery('');
+                    }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-600 rounded-full hover:bg-stone-200/60 transition-colors cursor-pointer"
                     title="Clear input"
                   >
@@ -123,7 +180,7 @@ export default function JobsSearchPage() {
                 )}
               </div>
 
-              {/* Secondary CTA Accent: Warm Terracotta */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 className="px-6 py-3 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-[#F97316] to-[#EA580C] hover:from-[#EA580C] hover:to-[#C2410C] rounded-xl shadow-[0_4px_14px_rgba(249,115,22,0.25)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.35)] transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 shrink-0 cursor-pointer"
@@ -133,7 +190,7 @@ export default function JobsSearchPage() {
               </button>
             </form>
 
-            {/* Natural Language Quick Search Suggestion Chips */}
+            {/* Quick Keyword Suggestion Pills */}
             <div className="flex items-center gap-2 flex-wrap text-xs pt-0.5">
               <span className="text-[#78716C] font-semibold text-[11px] flex items-center gap-1.5 mr-1 select-none">
                 <Sparkles className="w-3 h-3 text-[#0F766E]" />
@@ -255,6 +312,34 @@ export default function JobsSearchPage() {
                   <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-stone-600 transition-colors" />
                 </div>
 
+                {/* Remote Toggle Pill */}
+                <button
+                  type="button"
+                  onClick={() => setRemoteOnly(!remoteOnly)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer shadow-2xs ${
+                    remoteOnly
+                      ? 'bg-[#FFEDD5] text-[#C2410C] border-[#FED7AA]'
+                      : 'bg-white border-stone-200/90 text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <Wifi className="w-3.5 h-3.5" />
+                  <span>Remote Only</span>
+                </button>
+
+                {/* Bookmarked Jobs Toggle Pill */}
+                <button
+                  type="button"
+                  onClick={() => setSavedOnly(!savedOnly)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold border transition-all duration-150 cursor-pointer shadow-2xs ${
+                    savedOnly
+                      ? 'bg-[#FFEDD5] text-[#F97316] border-[#FED7AA]'
+                      : 'bg-white border-stone-200/90 text-stone-700 hover:bg-stone-50'
+                  }`}
+                >
+                  <BookmarkCheck className="w-3.5 h-3.5" />
+                  <span>Saved ({savedJobIds.length})</span>
+                </button>
+
                 {hasActiveFilters && (
                   <button
                     type="button"
@@ -263,26 +348,56 @@ export default function JobsSearchPage() {
                     title="Reset all active filters"
                   >
                     <RotateCcw className="w-3 h-3 text-[#EA580C]" />
-                    <span>Reset filters</span>
+                    <span>Reset</span>
                   </button>
                 )}
               </div>
 
-              {/* Sort By Dropdown */}
-              <div className="flex items-center gap-2">
-                <span className="text-stone-400 font-medium text-xs whitespace-nowrap">Rank by:</span>
-                <div className="relative group">
-                  <SlidersHorizontal className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400 group-hover:text-stone-600 transition-colors" />
-                  <select
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    className="appearance-none pl-8 pr-7 py-2 rounded-lg text-xs font-semibold cursor-pointer border border-stone-200/90 bg-white hover:bg-stone-50/70 text-stone-800 shadow-2xs focus:outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/15 transition-all duration-150"
+              {/* Sort By Dropdown & View Mode Switcher */}
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-stone-400 font-medium text-xs whitespace-nowrap hidden sm:inline">Rank by:</span>
+                  <div className="relative group">
+                    <SlidersHorizontal className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400 group-hover:text-stone-600 transition-colors" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="appearance-none pl-8 pr-7 py-2 rounded-lg text-xs font-semibold cursor-pointer border border-stone-200/90 bg-white hover:bg-stone-50/70 text-stone-800 shadow-2xs focus:outline-none focus:border-[#0F766E] focus:ring-2 focus:ring-[#0F766E]/15 transition-all duration-150"
+                    >
+                      <option value="best_match">Best AI Match</option>
+                      <option value="proximity">Closest Proximity</option>
+                      <option value="newest">Recently Posted</option>
+                    </select>
+                    <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-stone-600 transition-colors" />
+                  </div>
+                </div>
+
+                {/* View Mode Toggle */}
+                <div className="flex items-center bg-stone-100 p-0.5 rounded-lg border border-stone-200">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('grid')}
+                    className={`p-1.5 rounded-md transition-all ${
+                      viewMode === 'grid'
+                        ? 'bg-white text-[#0F766E] shadow-2xs font-bold'
+                        : 'text-stone-400 hover:text-stone-600'
+                    }`}
+                    title="Grid View"
                   >
-                    <option value="best_match">Best AI Match</option>
-                    <option value="proximity">Closest Proximity</option>
-                    <option value="newest">Recently Posted</option>
-                  </select>
-                  <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none group-hover:text-stone-600 transition-colors" />
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('list')}
+                    className={`p-1.5 rounded-md transition-all ${
+                      viewMode === 'list'
+                        ? 'bg-white text-[#0F766E] shadow-2xs font-bold'
+                        : 'text-stone-400 hover:text-stone-600'
+                    }`}
+                    title="List View"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -293,42 +408,62 @@ export default function JobsSearchPage() {
       </div>
 
       {/* Main Results Content Area */}
-      <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-6">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 space-y-6">
         
-        {/* Results Header Count */}
-        <div className="flex items-center justify-between text-xs text-[#78716C]">
-          <span>
-            Showing <b className="n text-[#1C1917] font-bold">{jobs.length}</b> verified engineering opportunities
-          </span>
+        {/* Results Header Count & Active Filter Tags */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#78716C]">
+          <div className="flex items-center gap-2">
+            <span>
+              Showing <b className="text-[#1C1917] font-bold">{displayedJobs.length}</b> verified engineering opportunities
+            </span>
+            {savedOnly && (
+              <span className="badge-pill bg-[#FFEDD5] text-[#F97316] border-[#FED7AA] text-[10px]">
+                Bookmarked Only
+              </span>
+            )}
+            {remoteOnly && (
+              <span className="badge-pill bg-[#FFEDD5] text-[#C2410C] border-[#FED7AA] text-[10px]">
+                Remote Only
+              </span>
+            )}
+          </div>
           <span className="text-[11px] text-[#78716C]">
             Updated in real-time
           </span>
         </div>
 
-        {/* Grid of Results */}
+        {/* Grid or List of Results */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
             <CardSkeleton />
             <CardSkeleton />
             <CardSkeleton />
           </div>
-        ) : jobs.length === 0 ? (
-          <div className="bg-white p-12 rounded-[12px] border border-[#E7E5E4] text-center space-y-3 shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
-            <p className="text-base font-bold text-[#1C1917]">No Matching Opportunities Found</p>
-            <p className="text-xs text-[#78716C] max-w-md mx-auto">
-              Try expanding your search criteria or adjusting your location hub and radius filters.
-            </p>
+        ) : displayedJobs.length === 0 ? (
+          <div className="bg-white p-12 rounded-[14px] border border-[#E7E5E4] text-center space-y-4 shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
+            <div className="w-12 h-12 rounded-full bg-stone-100 text-stone-400 mx-auto flex items-center justify-center">
+              <Filter className="w-6 h-6" />
+            </div>
+            <div>
+              <p className="text-base font-bold text-[#1C1917]">No Matching Opportunities Found</p>
+              <p className="text-xs text-[#78716C] max-w-md mx-auto mt-1">
+                {savedOnly 
+                  ? "You haven't bookmarked any jobs yet. Browse the open engineering roles and tap the bookmark icon on any job card to save it."
+                  : "Try expanding your search query or loosening your location hub and match score filters."}
+              </p>
+            </div>
             <button
               onClick={clearFilters}
-              className="px-4 py-2 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-colors"
+              className="px-5 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs cursor-pointer inline-flex items-center gap-1.5"
             >
-              Clear All Filters
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset All Filters</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+          <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-3.5"}>
+            {displayedJobs.map((job) => (
+              <JobCard key={job.id} job={job} layout={viewMode} />
             ))}
           </div>
         )}

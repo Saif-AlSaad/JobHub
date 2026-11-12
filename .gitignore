@@ -43,5 +43,6 @@ Thumbs.db
 *.sln
 *.sw?
 
-# Scratch scripts
+# Scratch scripts & temporary test artifacts
 generate_ui_ux_report.py
+.playwright-mcp/

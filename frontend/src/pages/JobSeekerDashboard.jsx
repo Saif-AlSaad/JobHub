@@ -1,19 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useNotifications } from '../context/NotificationContext';
 import { 
   Sparkles, 
   MapPin, 
-  TrendingUp, 
-  FileText, 
-  CheckCircle2, 
   ArrowRight, 
   Compass, 
-  Navigation,
-  BookOpen,
-  Check,
-  Building2,
-  Bell
+  Check, 
+  Bell, 
+  BookmarkCheck, 
+  Target, 
+  ListTodo
 } from 'lucide-react';
 import api from '../services/api';
 import JobCard from '../components/JobCard';
@@ -26,8 +23,19 @@ export default function JobSeekerDashboard() {
   const [error, setError] = useState('');
   const [selectedHub, setSelectedHub] = useState('All');
   const [radiusFilter, setRadiusFilter] = useState(5);
+  const [savedCount, setSavedCount] = useState(0);
   const navigate = useNavigate();
   const { notifications, unreadCount, markAsRead, fetchNotifications } = useNotifications();
+
+  // Load saved jobs count
+  const loadSavedCount = useCallback(() => {
+    try {
+      const ids = JSON.parse(localStorage.getItem('jobhub_saved_jobs') || '[]');
+      setSavedCount(ids.length);
+    } catch {
+      setSavedCount(0);
+    }
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
@@ -44,7 +52,10 @@ export default function JobSeekerDashboard() {
   useEffect(() => {
     fetchDashboardData();
     fetchNotifications();
-  }, [fetchNotifications]);
+    loadSavedCount();
+    window.addEventListener('jobhub_saved_updated', loadSavedCount);
+    return () => window.removeEventListener('jobhub_saved_updated', loadSavedCount);
+  }, [fetchNotifications, loadSavedCount]);
 
   if (loading) {
     return (
@@ -68,7 +79,7 @@ export default function JobSeekerDashboard() {
     );
   }
 
-  const { candidate_name, first_name, stats, top_matches, nearby_opportunities, recent_applications, skill_gap_roadmap } = data;
+  const { candidate_name, first_name, stats, top_matches, nearby_opportunities, recent_applications } = data;
 
   const hubs = ['All', 'Savar', 'Banani', 'Mohakhali', 'Dhanmondi', 'Uttara'];
 
@@ -85,15 +96,23 @@ export default function JobSeekerDashboard() {
 
   const applicationSteps = ['APPLIED', 'VIEWED', 'SHORTLISTED', 'INTERVIEW', 'HIRED'];
 
+  const readinessChecklist = [
+    { title: 'Academic Degree & CGPA Verified', done: true, points: '+25%' },
+    { title: 'Technical Taxonomy (Python, React, FastAPI)', done: true, points: '+25%' },
+    { title: 'University Hub Proximity Configured (Savar / Banani)', done: true, points: '+20%' },
+    { title: 'Verified PDF Resume Parsed & Vectorized', done: true, points: '+17%' },
+    { title: 'GitHub Open-Source & Capstone Project Linked', done: false, points: '+13%', link: '/profile' }
+  ];
+
   return (
-    <div className="max-w-[1280px] mx-auto px-6 py-8 space-y-8 bg-[#FAF8F5]">
+    <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 space-y-8 bg-[#FAF8F5]">
       
       {/* 1. Hero Placement Radar & Radial Gauge */}
-      <div className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_2px_6px_rgba(28,25,23,0.03)] flex flex-col lg:flex-row items-center justify-between gap-8">
+      <div className="bg-white rounded-[14px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_2px_6px_rgba(28,25,23,0.03)] flex flex-col lg:flex-row items-center justify-between gap-8">
         
         {/* Left greeting & mission */}
         <div className="space-y-3 flex-1">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-xs font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] text-xs font-bold shadow-2xs">
             <Sparkles className="w-3.5 h-3.5 text-[#0F766E]" />
             Proactive AI Placement Engine Active
           </div>
@@ -103,36 +122,45 @@ export default function JobSeekerDashboard() {
           </h1>
 
           <p className="text-sm text-[#78716C] leading-relaxed max-w-2xl">
-            JobHub is continuously calculating hybrid semantic matches against open software engineering and internship roles within your preferred hub radius.
+            JobHub is continuously computing hybrid semantic matches against open software engineering roles within your preferred university hub radius.
           </p>
 
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <Link
               to="/jobs"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
             >
               <Compass className="w-4 h-4" />
               Explore Matches
             </Link>
             <Link
               to="/profile"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-[#F3EFEA] hover:bg-[#E7E5E4] text-[#1C1917] border border-[#E7E5E4] text-xs font-bold transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[10px] bg-[#F3EFEA] hover:bg-[#E7E5E4] text-[#1C1917] border border-[#E7E5E4] text-xs font-bold transition-colors cursor-pointer"
             >
               Adjust Hub & Skills
             </Link>
+            {savedCount > 0 && (
+              <Link
+                to="/jobs?saved=true"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-[10px] bg-[#FFEDD5] hover:bg-[#FED7AA] text-[#C2410C] border border-[#FED7AA] text-xs font-bold transition-colors cursor-pointer"
+              >
+                <BookmarkCheck className="w-4 h-4" />
+                <span>{savedCount} Saved Roles</span>
+              </Link>
+            )}
           </div>
         </div>
 
         {/* Center / Right Radial Market Readiness Hero Gauge */}
-        <div className="flex items-center gap-6 p-5 rounded-[12px] bg-[#F3EFEA] border border-[#E7E5E4] flex-shrink-0">
+        <div className="flex items-center gap-6 p-5 rounded-[12px] bg-[#F3EFEA] border border-[#E7E5E4] shrink-0">
           <svg 
             width="96" 
             height="96" 
             viewBox="0 0 140 140" 
             role="img" 
             aria-label={`Overall Placement Readiness ${overallScore} percent`}
-            className="flex-shrink-0"
+            className="shrink-0"
           >
             <circle 
               cx="70" 
@@ -173,29 +201,109 @@ export default function JobSeekerDashboard() {
 
       </div>
 
-      {/* 2. "Next Best Action" Opportunity Callout Card */}
-      <div className="bg-[#CCFBF1]/30 border border-[#99F6E4] rounded-[12px] p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0_2px_6px_rgba(28,25,23,0.03)]">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 rounded-[10px] bg-white border border-[#99F6E4] text-[#0F766E] flex items-center justify-center font-bold flex-shrink-0 shadow-xs">
-            <Sparkles className="w-5 h-5 text-[#0F766E]" />
+      {/* 2. Interactive Placement Checklist & Target Tracker */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Profile Optimization Checklist (8 cols) */}
+        <div className="lg:col-span-8 bg-white border border-[#E7E5E4] rounded-[14px] p-5 sm:p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
+                <ListTodo className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#1C1917] font-heading">
+                  AI Placement Optimization Checklist
+                </h3>
+                <p className="text-xs text-[#78716C]">
+                  Complete these steps to maximize recruiter discovery and match confidence.
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-bold text-[#0F766E] bg-[#CCFBF1] px-2.5 py-1 rounded-full border border-[#99F6E4]">
+              4 / 5 Complete
+            </span>
           </div>
-          <div>
-            <p className="text-xs font-bold text-[#0F766E] uppercase tracking-wider">
-              Next Best Action Recommendation
-            </p>
-            <p className="text-sm font-semibold text-[#1C1917] mt-0.5">
-              Add <span className="underline decoration-[#F97316] font-bold">Docker & Redis</span> to increase your average placement match score from 87% to 94%.
-            </p>
+
+          <div className="space-y-2 pt-1">
+            {readinessChecklist.map((item, idx) => (
+              <div 
+                key={idx}
+                className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs transition-colors ${
+                  item.done 
+                    ? 'bg-stone-50/70 border-stone-200 text-stone-700' 
+                    : 'bg-[#FFEDD5]/40 border-[#FED7AA] text-[#C2410C]'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  {item.done ? (
+                    <div className="w-5 h-5 rounded-full bg-[#047857] text-white flex items-center justify-center shrink-0">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                    </div>
+                  ) : (
+                    <div className="w-5 h-5 rounded-full border-2 border-[#F97316] text-[#F97316] flex items-center justify-center shrink-0 font-bold text-[10px]">
+                      !
+                    </div>
+                  )}
+                  <span className={`font-semibold ${item.done ? 'text-stone-800' : 'text-[#9A3412]'}`}>
+                    {item.title}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] font-bold text-stone-400">{item.points}</span>
+                  {item.link && (
+                    <Link
+                      to={item.link}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-[#F97316] hover:bg-[#EA580C] text-white font-bold text-[11px] shadow-2xs transition-all"
+                    >
+                      <span>Complete Now</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <Link
-          to="/profile"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all whitespace-nowrap flex-shrink-0 active:scale-[0.98]"
-        >
-          Update Skills Now
-          <ArrowRight className="w-3.5 h-3.5" />
-        </Link>
+        {/* Weekly Placement Target & Motivation (4 cols) */}
+        <div className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[14px] p-5 sm:p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] flex flex-col justify-between space-y-4">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-[#FFEDD5] text-[#F97316] border border-[#FED7AA] flex items-center justify-center">
+                <Target className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#1C1917] font-heading">
+                  Weekly Placement Goal
+                </h3>
+                <p className="text-xs text-[#78716C]">Consistency boosts recruiter rank</p>
+              </div>
+            </div>
+
+            <div className="space-y-2 mt-4">
+              <div className="flex items-center justify-between text-xs font-semibold">
+                <span className="text-[#1C1917]">3 of 5 applications sent</span>
+                <span className="text-[#0F766E] font-bold">60%</span>
+              </div>
+              <div className="w-full bg-stone-100 rounded-full h-2.5 overflow-hidden">
+                <div className="bg-gradient-to-r from-[#0F766E] to-[#14B8A6] h-full rounded-full transition-all duration-500" style={{ width: '60%' }} />
+              </div>
+              <p className="text-[11px] text-[#78716C] mt-2">
+                Sending 2 more tailored applications this week will maintain your placement momentum.
+              </p>
+            </div>
+          </div>
+
+          <Link
+            to="/jobs?sort_by=best_match"
+            className="w-full py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold text-center block shadow-2xs transition-all"
+          >
+            Browse Today's High Matches →
+          </Link>
+        </div>
+
       </div>
 
       {/* 3. Stat Cards */}
@@ -235,9 +343,9 @@ export default function JobSeekerDashboard() {
 
       </div>
 
-      {/* Placement Alerts & Activity Section */}
+      {/* 4. Placement Alerts & Activity Section */}
       {notifications.length > 0 && (
-        <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-5 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-3">
+        <section className="bg-white rounded-[14px] border border-[#E7E5E4] p-5 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
@@ -307,7 +415,7 @@ export default function JobSeekerDashboard() {
         </section>
       )}
 
-      {/* 4. Section: Top AI Placement Matches */}
+      {/* 5. Section: Top AI Placement Matches */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -335,8 +443,8 @@ export default function JobSeekerDashboard() {
         </div>
       </section>
 
-      {/* 5. Section: Location-Aware Opportunities with Hub Pills */}
-      <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 sm:p-7 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-5">
+      {/* 6. Section: Location-Aware Opportunities with Hub Pills */}
+      <section className="bg-white rounded-[14px] border border-[#E7E5E4] p-6 sm:p-7 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -359,7 +467,7 @@ export default function JobSeekerDashboard() {
             <select
               value={radiusFilter}
               onChange={(e) => setRadiusFilter(Number(e.target.value))}
-              className="px-3 py-1.5 rounded-[8px] border border-[#E7E5E4] text-xs bg-[#F3EFEA] focus-ring font-semibold text-[#1C1917]"
+              className="px-3 py-1.5 rounded-[8px] border border-[#E7E5E4] text-xs bg-[#F3EFEA] focus:outline-none focus:border-[#0F766E] font-semibold text-[#1C1917]"
             >
               <option value={2}>Within 2 km</option>
               <option value={5}>Within 5 km</option>
@@ -371,14 +479,14 @@ export default function JobSeekerDashboard() {
 
         {/* Hub filter pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          <span className="text-xs text-[#78716C] font-semibold mr-1 flex-shrink-0">Bangladesh Hubs:</span>
+          <span className="text-xs text-[#78716C] font-semibold mr-1 shrink-0">Bangladesh Hubs:</span>
           {hubs.map((hub) => (
             <button
               key={hub}
               onClick={() => setSelectedHub(hub)}
-              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors flex-shrink-0 ${
+              className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors shrink-0 cursor-pointer ${
                 selectedHub === hub
-                  ? 'bg-[#0F766E] text-white'
+                  ? 'bg-[#0F766E] text-white shadow-2xs'
                   : 'bg-[#F3EFEA] text-[#78716C] hover:bg-[#E7E5E4] hover:text-[#1C1917]'
               }`}
             >
@@ -401,8 +509,8 @@ export default function JobSeekerDashboard() {
         )}
       </section>
 
-      {/* 6. Section: Horizontal Application Tracker */}
-      <section className="bg-white rounded-[12px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
+      {/* 7. Section: Horizontal Application Tracker */}
+      <section className="bg-white rounded-[14px] border border-[#E7E5E4] p-6 shadow-[0_2px_6px_rgba(28,25,23,0.03)] space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-[#1C1917] font-heading">Active Applications Pipeline</h2>

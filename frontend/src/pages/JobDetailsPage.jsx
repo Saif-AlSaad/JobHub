@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, 
@@ -9,10 +9,15 @@ import {
   BookOpen, 
   FileText, 
   X, 
-  CheckCircle2 
+  CheckCircle2,
+  Bookmark,
+  BookmarkCheck,
+  Share2,
+  Plus
 } from 'lucide-react';
 import api from '../services/api';
 import EmptyState from '../components/EmptyState';
+import JobCard from '../components/JobCard';
 import { useAuth } from '../context/AuthContext';
 
 export default function JobDetailsPage() {
@@ -21,31 +26,103 @@ export default function JobDetailsPage() {
   const { user } = useAuth();
 
   const [job, setJob] = useState(null);
+  const [similarJobs, setSimilarJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Bookmarking & Sharing state
+  const [isSaved, setIsSaved] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [studyPlanSkills, setStudyPlanSkills] = useState([]);
+
   // Application Modal state
   const [applyModalOpen, setApplyModalOpen] = useState(false);
   const [resumeCustomizerOpen, setResumeCustomizerOpen] = useState(false);
   const [coverNote, setCoverNote] = useState('');
+  const [selectedResume, setSelectedResume] = useState('Primary Engineering CV (Verified)');
   const [submitting, setSubmitting] = useState(false);
   const [applySuccess, setApplySuccess] = useState(false);
 
-  const fetchJob = async () => {
+  // Check saved job and study plan
+  const loadSavedState = useCallback(() => {
+    try {
+      const savedIds = JSON.parse(localStorage.getItem('jobhub_saved_jobs') || '[]');
+      setIsSaved(savedIds.includes(Number(id)) || savedIds.includes(String(id)));
+      const studyPlan = JSON.parse(localStorage.getItem('jobhub_study_plan') || '[]');
+      setStudyPlanSkills(studyPlan);
+    } catch {
+      setIsSaved(false);
+    }
+  }, [id]);
+
+  const toggleBookmark = () => {
+    try {
+      const savedIds = JSON.parse(localStorage.getItem('jobhub_saved_jobs') || '[]');
+      const numericId = Number(id);
+      let updated;
+      if (savedIds.includes(numericId)) {
+        updated = savedIds.filter(i => i !== numericId);
+        setIsSaved(false);
+      } else {
+        updated = [...savedIds, numericId];
+        setIsSaved(true);
+      }
+      localStorage.setItem('jobhub_saved_jobs', JSON.stringify(updated));
+      window.dispatchEvent(new Event('jobhub_saved_updated'));
+    } catch {
+      setIsSaved(!isSaved);
+    }
+  };
+
+  const handleCopyLink = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2200);
+    }
+  };
+
+  const toggleStudySkill = (skill) => {
+    try {
+      const current = JSON.parse(localStorage.getItem('jobhub_study_plan') || '[]');
+      let updated;
+      if (current.includes(skill)) {
+        updated = current.filter(s => s !== skill);
+      } else {
+        updated = [...current, skill];
+      }
+      localStorage.setItem('jobhub_study_plan', JSON.stringify(updated));
+      setStudyPlanSkills(updated);
+    } catch {
+      // fallback
+    }
+  };
+
+  const fetchJob = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get(`/jobs/${id}`);
       setJob(res.data);
+
+      // Also fetch similar jobs in the background
+      try {
+        const simRes = await api.get('/jobs/', { params: { limit: 3 } });
+        const list = (simRes.data.jobs || []).filter(j => String(j.id) !== String(id)).slice(0, 3);
+        setSimilarJobs(list);
+      } catch {
+        // quiet fallback
+      }
     } catch (err) {
       setError(err.message || 'Job not found');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchJob();
-  }, [id]);
+    loadSavedState();
+  }, [fetchJob, loadSavedState]);
 
   const handleApply = async (e) => {
     if (e) e.preventDefault();
@@ -53,7 +130,8 @@ export default function JobDetailsPage() {
     try {
       await api.post('/applications/', {
         job_id: job.id,
-        cover_note: coverNote || 'Excited to apply via JOB HUB placement matching.'
+        cover_note: coverNote || 'Excited to apply via JOB HUB placement matching.',
+        selected_resume: selectedResume
       });
       setApplySuccess(true);
       setApplyModalOpen(false);
@@ -69,14 +147,20 @@ export default function JobDetailsPage() {
     try {
       const res = await api.post('/chat/start', { job_id: job.id });
       navigate(`/messages?conversation_id=${res.data.conversation_id}`);
-    } catch (err) {
+    } catch {
       alert('Could not open chat with recruiter.');
     }
   };
 
+  const quickStarters = [
+    "I have direct project experience with the required tech stack and build scalable APIs.",
+    "Graduating in Computer Science & Engineering with a strong focus on high-performance backends.",
+    "Fast learner with strong fundamentals in clean code, automated testing, and CI/CD pipelines."
+  ];
+
   if (loading) {
     return (
-      <div className="max-w-[1280px] mx-auto px-6 py-16 text-center text-sm text-secondary animate-pulse">
+      <div className="max-w-[1280px] mx-auto px-6 py-16 text-center text-sm text-[#78716C] animate-pulse">
         Loading job specifications and computing AI match diagnostics...
       </div>
     );
@@ -96,7 +180,7 @@ export default function JobDetailsPage() {
   }
 
   const matchAnalysis = job.match_analysis || {};
-  const matchScore = Math.round(matchAnalysis.match_score || 88);
+  const matchScore = Math.round(matchAnalysis.match_score || job.match_percentage || 88);
 
   // SVG circular gauge math: circumference = 2 * PI * 54 = ~339.29
   const circumference = 339.3;
@@ -110,25 +194,25 @@ export default function JobDetailsPage() {
   // Extract skills breakdown
   const matchedSkills = matchAnalysis.skill_overlap?.matched_skills?.length > 0
     ? matchAnalysis.skill_overlap.matched_skills
-    : ['Python', 'SQL', 'Git'];
+    : job.required_skills?.slice(0, 3) || ['Python', 'SQL', 'Git'];
 
   const missingSkills = matchAnalysis.skill_overlap?.missing_skills?.length > 0
     ? matchAnalysis.skill_overlap.missing_skills
-    : ['Docker', 'Redis', 'FastAPI'];
+    : job.preferred_skills?.slice(0, 2) || ['Docker', 'Redis', 'FastAPI'];
 
-  // Synthesize transferable skills (prerequisites with adjacent experience)
-  const transferableSkills = ['Flask', 'PostgreSQL', 'REST APIs'].filter(s => !matchedSkills.includes(s));
+  // Transferable skills
+  const transferableSkills = ['PostgreSQL', 'REST APIs', 'Git', 'Linux'].filter(s => !matchedSkills.includes(s));
 
   // Distance & transit
   const distanceKm = matchAnalysis.location_fit?.distance_km != null 
     ? matchAnalysis.location_fit.distance_km 
-    : 4;
-  const transitMin = Math.round(distanceKm * 5) || 20;
+    : (job.distance_km != null ? job.distance_km : 3.5);
+  const transitMin = Math.round(distanceKm * 5) || 18;
 
   // Format salary
   const salaryDisplay = job.salary_min
     ? `${job.salary_min.toLocaleString()} - ${job.salary_max ? job.salary_max.toLocaleString() : ''} ${job.salary_currency || 'BDT'}`
-    : 'Competitive (Negotiable)';
+    : job.salary_range || 'Competitive (Negotiable)';
 
   // Format responsibilities & culture
   const responsibilitiesList = job.responsibilities 
@@ -144,19 +228,62 @@ export default function JobDetailsPage() {
   return (
     <div className="min-h-full bg-[#FAF8F5]">
       
-      {/* Breadcrumb Navigation */}
-      <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-2">
+      {/* Breadcrumb Navigation & Top Action Bar */}
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 pt-6 pb-2 flex items-center justify-between gap-4 flex-wrap">
         <Link to="/jobs" className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#78716C] hover:text-[#0F766E] transition-colors">
           <ArrowLeft className="w-3.5 h-3.5 text-[#0F766E]" />
           Back to all opportunities
         </Link>
+
+        {/* Share & Bookmark Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E7E5E4] bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 shadow-2xs transition-colors cursor-pointer"
+          >
+            {copiedLink ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-[#047857]" />
+                <span className="text-[#047857]">Link Copied!</span>
+              </>
+            ) : (
+              <>
+                <Share2 className="w-3.5 h-3.5 text-stone-500" />
+                <span>Share Role</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleBookmark}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-semibold shadow-2xs transition-all cursor-pointer ${
+              isSaved 
+                ? 'bg-[#FFEDD5] text-[#F97316] border-[#FED7AA]' 
+                : 'bg-white hover:bg-stone-50 text-stone-700 border-[#E7E5E4]'
+            }`}
+          >
+            {isSaved ? (
+              <>
+                <BookmarkCheck className="w-3.5 h-3.5 fill-current text-[#F97316]" />
+                <span>Saved Job</span>
+              </>
+            ) : (
+              <>
+                <Bookmark className="w-3.5 h-3.5 text-stone-500" />
+                <span>Save for Later</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Main 3-Column Prototype Grid */}
-      <main className="max-w-[1280px] mx-auto px-6 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-start">
+      <main className="max-w-[1280px] mx-auto px-4 sm:px-6 py-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6 items-start">
         
-        {/* COLUMN 1: Aside Company & Quick Apply Card (3.5 cols on desktop) */}
-        <aside className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
+        {/* COLUMN 1: Aside Company & Quick Apply Card */}
+        <aside className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[14px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
           
           {/* Monogram */}
           <div className="w-[52px] h-[52px] rounded-[12px] bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] font-extrabold flex items-center justify-center text-lg">
@@ -188,10 +315,10 @@ export default function JobDetailsPage() {
           </div>
 
           {/* Action Button */}
-          {job.applied_status ? (
+          {job.applied_status || applySuccess ? (
             <div className="w-full min-h-[48px] rounded-[10px] bg-[#ECFDF5] border border-[#A7F3D0] text-[#047857] font-bold text-xs flex items-center justify-center gap-2">
               <Check className="w-4 h-4 text-[#047857]" />
-              Applied ({job.applied_status.status})
+              Application Submitted ({job.applied_status?.status || 'APPLIED'})
             </div>
           ) : user?.role === 'JOB_SEEKER' ? (
             <div className="space-y-2.5">
@@ -205,7 +332,7 @@ export default function JobDetailsPage() {
 
               <button
                 onClick={handleStartChat}
-                className="w-full min-h-[42px] border border-[#E7E5E4] hover:bg-[#F3EFEA] text-[#1C1917] font-semibold text-xs rounded-[10px] transition-colors flex items-center justify-center gap-2"
+                className="w-full min-h-[42px] border border-[#E7E5E4] hover:bg-[#F3EFEA] text-[#1C1917] font-semibold text-xs rounded-[10px] transition-colors flex items-center justify-center gap-2 cursor-pointer"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-[#0F766E]" />
                 Message Hiring Manager
@@ -219,8 +346,8 @@ export default function JobDetailsPage() {
 
         </aside>
 
-        {/* COLUMN 2: Article Job Details (4.5 cols on desktop) */}
-        <article className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border space-y-5">
+        {/* COLUMN 2: Article Job Details */}
+        <article className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[14px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border space-y-5">
           
           {/* Overview */}
           <div>
@@ -235,7 +362,7 @@ export default function JobDetailsPage() {
             <h2 className="text-[18px] font-bold text-[#1C1917] mb-2 font-heading">Responsibilities</h2>
             <ul className="text-[#1C1917]/90 leading-relaxed text-sm space-y-1.5 pl-5 list-disc m-0">
               {responsibilitiesList.map((resp, i) => (
-                <li key={i}>{resp.replace(/^[•\-\*]\s*/, '')}</li>
+                <li key={i}>{resp.replace(/^[•\-*]\s*/, '')}</li>
               ))}
             </ul>
           </div>
@@ -260,8 +387,8 @@ export default function JobDetailsPage() {
 
         </article>
 
-        {/* COLUMN 3: Section Explainable Match (4 cols on desktop) */}
-        <section className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[12px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
+        {/* COLUMN 3: Section Explainable Match & Learning Planner */}
+        <section className="lg:col-span-4 bg-white border border-[#E7E5E4] rounded-[14px] shadow-[0_2px_6px_rgba(28,25,23,0.03)] p-6 box-border">
           
           {/* Top Radial Match Gauge & Percentage */}
           <div className="flex items-center gap-4">
@@ -302,7 +429,7 @@ export default function JobDetailsPage() {
                 {matchScore}%
               </div>
               <div className="text-[13px] text-[#78716C] font-medium mt-1">
-                Why this match
+                Semantic Match Score
               </div>
             </div>
           </div>
@@ -337,24 +464,43 @@ export default function JobDetailsPage() {
             ))}
           </div>
 
-          {/* Missing Prerequisites */}
-          <h3 className="text-sm font-bold text-[#1C1917] mt-4 mb-2 font-heading">
-            Missing Prerequisites
-          </h3>
-          <div className="flex gap-1.5 flex-wrap">
-            {missingSkills.map((skill, i) => (
-              <span 
-                key={i} 
-                className="badge-pill bg-[#FEF3C7] text-[#B45309] border-[#FDE68A]"
-              >
-                +{skill}
-              </span>
-            ))}
+          {/* Missing Prerequisites & Interactive Study Plan */}
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold text-[#1C1917] font-heading">
+                Prerequisite Gaps
+              </h3>
+              <span className="text-[11px] text-[#78716C]">Tap to track</span>
+            </div>
+
+            <div className="flex gap-1.5 flex-wrap">
+              {missingSkills.map((skill, i) => {
+                const inPlan = studyPlanSkills.includes(skill);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => toggleStudySkill(skill)}
+                    className={`badge-pill border transition-all cursor-pointer flex items-center gap-1 text-[11px] py-1 ${
+                      inPlan 
+                        ? 'bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] font-bold shadow-2xs' 
+                        : 'bg-[#FEF3C7] text-[#B45309] border-[#FDE68A] hover:bg-[#FDE68A]'
+                    }`}
+                    title={inPlan ? "In Study Plan (click to remove)" : "Add to Study Plan"}
+                  >
+                    {inPlan ? <Check className="w-3 h-3 text-[#047857]" /> : <Plus className="w-3 h-3" />}
+                    <span>{skill}</span>
+                    {inPlan && <span className="text-[9px] uppercase tracking-wider ml-0.5">Studying</span>}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Learning Roadmap */}
-          <h3 className="text-sm font-bold text-[#1C1917] mt-5 mb-2 font-heading">
-            Learning Roadmap
+          <h3 className="text-sm font-bold text-[#1C1917] mt-5 mb-2 font-heading flex items-center gap-1.5">
+            <BookOpen className="w-3.5 h-3.5 text-[#0F766E]" />
+            Free Learning Tutorials
           </h3>
           <div className="space-y-1">
             {missingSkills.slice(0, 2).map((skill, i) => (
@@ -363,9 +509,9 @@ export default function JobDetailsPage() {
                 href={`https://devdocs.io/${skill.toLowerCase()}`}
                 target="_blank"
                 rel="noreferrer"
-                className="block text-sm text-[#0F766E] hover:text-[#115E59] hover:underline leading-relaxed font-medium"
+                className="block text-xs text-[#0F766E] hover:text-[#115E59] hover:underline leading-relaxed font-semibold"
               >
-                {skill}: free tutorial →
+                {skill}: Fast-track interactive docs →
               </a>
             ))}
           </div>
@@ -373,20 +519,45 @@ export default function JobDetailsPage() {
           {/* AI Resume Customizer Button */}
           <button 
             onClick={() => setResumeCustomizerOpen(true)}
-            className="w-full mt-4 min-h-[48px] border border-[#99F6E4] rounded-[10px] bg-[#CCFBF1]/50 hover:bg-[#CCFBF1] text-[#0F766E] font-bold text-sm cursor-pointer transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-5 min-h-[44px] border border-[#99F6E4] rounded-[10px] bg-[#CCFBF1]/50 hover:bg-[#CCFBF1] text-[#0F766E] font-bold text-xs cursor-pointer transition-colors flex items-center justify-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-[#0F766E]" />
-            AI Resume Customizer
+            AI Resume Tailoring Diagnostics
           </button>
 
         </section>
 
       </main>
 
+      {/* SIMILAR RECOMMENDED OPPORTUNITIES */}
+      {similarJobs.length > 0 && (
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 border-t border-[#E7E5E4] mt-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-[#1C1917] font-heading">
+                Similar Open Engineering Roles
+              </h2>
+              <p className="text-xs text-[#78716C]">
+                Other high-affinity placement openings in your university cluster.
+              </p>
+            </div>
+            <Link to="/jobs" className="text-xs font-bold text-[#0F766E] hover:underline">
+              View all →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {similarJobs.map((simJob) => (
+              <JobCard key={simJob.id} job={simJob} />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* QUICK APPLY MODAL */}
       {applyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-[12px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
+          <div className="bg-white rounded-[14px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
             <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
               <div>
                 <h3 className="text-base font-bold text-[#1C1917] font-heading">Apply to {job.title}</h3>
@@ -394,31 +565,70 @@ export default function JobDetailsPage() {
               </div>
               <button 
                 onClick={() => setApplyModalOpen(false)}
-                className="text-[#78716C] hover:text-[#1C1917] p-1"
+                className="text-[#78716C] hover:text-[#1C1917] p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <form onSubmit={handleApply} className="space-y-4">
+              
+              {/* Select CV Version */}
               <div>
-                <label className="block text-xs font-semibold text-[#1C1917] mb-1.5">
-                  Tailored Candidate Note / Introduction
+                <label className="block text-xs font-semibold text-[#1C1917] mb-1">
+                  Select Verified CV Version
                 </label>
+                <select
+                  value={selectedResume}
+                  onChange={(e) => setSelectedResume(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-[#E7E5E4] bg-[#FAF8F5] text-[#1C1917] font-medium focus:outline-none focus:border-[#0F766E]"
+                >
+                  <option value="Primary Engineering CV (Verified)">Primary Engineering CV (Verified)</option>
+                  <option value="Backend & Cloud Architecture CV">Backend & Cloud Architecture CV</option>
+                  <option value="Full-Stack Web & AI Projects CV">Full-Stack Web & AI Projects CV</option>
+                </select>
+              </div>
+
+              {/* Cover Note with Quick Starters */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-semibold text-[#1C1917]">
+                    Tailored Candidate Note / Pitch
+                  </label>
+                  <span className="text-[11px] text-[#78716C]">{coverNote.length}/300</span>
+                </div>
+
+                {/* Quick Starter Chips */}
+                <div className="flex items-center gap-1.5 flex-wrap mb-2">
+                  <span className="text-[10px] text-[#78716C] font-medium">Quick starters:</span>
+                  {quickStarters.map((starter, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setCoverNote(starter)}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-stone-100 hover:bg-[#CCFBF1] text-stone-700 hover:text-[#0F766E] border border-stone-200 transition-colors cursor-pointer"
+                    >
+                      Preset {i + 1}
+                    </button>
+                  ))}
+                </div>
+
                 <textarea
                   rows={4}
+                  maxLength={300}
                   value={coverNote}
                   onChange={(e) => setCoverNote(e.target.value)}
-                  placeholder={`Hi ${job.company?.name || 'Hiring Team'}, I am excited to apply for the ${job.title} position. My experience in ${matchedSkills.join(', ')} aligns strongly with this opportunity...`}
-                  className="w-full p-3 text-xs rounded-[10px] border border-[#E7E5E4] bg-[#FAF8F5] focus-ring text-[#1C1917]"
+                  placeholder={`Hi ${job.company?.name || 'Hiring Team'}, I am excited to apply for the ${job.title} position. My background in ${matchedSkills.join(', ')} directly matches your core technical requirements...`}
+                  className="w-full p-3 text-xs rounded-[10px] border border-[#E7E5E4] bg-[#FAF8F5] focus:ring-2 focus:ring-[#0F766E]/20 text-[#1C1917] focus:outline-none focus:border-[#0F766E]"
                 />
               </div>
 
+              {/* Active Profile Sync Banner */}
               <div className="p-3 bg-[#CCFBF1]/30 border border-[#99F6E4] rounded-[10px] flex items-center gap-3">
-                <FileText className="w-5 h-5 text-[#0F766E] flex-shrink-0" />
+                <FileText className="w-5 h-5 text-[#0F766E] shrink-0" />
                 <div className="text-xs">
                   <p className="font-semibold text-[#1C1917]">{user?.profile?.resume_filename || 'Sarah_Rahman_Software_Engineering_Resume.pdf'}</p>
-                  <p className="text-[11px] text-[#78716C]">Parsed & Verified AI Placement Profile</p>
+                  <p className="text-[11px] text-[#78716C]">Parsed & Verified Placement Profile with {matchScore}% score</p>
                 </div>
               </div>
 
@@ -426,14 +636,14 @@ export default function JobDetailsPage() {
                 <button
                   type="button"
                   onClick={() => setApplyModalOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-[#E7E5E4] text-xs font-semibold text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA]"
+                  className="px-4 py-2 rounded-lg border border-[#E7E5E4] text-xs font-semibold text-[#78716C] hover:text-[#1C1917] hover:bg-[#F3EFEA] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-5 py-2 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 rounded-lg bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-[0_4px_12px_rgba(249,115,22,0.25)] transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {submitting ? 'Submitting...' : 'Submit 1-Click Application'}
                 </button>
@@ -446,7 +656,7 @@ export default function JobDetailsPage() {
       {/* AI RESUME CUSTOMIZER MODAL */}
       {resumeCustomizerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-[12px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
+          <div className="bg-white rounded-[14px] max-w-lg w-full p-6 shadow-[0_20px_48px_-8px_rgba(28,25,23,0.14)] border border-[#E7E5E4] space-y-4">
             <div className="flex items-center justify-between border-b border-[#E7E5E4] pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4] flex items-center justify-center">
@@ -459,7 +669,7 @@ export default function JobDetailsPage() {
               </div>
               <button 
                 onClick={() => setResumeCustomizerOpen(false)}
-                className="text-[#78716C] hover:text-[#1C1917] p-1"
+                className="text-[#78716C] hover:text-[#1C1917] p-1 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -492,7 +702,7 @@ export default function JobDetailsPage() {
                   setResumeCustomizerOpen(false);
                   setApplyModalOpen(true);
                 }}
-                className="w-full px-5 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all flex items-center justify-center gap-2"
+                className="w-full px-5 py-2.5 rounded-lg bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 Proceed to Apply With Tailored Profile →
               </button>
