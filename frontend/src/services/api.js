@@ -120,6 +120,17 @@ function getMockFallbackResponse(config) {
   // Applications
   if (url.includes('/applications')) {
     if (method === 'post') {
+      const savedUser = localStorage.getItem('jobhub_mock_user');
+      const user = savedUser ? JSON.parse(savedUser) : null;
+      const isComplete = user?.role === 'JOB_SEEKER' 
+        ? Boolean(user?.profile?.profile_completed && (user?.profile?.resume_url || user?.profile?.resume_filename))
+        : true;
+      if (!isComplete) {
+        return Promise.reject({
+          message: 'Please upload your resume and complete your profile setup before applying.',
+          status: 400,
+        });
+      }
       return { data: { status: 'success', message: 'Application submitted successfully (Demo Mode)' } };
     }
     return { data: MOCK_APPLICATIONS };
@@ -143,7 +154,24 @@ function getMockFallbackResponse(config) {
     const savedUser = localStorage.getItem('jobhub_mock_user');
     const user = savedUser ? JSON.parse(savedUser) : MOCK_USERS.JOB_SEEKER;
     const isRecruiter = user?.role === 'RECRUITER';
-    const notifs = isRecruiter ? MOCK_RECRUITER_NOTIFICATIONS : MOCK_JOB_SEEKER_NOTIFICATIONS;
+    let notifs = isRecruiter ? [...MOCK_RECRUITER_NOTIFICATIONS] : [...MOCK_JOB_SEEKER_NOTIFICATIONS];
+
+    // If seeker has not finished setup, prepend the mandatory setup notification
+    if (user?.role === 'JOB_SEEKER' && (!user.profile?.profile_completed || user.profile?.profile_completed === false)) {
+      notifs = [
+        {
+          id: 399,
+          type: 'ACTION_REQUIRED',
+          notification_type: 'ACTION_REQUIRED',
+          title: 'Complete Your Profile & Upload Resume',
+          message: 'Please complete your career profile setup and upload your resume to activate 4-factor AI job matching across Dhaka hubs.',
+          link: '/profile-setup',
+          is_read: false,
+          created_at: new Date().toISOString(),
+        },
+        ...notifs
+      ];
+    }
 
     if (url.includes('/unread-count')) {
       const count = notifs.filter((n) => !n.is_read).length;
@@ -180,12 +208,20 @@ function getMockFallbackResponse(config) {
 
   if (url.includes('/resume/parse-upload')) {
     const savedUser = localStorage.getItem('jobhub_mock_user');
+    let filename = 'Candidate_Resume.pdf';
+    if (config.data instanceof FormData) {
+      const file = config.data.get('file');
+      if (file && file.name) {
+        filename = file.name;
+      }
+    }
+    const resumeUrl = `/uploads/${filename}`;
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
         if (user.profile) {
-          user.profile.resume_url = '/uploads/sample_resume.pdf';
-          user.profile.resume_filename = 'Candidate_Resume.pdf';
+          user.profile.resume_url = resumeUrl;
+          user.profile.resume_filename = filename;
         }
         localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
       } catch (e) {
@@ -195,8 +231,8 @@ function getMockFallbackResponse(config) {
     return {
       data: {
         status: 'success',
-        filename: 'Candidate_Resume.pdf',
-        resume_url: '/uploads/sample_resume.pdf',
+        filename,
+        resume_url: resumeUrl,
         extracted_profile: {
           full_name: 'Sarah Rahman',
           headline: 'Full-Stack Software Engineer',
@@ -209,14 +245,29 @@ function getMockFallbackResponse(config) {
   }
 
   if (url.includes('/resume/confirm-profile')) {
+    let postData = {};
+    try {
+      postData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data || {};
+    } catch {
+      postData = {};
+    }
     const savedUser = localStorage.getItem('jobhub_mock_user');
     if (savedUser) {
       try {
         const user = JSON.parse(savedUser);
+        user.profile_completed = true;
         if (user.profile) {
           user.profile.profile_completed = true;
-          user.profile.resume_url = user.profile.resume_url || '/uploads/sample_resume.pdf';
+          user.profile.resume_url = user.profile.resume_url || '/uploads/Candidate_Resume.pdf';
           user.profile.resume_filename = user.profile.resume_filename || 'Candidate_Resume.pdf';
+          if (postData.full_name) user.profile.full_name = postData.full_name;
+          if (postData.headline) user.profile.headline = postData.headline;
+          if (postData.phone) user.profile.phone = postData.phone;
+          if (postData.skills) user.profile.skills = postData.skills;
+          if (postData.education) user.profile.education = postData.education;
+          if (postData.preferred_location_name) user.profile.preferred_location_name = postData.preferred_location_name;
+          if (postData.preferred_job_types) user.profile.preferred_job_types = postData.preferred_job_types;
+          if (postData.preferred_roles) user.profile.preferred_roles = postData.preferred_roles;
         }
         localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
       } catch (e) {
@@ -227,6 +278,7 @@ function getMockFallbackResponse(config) {
       data: {
         status: 'success',
         profile_completed: true,
+        new_matches_count: 5,
         message: 'Career profile confirmed, resume verified, and AI matching activated!'
       }
     };
