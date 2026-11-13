@@ -53,7 +53,43 @@ function getMockFallbackResponse(config) {
   }
 
   // Standard Login / Register
-  if (url.includes('/auth/login') || url.includes('/auth/register')) {
+  if (url.includes('/auth/register')) {
+    let postData = {};
+    try {
+      postData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data || {};
+    } catch {
+      postData = {};
+    }
+    const role = postData.role === 'RECRUITER' ? 'RECRUITER' : 'JOB_SEEKER';
+    const isSeeker = role === 'JOB_SEEKER';
+    const user = {
+      id: 999,
+      email: postData.email || 'newcandidate@jobhub.io',
+      role,
+      full_name: postData.full_name || 'New Candidate',
+      is_verified: true,
+      profile: isSeeker ? {
+        id: 999,
+        full_name: postData.full_name || 'New Candidate',
+        headline: 'Aspiring Professional',
+        profile_completed: false,
+        resume_url: null,
+        resume_filename: null,
+        skills: [],
+        education: [],
+        preferred_location_name: 'Dhaka, Bangladesh',
+      } : {
+        id: 998,
+        full_name: postData.full_name || 'New Recruiter',
+        company_name: postData.company_name || 'Tech Ventures',
+        profile_completed: true,
+      }
+    };
+    localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
+    return { data: { access_token: 'mock_token_register', user } };
+  }
+
+  if (url.includes('/auth/login')) {
     const user = MOCK_USERS.JOB_SEEKER;
     localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
     return { data: { access_token: 'mock_token_demo', user } };
@@ -125,6 +161,75 @@ function getMockFallbackResponse(config) {
       return { data: { status: 'success', id, is_read: true } };
     }
     return { data: notifs };
+  }
+
+  // Resume Endpoints
+  if (url.includes('/resume/status')) {
+    const savedUser = localStorage.getItem('jobhub_mock_user');
+    const user = savedUser ? JSON.parse(savedUser) : null;
+    const p = user?.profile;
+    return {
+      data: {
+        has_resume: Boolean(p?.resume_url || p?.resume_filename),
+        resume_url: p?.resume_url || null,
+        resume_filename: p?.resume_filename || null,
+        profile_completed: Boolean(p?.profile_completed)
+      }
+    };
+  }
+
+  if (url.includes('/resume/parse-upload')) {
+    const savedUser = localStorage.getItem('jobhub_mock_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        if (user.profile) {
+          user.profile.resume_url = '/uploads/sample_resume.pdf';
+          user.profile.resume_filename = 'Candidate_Resume.pdf';
+        }
+        localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {
+      data: {
+        status: 'success',
+        filename: 'Candidate_Resume.pdf',
+        resume_url: '/uploads/sample_resume.pdf',
+        extracted_profile: {
+          full_name: 'Sarah Rahman',
+          headline: 'Full-Stack Software Engineer',
+          skills: ['Python', 'FastAPI', 'React', 'PostgreSQL', 'Docker', 'Git'],
+          education: [{ degree: 'BSc in Software Engineering', university: 'Daffodil International University', graduation_year: 2026, cgpa: 3.82 }],
+          preferred_location_name: 'Savar, Dhaka'
+        }
+      }
+    };
+  }
+
+  if (url.includes('/resume/confirm-profile')) {
+    const savedUser = localStorage.getItem('jobhub_mock_user');
+    if (savedUser) {
+      try {
+        const user = JSON.parse(savedUser);
+        if (user.profile) {
+          user.profile.profile_completed = true;
+          user.profile.resume_url = user.profile.resume_url || '/uploads/sample_resume.pdf';
+          user.profile.resume_filename = user.profile.resume_filename || 'Candidate_Resume.pdf';
+        }
+        localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return {
+      data: {
+        status: 'success',
+        profile_completed: true,
+        message: 'Career profile confirmed, resume verified, and AI matching activated!'
+      }
+    };
   }
 
   // Messages & Chat

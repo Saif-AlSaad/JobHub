@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Navbar from './components/Navbar';
@@ -19,6 +19,7 @@ import ProfilePage from './pages/ProfilePage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PostJobPage from './pages/PostJobPage';
+import ProfileSetupPage from './pages/ProfileSetupPage';
 
 function RoleBasedHome() {
   const { user } = useAuth();
@@ -37,7 +38,8 @@ function RecruiterOnlyRoute({ children }) {
 }
 
 function ProtectedLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isProfileComplete } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -49,6 +51,19 @@ function ProtectedLayout({ children }) {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  const isSeeker = user.role === 'JOB_SEEKER';
+  const isIncompleteSeeker = isSeeker && !isProfileComplete;
+
+  // Mandatory Guard: If seeker has not completed profile setup and uploaded resume, restrict to /profile-setup
+  if (isIncompleteSeeker && location.pathname !== '/profile-setup') {
+    return <Navigate to="/profile-setup" replace />;
+  }
+
+  // If seeker already completed profile (or user is recruiter/admin), redirect away from /profile-setup
+  if (location.pathname === '/profile-setup' && (!isSeeker || isProfileComplete)) {
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -132,6 +147,15 @@ export default function App() {
               element={
                 <ProtectedLayout>
                   <NotificationsPage />
+                </ProtectedLayout>
+              }
+            />
+
+            <Route
+              path="/profile-setup"
+              element={
+                <ProtectedLayout>
+                  <ProfileSetupPage />
                 </ProtectedLayout>
               }
             />
