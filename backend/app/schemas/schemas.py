@@ -276,6 +276,8 @@ class ResumeExtractionReview(BaseModel):
     projects: List[Dict[str, Any]] = []
     certifications: List[Dict[str, Any]] = []
     preferred_location_name: Optional[str] = "Dhaka, Bangladesh"
+    preferred_job_types: Optional[List[str]] = ["Internship", "Full-time"]
+    preferred_roles: Optional[List[str]] = ["Software Engineer"]
 
 class JobExtractionReview(BaseModel):
     title: str
