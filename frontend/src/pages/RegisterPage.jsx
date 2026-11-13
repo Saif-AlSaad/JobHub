@@ -120,7 +120,11 @@ export default function RegisterPage() {
     setError('');
     try {
       await register(form);
-      navigate('/');
+      if (form.role === 'JOB_SEEKER') {
+        navigate('/profile-setup');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.message || 'Failed to create account. Please check your details.');
     } finally {

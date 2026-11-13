@@ -86,6 +86,7 @@ export default function Navbar() {
   if (role === 'RECRUITER') navItems = recruiterNav;
   if (role === 'ADMIN') navItems = adminNav;
 
+  const isIncompleteSeeker = role === 'JOB_SEEKER' && (!user?.profile || user.profile.profile_completed === false);
   const currentHub = user?.profile?.location_name || 'Savar Smart City';
   const currentRadius = user?.profile?.alert_radius_km || 5;
 
@@ -106,25 +107,32 @@ export default function Navbar() {
 
           {/* Top Horizontal Nav Links */}
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map((item) => {
-              const isActive = item.end 
-                ? location.pathname === item.to 
-                : location.pathname.startsWith(item.to) && (item.to !== '/' || location.pathname === '/');
-              return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.end}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${
-                    isActive
-                      ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold shadow-xs'
-                      : 'text-[#78716C] hover:text-[#0F766E] hover:bg-[#F3EFEA] font-medium'
-                  }`}
-                >
-                  {item.label}
-                </NavLink>
-              );
-            })}
+            {isIncompleteSeeker ? (
+              <span className="badge-pill bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A] text-xs font-bold inline-flex items-center gap-1.5 px-3 py-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Setup Required: Upload Resume & Review Profile
+              </span>
+            ) : (
+              navItems.map((item) => {
+                const isActive = item.end 
+                  ? location.pathname === item.to 
+                  : location.pathname.startsWith(item.to) && (item.to !== '/' || location.pathname === '/');
+                return (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    end={item.end}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${
+                      isActive
+                        ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold shadow-xs'
+                        : 'text-[#78716C] hover:text-[#0F766E] hover:bg-[#F3EFEA] font-medium'
+                    }`}
+                  >
+                    {item.label}
+                  </NavLink>
+                );
+              })
+            )}
           </nav>
         </div>
 
@@ -362,21 +370,27 @@ export default function Navbar() {
 
       {/* Mobile Horizontal Sub-Navigation */}
       <div className="md:hidden flex items-center gap-1.5 overflow-x-auto px-4 py-2 border-t border-[#E7E5E4] bg-[#FAF8F5]">
-        {navItems.map((item) => {
-          const isActive = item.end ? location.pathname === item.to : location.pathname.startsWith(item.to);
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
-                isActive ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold' : 'text-[#78716C] hover:text-[#0F766E]'
-              }`}
-            >
-              {item.label}
-            </NavLink>
-          );
-        })}
+        {isIncompleteSeeker ? (
+          <span className="text-xs font-bold text-[#D97706] px-2 py-1">
+            Setup in Progress: Complete profile & upload resume
+          </span>
+        ) : (
+          navItems.map((item) => {
+            const isActive = item.end ? location.pathname === item.to : location.pathname.startsWith(item.to);
+            return (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
+                  isActive ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold' : 'text-[#78716C] hover:text-[#0F766E]'
+                }`}
+              >
+                {item.label}
+              </NavLink>
+            );
+          })
+        )}
       </div>
     </header>
   );
