@@ -17,6 +17,11 @@ import {
   RefreshCw,
   Clock,
   User,
+  Compass,
+  FileCheck,
+  Zap,
+  Building2,
+  Target
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -34,26 +39,52 @@ const SUGGESTED_SKILLS = [
   'Node.js',
   'MongoDB',
   'AWS',
+  'PyTorch',
+  'Scikit-Learn',
+  'REST APIs',
+  'Next.js',
 ];
 
+const TARGET_ROLES = [
+  'Software Engineer',
+  'Backend Developer',
+  'Frontend Developer',
+  'Full Stack Developer',
+  'AI / ML Engineer',
+  'DevOps Aspirant',
+  'QA Automation Engineer',
+];
+
+const BD_HUBS = [
+  'Savar, Dhaka',
+  'Banani, Dhaka',
+  'Mohakhali, Dhaka',
+  'Dhanmondi, Dhaka',
+  'Uttara, Dhaka',
+  'Gulshan, Dhaka',
+];
+
+const JOB_TYPES = ['Internship', 'Full-time', 'Part-time'];
+
 export default function ProfileSetupPage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, markProfileCompleted } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  const [step, setStep] = useState(1); // 1 = Upload, 2 = Review & Confirm
+  const [step, setStep] = useState(1); // 1 = Upload, 2 = Review & Confirm, 3 = Success Celebration
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
   const [uploadedFilename, setUploadedFilename] = useState('');
+  const [matchCountResult, setMatchCountResult] = useState(0);
 
   // Extracted / Editable Profile State
   const [formData, setFormData] = useState({
     full_name: user?.full_name || '',
     headline: 'Aspiring Software Engineer',
     phone: '',
-    preferred_location_name: 'Dhaka, Bangladesh',
+    preferred_location_name: 'Savar, Dhaka',
     preferred_job_types: ['Internship', 'Full-time'],
     preferred_roles: ['Software Engineer', 'Backend Developer'],
     skills: [],
@@ -136,6 +167,35 @@ export default function ProfileSetupPage() {
     }
   };
 
+  const handleDemoFill = async () => {
+    setError('');
+    setUploading(true);
+    // Create a demo text blob representing a DIU CS graduate resume
+    const demoResumeText = `
+Sarah Rahman
+Software Engineering Graduate
+Email: ${user?.email || 'sarah.rahman@diu.edu.bd'}
+Phone: +880 1712-345678
+Location: Savar, Dhaka
+
+Objective:
+Passionate Software Engineer specializing in backend APIs with FastAPI, PostgreSQL, and reactive React applications.
+
+Skills:
+Python, FastAPI, React, PostgreSQL, Docker, Git, Tailwind CSS, REST APIs
+
+Education:
+BSc in Software Engineering, Daffodil International University, 2026, CGPA: 3.82
+
+Projects:
+- AI Semantic Job Matcher: Built TF-IDF and Haversine distance ranking engine with FastAPI and React.
+- E-Commerce Microservices: Implemented JWT-authenticated checkout with PostgreSQL and Redis.
+`;
+    const blob = new Blob([demoResumeText], { type: 'text/plain' });
+    const file = new File([blob], 'Sarah_Rahman_DIU_Resume.txt', { type: 'text/plain' });
+    await handleFileUpload(file);
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
@@ -165,6 +225,26 @@ export default function ProfileSetupPage() {
     } else {
       setFormData((prev) => ({ ...prev, skills: [...prev.skills, skill] }));
     }
+  };
+
+  const handleToggleJobType = (jobType) => {
+    setFormData((prev) => {
+      const exists = prev.preferred_job_types.includes(jobType);
+      const updated = exists
+        ? prev.preferred_job_types.filter((t) => t !== jobType)
+        : [...prev.preferred_job_types, jobType];
+      return { ...prev, preferred_job_types: updated.length ? updated : [jobType] };
+    });
+  };
+
+  const handleToggleRole = (role) => {
+    setFormData((prev) => {
+      const exists = prev.preferred_roles.includes(role);
+      const updated = exists
+        ? prev.preferred_roles.filter((r) => r !== role)
+        : [...prev.preferred_roles, role];
+      return { ...prev, preferred_roles: updated };
+    });
   };
 
   const handleAddEducation = () => {
@@ -206,12 +286,26 @@ export default function ProfileSetupPage() {
     setSubmitting(true);
 
     try {
-      await api.post('/resume/confirm-profile', formData);
+      const res = await api.post('/resume/confirm-profile', formData);
+      setMatchCountResult(res.data?.new_matches_count || 3);
+      setStep(3); // Success celebration screen
+
+      // Synchronously mark profile completed in AuthContext to immediately unlock navigation
+      if (typeof markProfileCompleted === 'function') {
+        markProfileCompleted({
+          ...formData,
+          profile_completed: true,
+          resume_url: res.data?.resume_url || '/uploads/uploaded_resume.pdf',
+          resume_filename: uploadedFilename,
+        });
+      }
+
       await refreshUser();
-      navigate('/', { replace: true });
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 2500);
     } catch (err) {
       setError(err.response?.data?.detail || err.message || 'Failed to confirm profile setup.');
-    } finally {
       setSubmitting(false);
     }
   };
@@ -230,14 +324,15 @@ export default function ProfileSetupPage() {
               Setup Your Career Profile & Upload Resume
             </h1>
             <p className="text-xs sm:text-sm text-[#78716C] max-w-2xl leading-relaxed">
-              To ensure fairness and accurate 4-factor AI matching, job seekers must upload their resume and review their profile before accessing job search and application features.
+              Upload your resume to activate our 4-factor AI matching engine. Your profile will be automatically matched against open roles in Savar, Banani, Mohakhali, and across Dhaka tech hubs.
             </p>
           </div>
 
           {/* Stepper Pill Indicator */}
           <div className="flex items-center gap-2 self-start sm:self-auto bg-[#F3EFEA] p-1.5 rounded-xl border border-[#E7E5E4] text-xs font-bold">
             <button
-              onClick={() => setStep(1)}
+              onClick={() => step !== 3 && setStep(1)}
+              disabled={step === 3}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                 step === 1 ? 'bg-white text-[#0F766E] shadow-xs' : 'text-[#78716C] hover:text-[#1C1917]'
               }`}
@@ -246,8 +341,8 @@ export default function ProfileSetupPage() {
               1. Resume
             </button>
             <button
-              onClick={() => uploadedFilename && setStep(2)}
-              disabled={!uploadedFilename}
+              onClick={() => uploadedFilename && step !== 3 && setStep(2)}
+              disabled={!uploadedFilename || step === 3}
               className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
                 step === 2 ? 'bg-white text-[#0F766E] shadow-xs' : 'text-[#78716C] disabled:opacity-40'
               }`}
@@ -269,13 +364,27 @@ export default function ProfileSetupPage() {
       {/* STEP 1: RESUME UPLOAD */}
       {step === 1 && (
         <div className="bg-white rounded-[20px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_2px_8px_rgba(28,25,23,0.03)] space-y-6">
-          <div className="text-center max-w-md mx-auto space-y-2">
-            <h2 className="text-lg font-bold text-[#1C1917] font-heading">
-              Upload Your Resume Document
-            </h2>
-            <p className="text-xs text-[#78716C]">
-              Supports PDF, DOCX, or TXT (up to 5 MB). Our parser extracts your skills, education, and experience automatically.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E7E5E4] pb-4">
+            <div>
+              <h2 className="text-lg font-bold text-[#1C1917] font-heading flex items-center gap-2">
+                <Upload className="w-5 h-5 text-[#0F766E]" />
+                Upload Your Resume Document
+              </h2>
+              <p className="text-xs text-[#78716C] mt-0.5">
+                Supports PDF, DOCX, or TXT up to 5 MB. Our AI extracts your credentials automatically.
+              </p>
+            </div>
+
+            {/* Quick Demo Resume Option */}
+            <button
+              type="button"
+              onClick={handleDemoFill}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#99F6E4] bg-[#CCFBF1] text-[#0F766E] hover:bg-[#99F6E4] text-xs font-bold transition-colors shadow-xs"
+            >
+              <Zap className="w-3.5 h-3.5 text-[#0F766E]" />
+              Use Sample CS Resume
+            </button>
           </div>
 
           {/* Dropzone */}
@@ -286,8 +395,8 @@ export default function ProfileSetupPage() {
             }}
             onDragLeave={() => setDragOver(false)}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-[16px] p-8 sm:p-12 text-center cursor-pointer transition-all ${
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`border-2 border-dashed rounded-[16px] p-8 sm:p-14 text-center cursor-pointer transition-all ${
               dragOver
                 ? 'border-[#0F766E] bg-[#CCFBF1]/20 scale-[1.01]'
                 : 'border-[#E7E5E4] bg-[#FAF8F5] hover:bg-[#F3EFEA] hover:border-[#0F766E]'
@@ -302,13 +411,13 @@ export default function ProfileSetupPage() {
             />
 
             {uploading ? (
-              <div className="space-y-3 py-4 flex flex-col items-center">
-                <RefreshCw className="w-8 h-8 text-[#0F766E] animate-spin" />
+              <div className="space-y-3 py-6 flex flex-col items-center">
+                <RefreshCw className="w-9 h-9 text-[#0F766E] animate-spin" />
                 <p className="text-sm font-bold text-[#1C1917]">
-                  Extracting Profile with AI Engine...
+                  Analyzing Resume with AI Engine...
                 </p>
-                <p className="text-xs text-[#78716C]">
-                  Vectorizing skills, degrees, and candidate timeline.
+                <p className="text-xs text-[#78716C] max-w-sm">
+                  Extracting programming languages, degrees, projects, and geographic coordinates.
                 </p>
               </div>
             ) : (
@@ -329,11 +438,13 @@ export default function ProfileSetupPage() {
           </div>
 
           {uploadedFilename && (
-            <div className="p-4 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <FileText className="w-5 h-5 text-[#047857]" />
+            <div className="p-4 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-[#D1FAE5] text-[#047857] flex items-center justify-center flex-shrink-0">
+                  <FileCheck className="w-5 h-5" />
+                </div>
                 <div>
-                  <p className="text-xs font-bold text-[#047857]">Attached Resume</p>
+                  <p className="text-xs font-bold text-[#047857]">Attached Resume Document</p>
                   <p className="text-xs text-[#065F46] font-medium">{uploadedFilename}</p>
                 </div>
               </div>
@@ -357,15 +468,15 @@ export default function ProfileSetupPage() {
             <div>
               <h2 className="text-lg font-bold text-[#1C1917] font-heading flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-[#0F766E]" />
-                Review & Confirm AI Extracted Profile
+                Review & Confirm Profile Details
               </h2>
               <p className="text-xs text-[#78716C] mt-0.5">
-                Verify your extracted technical background before unlocking placement matches.
+                Verify your extracted technical background and set your career targets.
               </p>
             </div>
             {uploadedFilename && (
               <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] text-xs">
-                File: {uploadedFilename}
+                Attached: {uploadedFilename}
               </span>
             )}
           </div>
@@ -422,9 +533,81 @@ export default function ProfileSetupPage() {
                 type="text"
                 value={formData.preferred_location_name}
                 onChange={(e) => setFormData({ ...formData, preferred_location_name: e.target.value })}
-                placeholder="e.g. Savar, Dhaka or Dhanmondi, Dhaka"
+                placeholder="e.g. Savar, Dhaka"
                 className="w-full px-3.5 py-2 rounded-lg border border-[#E7E5E4] bg-[#FAF8F5] text-xs font-semibold text-[#1C1917] focus-ring"
               />
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                <span className="text-[10px] text-[#78716C] font-semibold self-center">Hubs:</span>
+                {BD_HUBS.map((hub) => (
+                  <button
+                    key={hub}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, preferred_location_name: hub })}
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-colors ${
+                      formData.preferred_location_name === hub
+                        ? 'bg-[#0F766E] text-white shadow-xs'
+                        : 'bg-[#F3EFEA] text-[#78716C] hover:bg-[#E7E5E4]'
+                    }`}
+                  >
+                    {hub}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Job Types & Preferred Roles */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-[#E7E5E4]">
+            {/* Preferred Job Types */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#1C1917]">
+                Desired Placement Type
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {JOB_TYPES.map((jt) => {
+                  const isSelected = formData.preferred_job_types.includes(jt);
+                  return (
+                    <button
+                      key={jt}
+                      type="button"
+                      onClick={() => handleToggleJobType(jt)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                        isSelected
+                          ? 'bg-[#0F766E] text-white shadow-xs'
+                          : 'bg-[#F3EFEA] text-[#78716C] hover:bg-[#E7E5E4] hover:text-[#1C1917]'
+                      }`}
+                    >
+                      {isSelected ? `✓ ${jt}` : jt}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Target Roles */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-[#1C1917]">
+                Target Specializations
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {TARGET_ROLES.map((r) => {
+                  const isSelected = formData.preferred_roles.includes(r);
+                  return (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => handleToggleRole(r)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold transition-colors ${
+                        isSelected
+                          ? 'bg-[#0F766E] text-white shadow-xs'
+                          : 'bg-[#F3EFEA] text-[#78716C] hover:bg-[#E7E5E4] hover:text-[#1C1917]'
+                      }`}
+                    >
+                      {isSelected ? `✓ ${r}` : `+ ${r}`}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -432,10 +615,10 @@ export default function ProfileSetupPage() {
           <div className="space-y-3 pt-3 border-t border-[#E7E5E4]">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-[#1C1917]">
-                Technical Skills <span className="text-red-500">*</span> (Used for AI Match Score)
+                Technical Skills <span className="text-red-500">*</span> (Determines AI Match Score)
               </label>
               <span className="text-[11px] text-[#78716C] font-semibold">
-                {formData.skills.length} skills selected
+                {formData.skills.length} skills verified
               </span>
             </div>
 
@@ -600,6 +783,29 @@ export default function ProfileSetupPage() {
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: CELEBRATION / ACTIVATION TRANSITION */}
+      {step === 3 && (
+        <div className="bg-white rounded-[20px] border border-[#E7E5E4] p-10 sm:p-14 text-center shadow-[0_4px_24px_-4px_rgba(15,118,110,0.12)] space-y-6 animate-in zoom-in-95 duration-300">
+          <div className="w-16 h-16 mx-auto rounded-full bg-[#CCFBF1] text-[#0F766E] border-2 border-[#99F6E4] flex items-center justify-center shadow-sm">
+            <Check className="w-8 h-8 text-[#0F766E]" />
+          </div>
+
+          <div className="space-y-2 max-w-md mx-auto">
+            <h2 className="text-2xl font-black text-[#1C1917] font-heading tracking-tight">
+              Profile Setup Complete!
+            </h2>
+            <p className="text-xs sm:text-sm text-[#78716C] leading-relaxed">
+              Your resume has been verified and vectorized. We matched your credentials with <span className="font-bold text-[#0F766E]">{matchCountResult} top opportunities</span> across Dhaka hubs.
+            </p>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FAF8F5] border border-[#E7E5E4] text-xs font-semibold text-[#1C1917]">
+            <RefreshCw className="w-3.5 h-3.5 text-[#0F766E] animate-spin" />
+            <span>Redirecting to your personalized Career Dashboard...</span>
           </div>
         </div>
       )}

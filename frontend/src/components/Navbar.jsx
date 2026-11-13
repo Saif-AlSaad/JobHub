@@ -15,7 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
 export default function Navbar() {
-  const { user, logout, demoLogin } = useAuth();
+  const { user, logout, demoLogin, isProfileComplete } = useAuth();
   const { unreadCount, notifications, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
@@ -86,7 +86,7 @@ export default function Navbar() {
   if (role === 'RECRUITER') navItems = recruiterNav;
   if (role === 'ADMIN') navItems = adminNav;
 
-  const isIncompleteSeeker = role === 'JOB_SEEKER' && (!user?.profile || user.profile.profile_completed === false);
+  const isIncompleteSeeker = role === 'JOB_SEEKER' && !isProfileComplete;
   const currentHub = user?.profile?.location_name || 'Savar Smart City';
   const currentRadius = user?.profile?.alert_radius_km || 5;
 

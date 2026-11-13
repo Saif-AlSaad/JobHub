@@ -38,7 +38,7 @@ function RecruiterOnlyRoute({ children }) {
 }
 
 function ProtectedLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isProfileComplete } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -54,7 +54,7 @@ function ProtectedLayout({ children }) {
   }
 
   const isSeeker = user.role === 'JOB_SEEKER';
-  const isIncompleteSeeker = isSeeker && (!user.profile || user.profile.profile_completed === false);
+  const isIncompleteSeeker = isSeeker && !isProfileComplete;
 
   // Mandatory Guard: If seeker has not completed profile setup and uploaded resume, restrict to /profile-setup
   if (isIncompleteSeeker && location.pathname !== '/profile-setup') {
@@ -62,7 +62,7 @@ function ProtectedLayout({ children }) {
   }
 
   // If seeker already completed profile (or user is recruiter/admin), redirect away from /profile-setup
-  if (location.pathname === '/profile-setup' && (!isSeeker || (user.profile && user.profile.profile_completed))) {
+  if (location.pathname === '/profile-setup' && (!isSeeker || isProfileComplete)) {
     return <Navigate to="/" replace />;
   }
 
