@@ -27,6 +27,13 @@ def submit_application(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
+    # Guard: Candidate must have finished profile setup and uploaded a resume
+    if not seeker.profile_completed or not seeker.resume_url:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You must complete your career profile and upload your resume before submitting applications."
+        )
+
     # Check for existing application
     existing = db.query(Application).filter(
         Application.job_id == job.id,
