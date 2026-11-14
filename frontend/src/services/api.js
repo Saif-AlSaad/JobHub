@@ -194,7 +194,7 @@ function getMockFallbackResponse(config) {
     };
   }
 
-  if (url.includes('/resume/parse-upload')) {
+  if (url.includes('/resume/upload') || url.includes('/resume/parse-upload')) {
     const savedUser = localStorage.getItem('jobhub_mock_user');
     let filename = 'Candidate_Resume.pdf';
     if (config.data instanceof FormData) {

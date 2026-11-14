@@ -121,7 +121,7 @@ export default function RegisterPage() {
     try {
       await register(form);
       if (form.role === 'JOB_SEEKER') {
-        navigate('/profile-setup');
+        navigate('/resume-upload');
       } else {
         navigate('/');
       }

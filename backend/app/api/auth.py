@@ -79,8 +79,8 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             user_id=user.id,
             notification_type=NotificationType.PROFILE_REMINDER,
             title="Complete Your Profile & Upload Resume",
-            message="Welcome to JobHub! Complete your profile setup and upload your resume to unlock AI job matching.",
-            link="/profile-setup"
+            message="Welcome to JobHub! Please upload your resume and complete your profile setup to unlock AI job matching.",
+            link="/resume-upload"
         )
     elif role == UserRole.RECRUITER:
         company_name = user_in.company_name or "Tech Ventures BD"
