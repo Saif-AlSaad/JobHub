@@ -234,11 +234,11 @@ function getMockFallbackResponse(config) {
         filename,
         resume_url: resumeUrl,
         extracted_profile: {
-          full_name: 'Sarah Rahman',
-          headline: 'Full-Stack Software Engineer',
-          skills: ['Python', 'FastAPI', 'React', 'PostgreSQL', 'Docker', 'Git'],
-          education: [{ degree: 'BSc in Software Engineering', university: 'Daffodil International University', graduation_year: 2026, cgpa: 3.82 }],
-          preferred_location_name: 'Savar, Dhaka'
+          full_name: '',
+          headline: '',
+          skills: [],
+          education: [],
+          preferred_location_name: ''
         }
       }
     };
