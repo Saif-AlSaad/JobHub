@@ -27,6 +27,48 @@ def get_resume_status(seeker: JobSeekerProfile = Depends(get_current_seeker)):
         "profile_completed": bool(seeker.profile_completed)
     }
 
+@router.post("/upload")
+async def upload_resume(
+    file: UploadFile = File(...),
+    seeker: JobSeekerProfile = Depends(get_current_seeker),
+    db: Session = Depends(get_db)
+):
+    """
+    Dedicated resume upload: stores the candidate's resume file securely.
+    Does NOT auto-fill profile details; candidate fills their details in Step 2.
+    """
+    filename = file.filename
+    lower_name = filename.lower()
+    if not (lower_name.endswith(".pdf") or lower_name.endswith(".docx") or lower_name.endswith(".txt")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Unsupported format. Only PDF, DOCX, or TXT files up to 5MB are permitted."
+        )
+
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File size exceeds maximum limit of 5 MB."
+        )
+
+    # Save physical file securely
+    save_path = os.path.join(UPLOAD_DIR, f"seeker_{seeker.id}_{filename}")
+    with open(save_path, "wb") as f:
+        f.write(content)
+
+    seeker.resume_filename = filename
+    seeker.resume_url = f"/uploads/seeker_{seeker.id}_{filename}"
+    db.commit()
+    db.refresh(seeker)
+
+    return {
+        "status": "success",
+        "message": "Resume uploaded successfully.",
+        "filename": filename,
+        "resume_url": seeker.resume_url
+    }
+
 @router.post("/parse-upload")
 async def upload_and_parse_resume(
     file: UploadFile = File(...),
