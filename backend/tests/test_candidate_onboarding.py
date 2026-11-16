@@ -92,3 +92,20 @@ def test_recruiter_restricted_from_seeker_resume_endpoints():
     # Recruiter should receive 403 Forbidden on seeker-only resume status
     res = client.get("/api/v1/resume/status", headers=headers)
     assert res.status_code == 403
+
+def test_recruiter_upload_company_logo():
+    login_res = client.post("/api/v1/auth/demo-login/recruiter")
+    assert login_res.status_code == 200
+    token = login_res.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+
+    sample_logo = b"\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15c4\x00\x00\x00\nIDATx\x9cc\x00\x01\x00\x00\x05\x00\x01\r\n-\xb4\x00\x00\x00\x00IEND\xaeB`\x82"
+    file_payload = {
+        "file": ("enterprise_logo.png", io.BytesIO(sample_logo), "image/png")
+    }
+    res = client.post("/api/v1/recruiter/upload-logo", files=file_payload, headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "success"
+    assert "logo_url" in data
+    assert "storage_provider" in data

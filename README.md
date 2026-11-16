@@ -39,6 +39,7 @@
 - [🛠️ Tech Stack & Architecture](#-tech-stack--architecture)
 - [🔌 API Endpoints & Documentation](#-api-endpoints--documentation)
 - [⚙️ Configuration & Environment Variables](#-configuration--environment-variables)
+- [⚡ Supabase Integration & Setup Guide (PostgreSQL, Auth & Storage)](#-supabase-integration--setup-guide-postgresql-auth--storage)
 - [🌱 Database Reseeding](#-database-reseeding)
 
 ---
@@ -391,14 +392,80 @@ Environment variables can be customized in `.env` (or `backend/.env`):
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `sqlite:///./job_hub.db` | Database connection string (SQLite or PostgreSQL) |
-| `JWT_SECRET` | `super-secret-key-job-hub-prototype-2026-secure-jwt` | Secret key for signing JWT tokens |
+| `DATABASE_URL` | `sqlite:///./job_hub.db` | Database connection string (SQLite fallback or Supabase PostgreSQL Pooler URI) |
+| `SUPABASE_URL` | `""` | Supabase Project API URL (e.g. `https://xyz.supabase.co`) |
+| `SUPABASE_ANON_KEY` | `""` | Supabase Public / Anon API Key |
+| `SUPABASE_SERVICE_ROLE_KEY` | `""` | Supabase Service Role Key (for admin storage management) |
+| `SUPABASE_JWT_SECRET` | `""` | Supabase JWT Secret for server-side token validation |
+| `SUPABASE_RESUMES_BUCKET` | `"resumes"` | Supabase Storage bucket for candidate CVs |
+| `SUPABASE_LOGOS_BUCKET` | `"company-logos"` | Supabase Storage bucket for recruiter brand logos |
+| `JWT_SECRET` | `super-secret-key-job-hub-prototype-2026-secure-jwt` | Secret key for signing local demo JWT tokens |
 | `FRONTEND_URL` | `http://localhost:5173` | Allowed CORS origin for web client |
 | `GEMINI_API_KEY` | `""` | Optional Google Gemini API key for advanced AI features |
 | `WEIGHT_SEMANTIC`| `0.40` | AI match weight for TF-IDF semantic description similarity |
 | `WEIGHT_SKILL` | `0.30` | AI match weight for required & preferred skills overlap |
 | `WEIGHT_EXP_EDU` | `0.15` | AI match weight for education and experience level |
 | `WEIGHT_LOCATION`| `0.15` | AI match weight for geographic proximity |
+
+For the frontend (Vite), configure in `frontend/.env`:
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `VITE_API_BASE_URL` | `http://localhost:8000/api/v1` | Backend FastAPI endpoint |
+| `VITE_SUPABASE_URL` | `""` | Supabase Project API URL |
+| `VITE_SUPABASE_ANON_KEY` | `""` | Supabase Public / Anon API Key |
+
+---
+
+## ⚡ Supabase Integration & Setup Guide (PostgreSQL, Auth & Storage)
+
+JobHub features built-in **Dual-Mode Architecture**: it runs with zero configuration on local SQLite and local storage when offline or for local demonstrations, and automatically transitions to **Supabase Cloud** when environment credentials are provided.
+
+### Step 1: Create Your Supabase Project
+1. Log in to [Supabase](https://supabase.com) and click **"New Project"**.
+2. Give your project a name (e.g. `JobHub-Platform`) and set a strong database password. Choose your closest region (e.g., *Singapore* or *Mumbai*).
+
+### Step 2: Retrieve Connection Details from Supabase Dashboard
+1. **Database URI (Transaction Pooler):**
+   - Go to **Project Settings** > **Database** > **Connection Pooling**.
+   - Copy the URI (Port `6543`) with `sslmode=require`:
+     ```text
+     postgresql://postgres.[PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require
+     ```
+2. **API Keys & Secret:**
+   - Go to **Project Settings** > **API**.
+   - Copy **Project URL** (`SUPABASE_URL`), **Project API Keys (anon public)** (`SUPABASE_ANON_KEY`), **service_role secret** (`SUPABASE_SERVICE_ROLE_KEY`), and **JWT Secret** (`SUPABASE_JWT_SECRET`).
+
+### Step 3: Create Storage Buckets
+In the Supabase Dashboard, go to **Storage** and create two buckets:
+1. `resumes` — Private bucket (candidate CVs are accessed via 7-day signed secure URLs).
+2. `company-logos` — Public bucket (allows public viewing of company logos on job cards).
+
+### Step 4: Populate Environment Files
+Update `.env` (or `backend/.env`):
+```ini
+DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require"
+SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+SUPABASE_ANON_KEY="your-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_JWT_SECRET="your-jwt-secret"
+```
+
+Update `frontend/.env`:
+```ini
+VITE_API_BASE_URL="http://localhost:8000/api/v1"
+VITE_SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+VITE_SUPABASE_ANON_KEY="your-anon-key"
+```
+
+### Step 5: Migrate Schema & Seed Initial Data
+Run the automated schema generator and seed tool:
+```powershell
+cd backend
+.\venv\Scripts\activate
+python migrate_to_supabase.py --seed
+```
+This generates all 12 relational tables with foreign keys and indexes on your Supabase PostgreSQL instance, verifies the connection, and seeds initial companies, jobs, seekers, and match data.
 
 ---
 

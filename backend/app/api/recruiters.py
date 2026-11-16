@@ -1,10 +1,11 @@
 import json
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import RecruiterProfile, Job, Application, Company, JobSeekerProfile
 from app.auth.deps import get_current_recruiter
 from app.schemas.schemas import RecruiterProfileUpdate
+from app.services.storage_service import storage_service
 
 router = APIRouter(prefix="/recruiter", tags=["Recruiter"])
 
@@ -158,3 +159,35 @@ def update_recruiter_profile(
     db.commit()
     db.refresh(recruiter)
     return {"status": "success", "message": "Recruiter profile updated successfully"}
+
+@router.post("/upload-logo")
+async def upload_company_logo(
+    file: UploadFile = File(...),
+    recruiter: RecruiterProfile = Depends(get_current_recruiter),
+    db: Session = Depends(get_db)
+):
+    """
+    Uploads company logo via unified StorageService (Supabase Storage 'company-logos' bucket or local fallback).
+    """
+    company = recruiter.company
+    if not company:
+        company = Company(name=f"{recruiter.full_name}'s Enterprise", is_verified=True)
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+        recruiter.company_id = company.id
+
+    content = await file.read()
+    if len(content) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Logo file size exceeds 5 MB limit.")
+
+    upload_res = storage_service.upload_logo(content, file.filename, company.id)
+    company.logo_url = upload_res["file_url"]
+    db.commit()
+    db.refresh(company)
+
+    return {
+        "status": "success",
+        "logo_url": company.logo_url,
+        "storage_provider": upload_res.get("provider", "local")
+    }

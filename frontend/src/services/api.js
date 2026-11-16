@@ -280,6 +280,16 @@ function getMockFallbackResponse(config) {
     };
   }
 
+  if (url.includes('/recruiter/upload-logo')) {
+    let filename = 'company_logo.png';
+    if (config.data instanceof FormData) {
+      const file = config.data.get('file');
+      if (file && file.name) filename = file.name;
+    }
+    const logoUrl = `/uploads/${filename}`;
+    return { data: { status: 'success', logo_url: logoUrl, storage_provider: 'mock' } };
+  }
+
   if (url.includes('/resume/confirm-profile')) {
     let postData = {};
     try {
