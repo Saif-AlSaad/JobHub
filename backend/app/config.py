@@ -11,8 +11,14 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days for dev/prototype convenience
     
-    # Database (Default to SQLite for effortless zero-config run, or PostgreSQL via env)
+    # Database (Default to SQLite for zero-config local run, or Supabase PostgreSQL via env)
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./job_hub.db")
+    
+    # Supabase Cloud Integration
+    SUPABASE_URL: str = os.getenv("SUPABASE_URL", "")
+    SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
+    SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+    SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
     
     # AI / LLM Keys (Supports Google Gemini or local deterministic fallback)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")

@@ -34,10 +34,11 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    supabase_uid = Column(String(64), unique=True, index=True, nullable=True)  # Bridges Supabase Auth UUID
     email = Column(String(255), unique=True, index=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # Nullable for OAuth/Supabase Auth users
     role = Column(String(50), default=UserRole.JOB_SEEKER, nullable=False)
-    is_verified = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)  # False until email is verified
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
