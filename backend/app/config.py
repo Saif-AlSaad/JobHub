@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: str = os.getenv("SUPABASE_ANON_KEY", "")
     SUPABASE_SERVICE_ROLE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
     SUPABASE_JWT_SECRET: str = os.getenv("SUPABASE_JWT_SECRET", "")
+    SUPABASE_RESUMES_BUCKET: str = os.getenv("SUPABASE_RESUMES_BUCKET", "resumes")
+    SUPABASE_LOGOS_BUCKET: str = os.getenv("SUPABASE_LOGOS_BUCKET", "company-logos")
     
     # AI / LLM Keys (Supports Google Gemini or local deterministic fallback)
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")

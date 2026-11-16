@@ -24,6 +24,13 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class SupabaseSyncRequest(BaseModel):
+    supabase_uid: str
+    email: str
+    role: Optional[str] = "JOB_SEEKER"
+    full_name: Optional[str] = None
+    company_name: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     email: str

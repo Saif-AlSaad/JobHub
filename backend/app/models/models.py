@@ -29,6 +29,7 @@ class NotificationType(str):
     HIRED = "HIRED"
     MESSAGE = "MESSAGE"
     PROFILE_REMINDER = "PROFILE_REMINDER"
+    SYSTEM = "SYSTEM"
 
 class User(Base):
     __tablename__ = "users"

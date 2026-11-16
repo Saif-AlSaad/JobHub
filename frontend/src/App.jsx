@@ -22,6 +22,7 @@ import PostJobPage from './pages/PostJobPage';
 import ProfileSetupPage from './pages/ProfileSetupPage';
 import ResumeUploadPage from './pages/ResumeUploadPage';
 import UpdateProfilePage from './pages/UpdateProfilePage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 function RoleBasedHome() {
   const { user } = useAuth();
@@ -94,6 +95,7 @@ export default function App() {
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
 
             {/* Protected Routes */}
             <Route
