@@ -9,6 +9,7 @@ from app.ai.resume_parser import extract_text_from_file, parse_resume_to_profile
 from app.schemas.schemas import ResumeExtractionReview
 from app.services.location_service import get_coordinates_for_location
 from app.services.notification_service import evaluate_matches_for_new_seeker, create_notification
+from app.services.storage_service import storage_service
 
 router = APIRouter(prefix="/resume", tags=["AI Resume"])
 
@@ -52,13 +53,11 @@ async def upload_resume(
             detail="File size exceeds maximum limit of 5 MB."
         )
 
-    # Save physical file securely
-    save_path = os.path.join(UPLOAD_DIR, f"seeker_{seeker.id}_{filename}")
-    with open(save_path, "wb") as f:
-        f.write(content)
+    # Save file via unified storage service (Supabase Storage 'resumes' bucket with local fallback)
+    upload_res = storage_service.upload_resume(content, filename, seeker.id)
 
     seeker.resume_filename = filename
-    seeker.resume_url = f"/uploads/seeker_{seeker.id}_{filename}"
+    seeker.resume_url = upload_res["file_url"]
     db.commit()
     db.refresh(seeker)
 
@@ -66,7 +65,8 @@ async def upload_resume(
         "status": "success",
         "message": "Resume uploaded successfully.",
         "filename": filename,
-        "resume_url": seeker.resume_url
+        "resume_url": seeker.resume_url,
+        "storage_provider": upload_res.get("provider", "local")
     }
 
 @router.post("/parse-upload")
@@ -94,10 +94,8 @@ async def upload_and_parse_resume(
             detail="File size exceeds maximum limit of 5 MB."
         )
 
-    # Save physical file securely
-    save_path = os.path.join(UPLOAD_DIR, f"seeker_{seeker.id}_{filename}")
-    with open(save_path, "wb") as f:
-        f.write(content)
+    # Save file via unified storage service (Supabase Storage 'resumes' bucket with local fallback)
+    upload_res = storage_service.upload_resume(content, filename, seeker.id)
 
     # Extract text
     raw_text = extract_text_from_file(content, filename)
@@ -113,7 +111,7 @@ async def upload_and_parse_resume(
     # Securely store raw text and file reference in database
     seeker.resume_raw_text = raw_text[:8000]
     seeker.resume_filename = filename
-    seeker.resume_url = f"/uploads/seeker_{seeker.id}_{filename}"
+    seeker.resume_url = upload_res["file_url"]
     db.commit()
     db.refresh(seeker)
 
@@ -122,6 +120,7 @@ async def upload_and_parse_resume(
         "message": "AI successfully extracted your profile from the resume.",
         "filename": filename,
         "resume_url": seeker.resume_url,
+        "storage_provider": upload_res.get("provider", "local"),
         "extracted_profile": extracted_data
     }
 
