@@ -21,7 +21,8 @@ import {
   HelpCircle,
   Building2,
   Clock,
-  Award
+  Award,
+  ExternalLink
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -375,6 +376,17 @@ export default function UpdateProfilePage() {
               <span className="badge-pill bg-[#ECFDF5] text-[#047857] border-[#A7F3D0] text-[10px] font-bold">
                 ✓ Uploaded
               </span>
+              {resumeInfo.url && (
+                <a
+                  href={resumeInfo.url.startsWith('http') ? resumeInfo.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${resumeInfo.url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] text-[#0F766E] underline inline-flex items-center gap-0.5 font-semibold ml-1 hover:text-[#115E59]"
+                >
+                  <span>Preview</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
             </div>
             <p className="text-[11px] text-[#78716C]">
               Your resume document is ready. Now fill in your profile details to unlock your account.

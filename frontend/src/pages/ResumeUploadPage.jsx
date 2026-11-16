@@ -10,7 +10,8 @@ import {
   RefreshCw,
   CheckCircle2,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -214,7 +215,21 @@ export default function ResumeUploadPage() {
               </div>
               <div>
                 <p className="text-xs font-bold text-[#047857]">Resume Document Attached</p>
-                <p className="text-xs text-[#065F46] font-medium">{uploadedFile.name}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-[#065F46] font-medium">{uploadedFile.name}</p>
+                  {uploadedFile.url && uploadedFile.url.startsWith('http') && (
+                    <a
+                      href={uploadedFile.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[11px] text-[#0F766E] underline inline-flex items-center gap-0.5 font-semibold"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <span>Preview</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
               </div>
             </div>
             <button

@@ -201,7 +201,7 @@ function getMockFallbackResponse(config) {
           notification_type: 'ACTION_REQUIRED',
           title: 'Complete Your Profile & Upload Resume',
           message: 'Please complete your career profile setup and upload your resume to activate 4-factor AI job matching across Dhaka hubs.',
-          link: '/profile-setup',
+          link: '/resume-upload',
           is_read: false,
           created_at: new Date().toISOString(),
         },

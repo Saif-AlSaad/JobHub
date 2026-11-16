@@ -176,9 +176,9 @@ def confirm_reviewed_profile(
         coords = get_coordinates_for_location(seeker.preferred_location_name)
         seeker.preferred_latitude = coords[0]
         seeker.preferred_longitude = coords[1]
-    if hasattr(profile_data, 'preferred_job_types') and profile_data.preferred_job_types:
+    if profile_data.preferred_job_types is not None:
         seeker.preferred_job_types = json.dumps(profile_data.preferred_job_types)
-    if hasattr(profile_data, 'preferred_roles') and profile_data.preferred_roles:
+    if profile_data.preferred_roles is not None:
         seeker.preferred_roles = json.dumps(profile_data.preferred_roles)
 
     # 4. Mark Profile as Complete
