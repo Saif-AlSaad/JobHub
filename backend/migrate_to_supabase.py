@@ -65,8 +65,11 @@ def run_migration(seed: bool = False):
     if seed:
         print("\n[3/3] Seeding initial active jobs, companies, and test accounts...")
         try:
-            from seed_data import seed_database
-            seed_database()
+            try:
+                from seed_data import run_seed as seed_fn
+            except ImportError:
+                from seed_data import seed_database as seed_fn
+            seed_fn()
             print("  -> Seed data inserted successfully.")
         except Exception as e:
             print(f"  [WARNING] Seeding encountered an issue: {e}")

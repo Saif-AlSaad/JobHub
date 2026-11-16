@@ -1,5 +1,10 @@
 import os
+from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
+
+# Automatically load environment variables from backend/.env and root .env
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "JOB HUB - AI-Powered Placement Platform"

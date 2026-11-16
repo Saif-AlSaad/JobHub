@@ -6,7 +6,18 @@ from app.config import settings
 # Normalize database URL for SQLAlchemy 2.0 (Supabase provides postgres:// or postgresql://)
 db_url = settings.DATABASE_URL
 if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
+    db_url = db_url.replace("postgres://", "postgresql+psycopg2://", 1)
+elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+"):
+    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+
+# Auto-strip literal brackets or encode password if present
+if ":[" in db_url and "]@" in db_url:
+    import urllib.parse
+    start_idx = db_url.find(":[")
+    end_idx = db_url.find("]@", start_idx)
+    raw_pwd = db_url[start_idx + 2 : end_idx]
+    encoded_pwd = urllib.parse.quote_plus(raw_pwd)
+    db_url = db_url[:start_idx + 1] + encoded_pwd + db_url[end_idx + 1:]
 
 # Production-ready Engine Configuration
 if db_url.startswith("sqlite"):
