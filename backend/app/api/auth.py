@@ -3,9 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import User, UserRole, JobSeekerProfile, RecruiterProfile, Company, NotificationPreference, NotificationType
-from app.schemas.schemas import UserRegister, UserLogin, Token
+from app.schemas.schemas import UserRegister, UserLogin, Token, SupabaseSyncRequest
 from app.auth.security import hash_password, verify_password, create_access_token
 from app.auth.deps import get_current_user
+from app.auth.supabase_auth import auto_provision_supabase_user
 from app.services.notification_service import create_notification
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -212,11 +213,29 @@ def get_current_user_profile(
 
     return {
         "id": user.id,
+        "supabase_uid": user.supabase_uid,
         "email": user.email,
         "role": user.role,
         "is_verified": user.is_verified,
         "profile": profile_data
     }
+
+@router.post("/supabase-sync")
+def supabase_sync(sync_in: SupabaseSyncRequest, db: Session = Depends(get_db)):
+    """
+    Explicitly synchronizes a user record after Supabase signup or email verification.
+    Guarantees user profile and role provisioning.
+    """
+    user_info = {
+        "sub": sync_in.supabase_uid,
+        "email": sync_in.email,
+        "role": sync_in.role or "JOB_SEEKER",
+        "full_name": sync_in.full_name or sync_in.email.split("@")[0],
+        "company_name": sync_in.company_name or "",
+        "email_confirmed": True,
+    }
+    user = auto_provision_supabase_user(db, user_info)
+    return get_current_user_profile(user=user, db=db)
 
 @router.post("/demo-login/{role}")
 def demo_login(role: str, db: Session = Depends(get_db)):

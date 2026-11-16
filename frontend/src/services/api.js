@@ -90,6 +90,42 @@ function getMockFallbackResponse(config) {
     return { data: { access_token: 'mock_token_register', user } };
   }
 
+  if (url.includes('/auth/supabase-sync')) {
+    let postData = {};
+    try {
+      postData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data || {};
+    } catch {
+      postData = {};
+    }
+    const role = postData.role === 'RECRUITER' ? 'RECRUITER' : 'JOB_SEEKER';
+    const isSeeker = role === 'JOB_SEEKER';
+    const user = {
+      id: 999,
+      supabase_uid: postData.supabase_uid || 'mock-supabase-uuid',
+      email: postData.email || 'candidate@jobhub.io',
+      role,
+      full_name: postData.full_name || 'JobHub User',
+      is_verified: true,
+      profile: isSeeker ? {
+        id: 999,
+        full_name: postData.full_name || 'JobHub User',
+        headline: '',
+        profile_completed: false,
+        resume_url: null,
+        resume_filename: null,
+        skills: [],
+        education: [],
+      } : {
+        id: 998,
+        full_name: postData.full_name || 'JobHub Recruiter',
+        company_name: postData.company_name || 'Tech Ventures BD',
+        profile_completed: true,
+      }
+    };
+    localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
+    return { data: user };
+  }
+
   if (url.includes('/auth/login')) {
     const user = MOCK_USERS.JOB_SEEKER;
     localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
