@@ -119,21 +119,26 @@ class RecruiterProfileUpdate(BaseModel):
     designation: Optional[str] = None
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    skills: Optional[List[str]] = None
+    profile_completed: Optional[bool] = None
     company_name: Optional[str] = None
     company_website: Optional[str] = None
     company_industry: Optional[str] = None
     company_location: Optional[str] = None
     company_description: Optional[str] = None
     company_size: Optional[str] = None
+    company_founded_year: Optional[int] = None
 
 class RecruiterProfileResponse(BaseModel):
     id: int
     user_id: int
     company_id: Optional[int]
     full_name: str
-    designation: str
-    phone: Optional[str]
+    designation: Optional[str] = None
+    phone: Optional[str] = None
     avatar_url: Optional[str] = None
+    skills: List[str] = []
+    profile_completed: bool = False
     is_approved: bool
     company: Optional[CompanyResponse] = None
 

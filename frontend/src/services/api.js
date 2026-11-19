@@ -82,7 +82,7 @@ function getMockFallbackResponse(config) {
         id: 998,
         full_name: postData.full_name || 'New Recruiter',
         company_name: postData.company_name || 'Tech Ventures',
-        profile_completed: true,
+        profile_completed: false,
       }
     };
     localStorage.setItem('jobhub_mock_user', JSON.stringify(user));
@@ -347,11 +347,33 @@ function getMockFallbackResponse(config) {
 
     if (method === 'put' && config.data) {
       const incoming = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-      const updated = { ...current, ...incoming };
+      const updated = {
+        ...current,
+        profile_completed: true,
+        ...(current.profile ? { profile: { ...current.profile, ...incoming, profile_completed: true } } : incoming)
+      };
       localStorage.setItem('jobhub_mock_user', JSON.stringify(updated));
-      return { data: { status: 'success', message: 'Profile updated successfully' } };
+      return { data: { status: 'success', message: 'Profile updated successfully', profile_completed: true } };
     }
-    return { data: current };
+
+    if (isRecruiterEndpoint) {
+      const recProfile = current.profile || current;
+      return {
+        data: {
+          id: recProfile.id || current.id,
+          user_id: current.id,
+          full_name: recProfile.full_name || current.full_name || '',
+          designation: recProfile.designation || '',
+          phone: recProfile.phone || '',
+          avatar_url: recProfile.avatar_url || '',
+          skills: recProfile.skills || [],
+          profile_completed: Boolean(recProfile.profile_completed || current.profile_completed),
+          company: recProfile.company || (recProfile.company_name ? { name: recProfile.company_name } : null)
+        }
+      };
+    }
+
+    return { data: current.profile || current };
   }
 
   return null;

@@ -112,6 +112,22 @@ export default function RegisterPage() {
       setError('Please agree to the Terms of Service and Privacy Policy.');
       return;
     }
+    if (!form.full_name?.trim()) {
+      setError('Please enter your full name.');
+      return;
+    }
+    if (isRecruiter && !form.company_name?.trim()) {
+      setError('Please enter your company / organization name.');
+      return;
+    }
+    if (!form.email?.trim() || !form.email.includes('@')) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+    if (!form.password || form.password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
     if (form.password !== confirmPassword) {
       setError('Passwords do not match. Please ensure both passwords are identical.');
       return;
@@ -124,6 +140,8 @@ export default function RegisterPage() {
         navigate(`/verify-email?email=${encodeURIComponent(form.email)}&role=${form.role}`);
       } else if (form.role === 'JOB_SEEKER') {
         navigate('/resume-upload');
+      } else if (form.role === 'RECRUITER') {
+        navigate('/profile');
       } else {
         navigate('/');
       }

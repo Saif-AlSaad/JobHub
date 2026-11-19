@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Upload,
   FileText,
@@ -27,6 +28,7 @@ import {
   Calendar,
   Download,
   AlertCircle,
+  ArrowRight,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -115,12 +117,16 @@ function resolveHubValue(locationName, fallback) {
 
 function computeReadinessScore(isRecruiter, profile) {
   if (isRecruiter) {
-    let score = 50;
-    if (profile.full_name && profile.company_name) score += 15;
-    if (profile.company_website) score += 10;
-    if (profile.company_description) score += 10;
-    if (profile.skills?.length >= 4) score += 5;
-    if (profile.avatar_url) score += 10;
+    let score = 0;
+    if (profile.full_name) score += 15;
+    if (profile.company_name) score += 15;
+    if (profile.designation) score += 15;
+    if (profile.phone) score += 15;
+    if (profile.company_industry) score += 10;
+    if (profile.company_description) score += 15;
+    if (profile.company_website) score += 5;
+    if (profile.company_size) score += 5;
+    if (profile.skills?.length >= 1) score += 5;
     return Math.min(score, 100);
   }
   // Matches backend /seekers/dashboard-summary formula
@@ -134,7 +140,8 @@ function computeReadinessScore(isRecruiter, profile) {
 }
 
 export default function ProfilePage() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, markProfileCompleted, isProfileComplete } = useAuth();
+  const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const isRecruiter = user?.role === 'RECRUITER';
@@ -189,31 +196,26 @@ export default function ProfilePage() {
           recruiterData = user?.profile || {};
         }
 
-        const comp = recruiterData.company || {};
-        const resolvedAvatar =
-          recruiterData.avatar_url ||
-          savedAvatar ||
-          'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=256&auto=format&fit=crop&q=80';
+        const comp = recruiterData.company || user?.profile?.company || {};
+        const resolvedAvatar = recruiterData.avatar_url || savedAvatar || '';
 
         setProfile({
-          full_name: recruiterData.full_name || user?.full_name || 'Sabrina Rahman',
-          designation: recruiterData.designation || 'Lead Technical Talent Partner',
-          phone: recruiterData.phone || '+880 1819-876543',
-          email: user?.email || 'recruiter@technova.io',
+          full_name: recruiterData.full_name || user?.full_name || '',
+          designation: recruiterData.designation || '',
+          phone: recruiterData.phone || '',
+          email: user?.email || '',
           avatar_url: resolvedAvatar,
-          company_name: comp.name || 'TechNova Labs',
-          company_industry: comp.industry || 'Software Engineering & Cloud AI',
-          company_website: comp.website || 'https://technova.io',
-          company_location: resolveHubValue(comp.location_name, 'Banani'),
-          company_location_display: comp.location_name || 'Banani Tech Corridor, Dhaka',
+          company_name: comp.name || user?.company_name || user?.profile?.company?.name || '',
+          company_industry: comp.industry || '',
+          company_website: comp.website || '',
+          company_location: comp.location_name ? resolveHubValue(comp.location_name, 'Banani') : 'Banani',
+          company_location_display: comp.location_name || '',
           company_size: comp.size || '50-200 employees',
-          company_founded_year: comp.founded_year || 2018,
-          company_is_verified: comp.is_verified ?? true,
-          company_description:
-            comp.description ||
-            'Fast-growing AI and engineering solutions company partnering with university placement offices to hire top graduates.',
-          skills: ['Python', 'FastAPI', 'React', 'Docker', 'PostgreSQL', 'Tailwind CSS'],
-          alert_radius_km: 10,
+          company_founded_year: comp.founded_year || '',
+          company_is_verified: comp.is_verified ?? false,
+          company_description: comp.description || '',
+          skills: Array.isArray(recruiterData.skills) ? recruiterData.skills : [],
+          alert_radius_km: recruiterData.alert_radius_km || 10,
         });
       } else {
         const res = await api.get('/seekers/profile');
@@ -395,24 +397,73 @@ export default function ProfilePage() {
       };
 
       if (isRecruiter) {
+        if (!profile.full_name?.trim()) {
+          alert('Please enter your full name.');
+          setSaving(false);
+          return;
+        }
+        if (!profile.company_name?.trim()) {
+          alert('Please enter your company / organization name.');
+          setSaving(false);
+          return;
+        }
+        if (!profile.designation?.trim()) {
+          alert('Please enter your job designation / role.');
+          setSaving(false);
+          return;
+        }
+        if (!profile.phone?.trim()) {
+          alert('Please enter your contact phone / WhatsApp number.');
+          setSaving(false);
+          return;
+        }
+        if (!profile.company_industry?.trim()) {
+          alert('Please specify your industry sector.');
+          setSaving(false);
+          return;
+        }
+        if (!profile.company_description?.trim()) {
+          alert('Please provide a brief company overview.');
+          setSaving(false);
+          return;
+        }
+
         const selectedHub = HUB_OPTIONS.find((h) => h.value === profile.company_location);
-        const locationLabel = selectedHub ? selectedHub.label : profile.company_location;
+        const locationLabel = selectedHub ? selectedHub.label : (profile.company_location || 'Banani Tech Corridor, Dhaka');
         const payload = {
-          full_name: profile.full_name,
-          designation: profile.designation,
-          phone: profile.phone,
+          full_name: profile.full_name.trim(),
+          designation: profile.designation.trim(),
+          phone: profile.phone.trim(),
           avatar_url: profile.avatar_url || '',
-          company_name: profile.company_name,
-          company_website: profile.company_website,
-          company_industry: profile.company_industry,
+          skills: profile.skills || [],
+          profile_completed: true,
+          company_name: profile.company_name.trim(),
+          company_website: profile.company_website?.trim() || '',
+          company_industry: profile.company_industry.trim(),
           company_location: locationLabel,
-          company_description: profile.company_description,
-          company_size: profile.company_size,
+          company_description: profile.company_description.trim(),
+          company_size: profile.company_size || '50-200 employees',
+          company_founded_year: profile.company_founded_year ? parseInt(profile.company_founded_year, 10) : 2024,
         };
         await Promise.all([
           api.put('/recruiter/profile', payload),
           api.put('/notifications/preferences', prefsPayload),
         ]);
+        if (markProfileCompleted) {
+          markProfileCompleted({
+            ...payload,
+            profile_completed: true,
+            company: {
+              name: payload.company_name,
+              website: payload.company_website,
+              industry: payload.company_industry,
+              location_name: payload.company_location,
+              description: payload.company_description,
+              size: payload.company_size,
+              founded_year: payload.company_founded_year,
+            }
+          });
+        }
       } else {
         const primaryEducation = {
           university: profile.university,
@@ -533,6 +584,28 @@ export default function ProfilePage() {
   return (
     <div className="max-w-[1240px] mx-auto px-4 sm:px-6 py-8 space-y-6 animate-in fade-in duration-300">
       {/* =========================================================================
+          RECRUITER PROFILE SETUP ONBOARDING ALERT
+          ========================================================================= */}
+      {isRecruiter && !isProfileComplete && (
+        <div className="bg-[#FFF7ED] rounded-2xl border-2 border-[#FED7AA] p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in slide-in-from-top-2">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-[#F97316] text-white flex items-center justify-center font-bold flex-shrink-0 shadow-sm">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-[#9A3412] flex items-center gap-2">
+                Recruiter Profile Setup Required
+                <span className="px-2 py-0.5 rounded-full bg-[#EA580C] text-white text-[10px] font-bold">Action Needed</span>
+              </h3>
+              <p className="text-xs text-[#C2410C] mt-0.5 leading-relaxed">
+                Welcome to JobHub! Your recruiter profile is currently in initial setup mode. Please fill in your professional designation, phone number, industry, and company details below and click <strong>Save Recruiter Changes</strong> to unlock the Recruiter Dashboard, post jobs, and access AI candidate matching.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
           HERO SECTION: Profile Identity Card & Picture Studio
           ========================================================================= */}
       <div className="bg-white rounded-[24px] sm:rounded-[28px] border border-[#E7E5E4] p-6 sm:p-8 shadow-[0_8px_30px_rgb(28,25,23,0.04)] relative overflow-hidden transition-all duration-300">
@@ -600,7 +673,7 @@ export default function ProfilePage() {
             <div className="space-y-2 text-center sm:text-left flex-1">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1C1917] tracking-tight">
-                  {profile.full_name || (isRecruiter ? 'Sabrina Rahman' : 'Sarah Rahman')}
+                  {profile.full_name || (isRecruiter ? 'Recruiter' : 'Candidate')}
                 </h1>
                 <span
                   className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
@@ -616,7 +689,7 @@ export default function ProfilePage() {
 
               <p className="text-xs sm:text-sm text-[#78716C] font-medium max-w-xl">
                 {isRecruiter
-                  ? `${profile.designation || 'Lead Technical Talent Partner'} • ${profile.company_name || 'TechNova Labs'}`
+                  ? `${profile.designation || 'Designation Pending'} • ${profile.company_name || 'Organization Pending'}`
                   : profile.headline || 'Aspiring Software Engineer | Recent Graduate'}
               </p>
 
@@ -626,7 +699,7 @@ export default function ProfilePage() {
                   <>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA] text-xs font-semibold">
                       <Building2 className="w-3.5 h-3.5" />
-                      {profile.company_name || 'TechNova Labs'} · Est. {profile.company_founded_year || 2018}
+                      {profile.company_name || 'Organization Pending'} {profile.company_founded_year ? `· Est. ${profile.company_founded_year}` : ''}
                     </span>
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF8F5] text-[#78716C] border border-[#E7E5E4] text-xs font-semibold">
                       <MapPin className="w-3.5 h-3.5 text-[#F97316]" />
@@ -722,10 +795,22 @@ export default function ProfilePage() {
           {/* Right: Save Changes CTA */}
           <div className="flex flex-col sm:flex-row lg:flex-col items-center sm:items-end justify-between w-full lg:w-auto gap-2.5 pt-4 lg:pt-0 border-t lg:border-t-0 border-[#E7E5E4]">
             {saveSuccess && (
-              <span className="text-xs font-bold text-[#047857] bg-[#ECFDF5] border border-[#A7F3D0] px-3.5 py-1.5 rounded-full flex items-center gap-1.5 animate-in fade-in shadow-xs">
-                <Check className="w-4 h-4" />
-                Profile Updated Successfully
-              </span>
+              <div className="flex flex-col sm:flex-row items-center gap-2">
+                <span className="text-xs font-bold text-[#047857] bg-[#ECFDF5] border border-[#A7F3D0] px-3.5 py-1.5 rounded-full flex items-center gap-1.5 animate-in fade-in shadow-xs">
+                  <Check className="w-4 h-4" />
+                  {isRecruiter ? 'Recruiter Profile Saved & Active!' : 'Profile Updated Successfully'}
+                </span>
+                {isRecruiter && (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/')}
+                    className="px-3.5 py-1.5 rounded-full bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Open Dashboard</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             )}
 
             {!saveSuccess && isDirty && (
@@ -778,7 +863,7 @@ export default function ProfilePage() {
               <div className="pt-1 flex items-center gap-2">
                 <span className="text-xs font-semibold text-[#C2410C] bg-[#FFEDD5]/60 px-2.5 py-1 rounded-lg border border-[#FED7AA]/60 flex items-center gap-1.5">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  Organization: <strong className="font-bold">{profile.company_name || 'TechNova Labs'}</strong>
+                  Organization: <strong className="font-bold">{profile.company_name || 'Pending Configuration'}</strong>
                 </span>
               </div>
             </div>

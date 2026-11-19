@@ -29,6 +29,8 @@ def get_recruiter_dashboard(
 
     total_apps = len(applications)
     shortlisted_apps = [a for a in applications if a.status in ["SHORTLISTED", "INTERVIEW", "HIRED"]]
+    under_review_apps = [a for a in applications if a.status in ["APPLIED", "REVIEWING", "PENDING"]]
+    interview_apps = [a for a in applications if a.status in ["INTERVIEW", "SHORTLISTED"]]
     
     avg_match = 0.0
     if applications:
@@ -76,7 +78,10 @@ def get_recruiter_dashboard(
         "stats": {
             "active_jobs": len([j for j in jobs if j.status == "ACTIVE"]),
             "total_applications": total_apps,
+            "total_applicants": total_apps,
             "shortlisted": len(shortlisted_apps),
+            "under_review": len(under_review_apps),
+            "interviews_scheduled": len(interview_apps),
             "average_match": avg_match
         },
         "active_jobs": active_jobs_data,
@@ -89,34 +94,34 @@ def get_recruiter_profile(
     db: Session = Depends(get_db)
 ):
     company = recruiter.company
+    skills_list = []
+    if recruiter.skills:
+        try:
+            skills_list = json.loads(recruiter.skills)
+        except Exception:
+            skills_list = []
+
     return {
         "id": recruiter.id,
         "user_id": recruiter.user_id,
         "full_name": recruiter.full_name,
-        "designation": recruiter.designation or "Lead Technical Talent Partner",
-        "phone": recruiter.phone or "+880 1819-876543",
-        "avatar_url": recruiter.avatar_url,
+        "designation": recruiter.designation or "",
+        "phone": recruiter.phone or "",
+        "avatar_url": recruiter.avatar_url or "",
+        "skills": skills_list,
+        "profile_completed": bool(recruiter.profile_completed),
         "company": {
-            "id": company.id if company else None,
-            "name": company.name if company else "TechNova Labs",
-            "industry": company.industry if company else "Software Engineering & Cloud AI",
-            "location_name": company.location_name if company else "Banani Tech Corridor, Dhaka",
-            "logo_url": company.logo_url if company else None,
-            "website": company.website if company else "https://technova.io",
-            "description": company.description if company else "Fast-growing AI and engineering solutions company.",
-            "size": company.size if company else "50-200 employees",
-            "founded_year": company.founded_year if company else 2018,
-            "is_verified": company.is_verified if company else True,
-        } if company else {
-            "name": "TechNova Labs",
-            "industry": "Software Engineering & Cloud AI",
-            "location_name": "Banani Tech Corridor, Dhaka",
-            "website": "https://technova.io",
-            "description": "Fast-growing AI and engineering solutions company.",
-            "size": "50-200 employees",
-            "founded_year": 2018,
-            "is_verified": True
-        }
+            "id": company.id,
+            "name": company.name or "",
+            "industry": company.industry or "",
+            "location_name": company.location_name or "",
+            "logo_url": company.logo_url,
+            "website": company.website or "",
+            "description": company.description or "",
+            "size": company.size or "",
+            "founded_year": company.founded_year,
+            "is_verified": bool(company.is_verified),
+        } if company else None
     }
 
 @router.put("/profile")
@@ -133,6 +138,12 @@ def update_recruiter_profile(
         recruiter.phone = update_data.phone
     if update_data.avatar_url is not None:
         recruiter.avatar_url = update_data.avatar_url
+    if update_data.skills is not None:
+        recruiter.skills = json.dumps(update_data.skills)
+    if update_data.profile_completed is not None:
+        recruiter.profile_completed = update_data.profile_completed
+    else:
+        recruiter.profile_completed = True
 
     company = recruiter.company
     if not company and update_data.company_name:
@@ -155,10 +166,16 @@ def update_recruiter_profile(
             company.description = update_data.company_description
         if update_data.company_size is not None:
             company.size = update_data.company_size
+        if update_data.company_founded_year is not None:
+            company.founded_year = update_data.company_founded_year
 
     db.commit()
     db.refresh(recruiter)
-    return {"status": "success", "message": "Recruiter profile updated successfully"}
+    return {
+        "status": "success",
+        "message": "Recruiter profile updated successfully",
+        "profile_completed": recruiter.profile_completed
+    }
 
 @router.post("/upload-logo")
 async def upload_company_logo(

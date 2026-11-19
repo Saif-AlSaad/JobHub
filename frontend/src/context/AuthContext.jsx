@@ -231,9 +231,11 @@ export const AuthProvider = ({ children }) => {
     });
   };
 
-  const isProfileComplete = !user || user.role !== 'JOB_SEEKER'
+  const isProfileComplete = !user
     ? true
-    : Boolean(user.profile?.profile_completed || user.profile_completed);
+    : user.role === 'JOB_SEEKER' || user.role === 'RECRUITER'
+    ? Boolean(user.profile?.profile_completed || user.profile_completed)
+    : true;
 
   return (
     <AuthContext.Provider

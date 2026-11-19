@@ -87,6 +87,7 @@ export default function Navbar() {
   if (role === 'ADMIN') navItems = adminNav;
 
   const isIncompleteSeeker = role === 'JOB_SEEKER' && !isProfileComplete;
+  const isIncompleteRecruiter = role === 'RECRUITER' && !isProfileComplete;
   const currentHub = user?.profile?.location_name || 'Savar Smart City';
   const currentRadius = user?.profile?.alert_radius_km || 5;
 
@@ -111,6 +112,11 @@ export default function Navbar() {
               <span className="badge-pill bg-[#FEF3C7] text-[#D97706] border border-[#FDE68A] text-xs font-bold inline-flex items-center gap-1.5 px-3 py-1">
                 <Sparkles className="w-3.5 h-3.5" />
                 Setup Required: Upload Resume & Review Profile
+              </span>
+            ) : isIncompleteRecruiter ? (
+              <span className="badge-pill bg-[#FFEDD5] text-[#C2410C] border border-[#FED7AA] text-xs font-bold inline-flex items-center gap-1.5 px-3 py-1">
+                <Sparkles className="w-3.5 h-3.5" />
+                Setup Required: Complete Company & Recruiter Profile
               </span>
             ) : (
               navItems.map((item) => {
@@ -373,6 +379,10 @@ export default function Navbar() {
         {isIncompleteSeeker ? (
           <span className="text-xs font-bold text-[#D97706] px-2 py-1">
             Setup in Progress: Complete profile & upload resume
+          </span>
+        ) : isIncompleteRecruiter ? (
+          <span className="text-xs font-bold text-[#C2410C] px-2 py-1">
+            Setup in Progress: Complete recruiter profile
           </span>
         ) : (
           navItems.map((item) => {

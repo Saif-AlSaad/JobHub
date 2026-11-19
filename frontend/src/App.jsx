@@ -57,18 +57,23 @@ function ProtectedLayout({ children }) {
   }
 
   const isSeeker = user.role === 'JOB_SEEKER';
+  const isRecruiter = user.role === 'RECRUITER';
   const hasResume = Boolean(user.profile?.resume_url || user.profile?.resume_filename);
   const isOnboardingRoute = location.pathname === '/resume-upload' || location.pathname === '/update-profile' || location.pathname === '/profile-setup';
 
-  // Mandatory Two-Step Onboarding Guard:
-  // 1. Resume Upload (first step)
-  // 2. Update Profile (second step with empty sections except registration name)
+  // Mandatory Onboarding Guards:
+  // 1. Job Seeker: Resume Upload -> Update Profile
   if (isSeeker && !isProfileComplete) {
     if (!hasResume && location.pathname !== '/resume-upload') {
       return <Navigate to="/resume-upload" replace />;
     }
     if (hasResume && !isOnboardingRoute) {
       return <Navigate to="/update-profile" replace />;
+    }
+  } else if (isRecruiter && !isProfileComplete) {
+    // 2. Recruiter: Must complete profile before accessing dashboard and other recruiter features
+    if (location.pathname !== '/profile') {
+      return <Navigate to="/profile" replace />;
     }
   } else if (isOnboardingRoute && (!isSeeker || isProfileComplete)) {
     // If seeker already completed profile (or user is recruiter/admin), redirect to home

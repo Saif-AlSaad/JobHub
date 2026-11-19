@@ -186,26 +186,34 @@ def auto_provision_supabase_user(db: Session, user_info: Dict[str, Any]) -> User
         )
 
     elif role == UserRole.RECRUITER:
-        company = db.query(Company).filter(Company.name == company_name).first()
-        if not company:
-            company = Company(
-                name=company_name,
-                industry="Software & IT Solutions",
-                location_name="Banani, Dhaka",
-                latitude=23.7937,
-                longitude=90.4043,
-                description="Fast-growing technology firm.",
-                is_verified=True,
-            )
-            db.add(company)
-            db.commit()
-            db.refresh(company)
+        company = None
+        if company_name:
+            company = db.query(Company).filter(Company.name == company_name).first()
+            if not company:
+                company = Company(
+                    name=company_name,
+                    industry="",
+                    location_name="",
+                    latitude=23.7937,
+                    longitude=90.4043,
+                    description="",
+                    size="",
+                    founded_year=None,
+                    is_verified=False,
+                )
+                db.add(company)
+                db.commit()
+                db.refresh(company)
 
         recruiter = RecruiterProfile(
             user_id=user.id,
-            company_id=company.id,
+            company_id=company.id if company else None,
             full_name=full_name,
-            designation="Talent Acquisition Lead",
+            designation="",
+            phone="",
+            avatar_url="",
+            skills=json.dumps([]),
+            profile_completed=False,
             is_approved=True,
         )
         db.add(recruiter)
@@ -214,10 +222,10 @@ def auto_provision_supabase_user(db: Session, user_info: Dict[str, Any]) -> User
         create_notification(
             db=db,
             user_id=user.id,
-            notification_type=NotificationType.SYSTEM,
-            title="Recruiter Portal Activated",
-            message=f"Welcome to JobHub Employer Portal! You can now post vacancies and review AI-matched candidates for {company.name}.",
-            link="/",
+            notification_type=NotificationType.PROFILE_REMINDER,
+            title="Complete Your Recruiter & Company Profile",
+            message="Welcome to JobHub! Please complete your corporate recruiter profile to activate candidate ranking and post job openings.",
+            link="/profile",
         )
 
     db.commit()

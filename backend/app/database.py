@@ -27,6 +27,12 @@ if db_url.startswith("sqlite"):
         connect_args=connect_args,
         pool_pre_ping=True
     )
+    from sqlalchemy import event
+    @event.listens_for(engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
 else:
     # Supabase PostgreSQL (Supports direct port 5432 and Transaction Pooler port 6543)
     engine = create_engine(
@@ -59,5 +65,17 @@ def init_db():
             pass
         try:
             conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_application ON applications (job_id, seeker_id)"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN supabase_uid VARCHAR(64)"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE recruiter_profiles ADD COLUMN profile_completed BOOLEAN DEFAULT 0"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("ALTER TABLE recruiter_profiles ADD COLUMN skills TEXT DEFAULT '[]'"))
         except Exception:
             pass

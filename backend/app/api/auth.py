@@ -13,21 +13,47 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=Token)
 def register(user_in: UserRegister, db: Session = Depends(get_db)):
+    email = (user_in.email or "").strip().lower()
+    full_name = (user_in.full_name or "").strip()
+    company_name = (user_in.company_name or "").strip()
+
+    if not email or "@" not in email:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A valid email address is required"
+        )
+    if not full_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Full name is required"
+        )
+    if not user_in.password or len(user_in.password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long"
+        )
+
+    role = user_in.role.upper()
+    if role not in [UserRole.JOB_SEEKER, UserRole.RECRUITER, UserRole.ADMIN]:
+        role = UserRole.JOB_SEEKER
+
+    if role == UserRole.RECRUITER and not company_name:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Company / Organization name is required for recruiter registration"
+        )
+
     # Check if email exists
-    existing = db.query(User).filter(User.email == user_in.email.lower()).first()
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="An account with this email address already exists"
         )
-    
-    role = user_in.role.upper()
-    if role not in [UserRole.JOB_SEEKER, UserRole.RECRUITER, UserRole.ADMIN]:
-        role = UserRole.JOB_SEEKER
 
     # Create user
     user = User(
-        email=user_in.email.lower(),
+        email=email,
         password_hash=hash_password(user_in.password),
         role=role,
         is_verified=True,
@@ -37,15 +63,17 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
-    # Initialize notification preferences
-    pref = NotificationPreference(
-        user_id=user.id,
-        email_alerts=True,
-        in_app_alerts=True,
-        min_match_score=70.0,
-        alert_radius_km=10.0
-    )
-    db.add(pref)
+    # Initialize notification preferences safely
+    pref = db.query(NotificationPreference).filter(NotificationPreference.user_id == user.id).first()
+    if not pref:
+        pref = NotificationPreference(
+            user_id=user.id,
+            email_alerts=True,
+            in_app_alerts=True,
+            min_match_score=70.0,
+            alert_radius_km=10.0
+        )
+        db.add(pref)
 
     # Create respective profile
     if role == UserRole.JOB_SEEKER:
@@ -84,31 +112,49 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             link="/resume-upload"
         )
     elif role == UserRole.RECRUITER:
-        company_name = user_in.company_name or "Tech Ventures BD"
-        company = db.query(Company).filter(Company.name == company_name).first()
-        if not company:
-            company = Company(
-                name=company_name,
-                industry="Software & IT Solutions",
-                location_name="Banani, Dhaka",
-                latitude=23.7937,
-                longitude=90.4043,
-                description="Fast-growing technology engineering firm.",
-                is_verified=True
-            )
-            db.add(company)
-            db.commit()
-            db.refresh(company)
+        company_name = (user_in.company_name or "").strip()
+        company = None
+        if company_name:
+            company = db.query(Company).filter(Company.name == company_name).first()
+            if not company:
+                company = Company(
+                    name=company_name,
+                    industry="",
+                    location_name="",
+                    latitude=23.7937,
+                    longitude=90.4043,
+                    description="",
+                    size="",
+                    founded_year=None,
+                    is_verified=False
+                )
+                db.add(company)
+                db.commit()
+                db.refresh(company)
 
         recruiter = RecruiterProfile(
             user_id=user.id,
-            company_id=company.id,
+            company_id=company.id if company else None,
             full_name=user_in.full_name,
-            designation="Talent Lead",
+            designation="",
+            phone="",
+            avatar_url="",
+            skills=json.dumps([]),
+            profile_completed=False,
             is_approved=True
         )
         db.add(recruiter)
         db.commit()
+
+        # Prompt new recruiter to complete company profile
+        create_notification(
+            db=db,
+            user_id=user.id,
+            notification_type=NotificationType.PROFILE_REMINDER,
+            title="Complete Your Recruiter & Company Profile",
+            message="Welcome to JobHub! Please complete your corporate recruiter profile to activate candidate ranking and post job openings.",
+            link="/profile"
+        )
 
     token = create_access_token(subject=user.id, role=user.role)
     return {
@@ -119,7 +165,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             "email": user.email,
             "role": user.role,
             "full_name": user_in.full_name,
-            "profile_completed": False if role == UserRole.JOB_SEEKER else True
+            "profile_completed": False if role in [UserRole.JOB_SEEKER, UserRole.RECRUITER] else True
         }
     }
 
@@ -146,6 +192,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         profile_completed = bool(user.seeker_profile.profile_completed)
     elif user.role == UserRole.RECRUITER and user.recruiter_profile:
         full_name = user.recruiter_profile.full_name
+        profile_completed = bool(user.recruiter_profile.profile_completed)
 
     token = create_access_token(subject=user.id, role=user.role)
     return {
@@ -189,7 +236,7 @@ def get_current_user_profile(
                 "resume_url": p.resume_url,
                 "resume_filename": p.resume_filename,
                 "avatar_url": p.avatar_url,
-                "profile_completed": p.profile_completed
+                "profile_completed": bool(p.profile_completed)
             }
     elif user.role == UserRole.RECRUITER:
         p = user.recruiter_profile
@@ -197,19 +244,29 @@ def get_current_user_profile(
             profile_data = {
                 "id": p.id,
                 "full_name": p.full_name,
-                "designation": p.designation,
-                "phone": p.phone,
-                "avatar_url": p.avatar_url,
+                "designation": p.designation or "",
+                "phone": p.phone or "",
+                "avatar_url": p.avatar_url or "",
+                "skills": json.loads(p.skills or "[]"),
+                "profile_completed": bool(p.profile_completed),
                 "is_approved": p.is_approved,
                 "company": {
                     "id": p.company.id,
                     "name": p.company.name,
-                    "industry": p.company.industry,
-                    "location_name": p.company.location_name,
+                    "industry": p.company.industry or "",
+                    "location_name": p.company.location_name or "",
                     "logo_url": p.company.logo_url,
-                    "website": p.company.website,
+                    "website": p.company.website or "",
+                    "description": p.company.description or "",
+                    "size": p.company.size or "",
+                    "founded_year": p.company.founded_year,
+                    "is_verified": p.company.is_verified,
                 } if p.company else None
             }
+
+    is_complete = True
+    if profile_data and "profile_completed" in profile_data:
+        is_complete = bool(profile_data["profile_completed"])
 
     return {
         "id": user.id,
@@ -217,6 +274,7 @@ def get_current_user_profile(
         "email": user.email,
         "role": user.role,
         "is_verified": user.is_verified,
+        "profile_completed": is_complete,
         "profile": profile_data
     }
 
