@@ -32,8 +32,8 @@ export async function signUpWithEmail(email, password, metadata = {}) {
     throw new Error('Supabase is not configured. Falling back to local backend registration.');
   }
 
-  // Hash-based routing redirect URL for verification confirmation
-  const redirectUrl = `${window.location.origin}${window.location.pathname}#/verify-email`;
+  // Clean origin redirect URL without hash collision (matches Supabase URL Configuration whitelist)
+  const redirectUrl = `${window.location.origin}/`;
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -50,6 +50,11 @@ export async function signUpWithEmail(email, password, metadata = {}) {
 
   if (error) {
     throw error;
+  }
+
+  // Detect if email is already registered (Supabase returns empty identities array to prevent user enumeration)
+  if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    throw new Error('An account with this email already exists. Please log in instead or use a different email.');
   }
 
   // If email confirmation is required, session will be null
@@ -93,7 +98,7 @@ export async function resendVerificationEmail(email) {
     throw new Error('Supabase is not configured.');
   }
 
-  const redirectUrl = `${window.location.origin}${window.location.pathname}#/verify-email`;
+  const redirectUrl = `${window.location.origin}/`;
 
   const { data, error } = await supabase.auth.resend({
     type: 'signup',
