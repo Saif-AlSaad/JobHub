@@ -1,15 +1,18 @@
 import os
 import json
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
+from typing import Optional
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.config import settings
-from app.database import engine, Base
+from app.database import engine, Base, SessionLocal, init_db
+from app.auth.deps import resolve_user_from_token
+from app.models.models import UserRole
 from app.api import auth, jobs, seekers, applications, recruiters, notifications, chat, admin, resume
 from app.websocket.connection_manager import manager
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
+# Create database tables and safe indexes
+init_db()
 
 # Create uploads directory if not exists
 UPLOAD_DIR = os.path.join(os.path.dirname(__file__), "..", "uploads")
@@ -52,7 +55,36 @@ app.include_router(admin.router, prefix=settings.API_V1_STR)
 app.include_router(resume.router, prefix=settings.API_V1_STR)
 
 @app.websocket("/ws/{user_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: int):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    user_id: int,
+    token: Optional[str] = Query(None)
+):
+    # Support token in query parameter (?token=... or ?access_token=...) or Authorization header
+    auth_token = token or websocket.query_params.get("token") or websocket.query_params.get("access_token")
+    if not auth_token:
+        auth_header = websocket.headers.get("authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            auth_token = auth_header.split(" ")[1]
+
+    if not auth_token:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Authentication token missing")
+        return
+
+    # Authenticate and authorize against database
+    db = SessionLocal()
+    try:
+        user = resolve_user_from_token(auth_token, db)
+        if not user or not user.is_active:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Invalid or inactive user credentials")
+            return
+        # Enforce authorization: only the matching user or an ADMIN may connect to this user stream
+        if user.id != user_id and user.role != UserRole.ADMIN:
+            await websocket.close(code=status.WS_1008_POLICY_VIOLATION, reason="Unauthorized access to user stream")
+            return
+    finally:
+        db.close()
+
     await manager.connect(websocket, user_id)
     try:
         while True:

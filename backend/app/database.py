@@ -49,5 +49,15 @@ def get_db():
         db.close()
 
 def init_db():
-    """Initializes all database tables on the configured engine."""
+    """Initializes all database tables and ensures critical unique indexes on the configured engine."""
     Base.metadata.create_all(bind=engine)
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        try:
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_match ON match_records (job_id, seeker_id)"))
+        except Exception:
+            pass
+        try:
+            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_application ON applications (job_id, seeker_id)"))
+        except Exception:
+            pass
