@@ -53,20 +53,20 @@ def compute_hybrid_match(
 
     # 2. Semantic Similarity via TF-IDF (40%)
     seeker_doc_parts = [
-        " ".join(seeker_profile.get("skills", [])),
-        seeker_profile.get("headline", ""),
-        json.dumps(seeker_profile.get("experience", [])),
-        json.dumps(seeker_profile.get("projects", [])),
-        json.dumps(seeker_profile.get("education", [])),
+        " ".join(seeker_profile.get("skills", []) or []),
+        str(seeker_profile.get("headline") or ""),
+        json.dumps(seeker_profile.get("experience", []) or []),
+        json.dumps(seeker_profile.get("projects", []) or []),
+        json.dumps(seeker_profile.get("education", []) or []),
     ]
     seeker_doc = " ".join(seeker_doc_parts).strip() or "software engineer developer programming"
     
     job_doc_parts = [
-        job.get("title", ""),
-        job.get("description", ""),
-        job.get("requirements", ""),
-        " ".join(job.get("required_skills", [])),
-        " ".join(job.get("preferred_skills", [])),
+        str(job.get("title") or ""),
+        str(job.get("description") or ""),
+        str(job.get("requirements") or ""),
+        " ".join(job.get("required_skills", []) or []),
+        " ".join(job.get("preferred_skills", []) or []),
     ]
     job_doc = " ".join(job_doc_parts).strip() or "software engineer internship developer"
 

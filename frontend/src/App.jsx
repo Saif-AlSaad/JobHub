@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Navbar from './components/Navbar';
@@ -19,6 +19,10 @@ import ProfilePage from './pages/ProfilePage';
 import MessagesPage from './pages/MessagesPage';
 import NotificationsPage from './pages/NotificationsPage';
 import PostJobPage from './pages/PostJobPage';
+import ProfileSetupPage from './pages/ProfileSetupPage';
+import ResumeUploadPage from './pages/ResumeUploadPage';
+import UpdateProfilePage from './pages/UpdateProfilePage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 
 function RoleBasedHome() {
   const { user } = useAuth();
@@ -37,7 +41,8 @@ function RecruiterOnlyRoute({ children }) {
 }
 
 function ProtectedLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isProfileComplete } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -49,6 +54,25 @@ function ProtectedLayout({ children }) {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  const isSeeker = user.role === 'JOB_SEEKER';
+  const hasResume = Boolean(user.profile?.resume_url || user.profile?.resume_filename);
+  const isOnboardingRoute = location.pathname === '/resume-upload' || location.pathname === '/update-profile' || location.pathname === '/profile-setup';
+
+  // Mandatory Two-Step Onboarding Guard:
+  // 1. Resume Upload (first step)
+  // 2. Update Profile (second step with empty sections except registration name)
+  if (isSeeker && !isProfileComplete) {
+    if (!hasResume && location.pathname !== '/resume-upload') {
+      return <Navigate to="/resume-upload" replace />;
+    }
+    if (hasResume && !isOnboardingRoute) {
+      return <Navigate to="/update-profile" replace />;
+    }
+  } else if (isOnboardingRoute && (!isSeeker || isProfileComplete)) {
+    // If seeker already completed profile (or user is recruiter/admin), redirect to home
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -71,6 +95,7 @@ export default function App() {
             {/* Public Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
 
             {/* Protected Routes */}
             <Route
@@ -132,6 +157,33 @@ export default function App() {
               element={
                 <ProtectedLayout>
                   <NotificationsPage />
+                </ProtectedLayout>
+              }
+            />
+
+            <Route
+              path="/resume-upload"
+              element={
+                <ProtectedLayout>
+                  <ResumeUploadPage />
+                </ProtectedLayout>
+              }
+            />
+
+            <Route
+              path="/update-profile"
+              element={
+                <ProtectedLayout>
+                  <UpdateProfilePage />
+                </ProtectedLayout>
+              }
+            />
+
+            <Route
+              path="/profile-setup"
+              element={
+                <ProtectedLayout>
+                  <UpdateProfilePage />
                 </ProtectedLayout>
               }
             />

@@ -119,8 +119,14 @@ export default function RegisterPage() {
     setLoading(true);
     setError('');
     try {
-      await register(form);
-      navigate('/');
+      const result = await register(form);
+      if (result?.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(form.email)}&role=${form.role}`);
+      } else if (form.role === 'JOB_SEEKER') {
+        navigate('/resume-upload');
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.message || 'Failed to create account. Please check your details.');
     } finally {

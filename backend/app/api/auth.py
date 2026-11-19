@@ -2,10 +2,12 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.models import User, UserRole, JobSeekerProfile, RecruiterProfile, Company, NotificationPreference
-from app.schemas.schemas import UserRegister, UserLogin, Token
+from app.models.models import User, UserRole, JobSeekerProfile, RecruiterProfile, Company, NotificationPreference, NotificationType
+from app.schemas.schemas import UserRegister, UserLogin, Token, SupabaseSyncRequest
 from app.auth.security import hash_password, verify_password, create_access_token
 from app.auth.deps import get_current_user
+from app.auth.supabase_auth import auto_provision_supabase_user
+from app.services.notification_service import create_notification
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -50,25 +52,37 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
         seeker = JobSeekerProfile(
             user_id=user.id,
             full_name=user_in.full_name,
-            headline="Aspiring Software Engineer",
+            headline="",
             preferred_job_types=json.dumps(["Internship", "Full-time"]),
-            preferred_roles=json.dumps(["Software Engineer", "Backend Developer"]),
-            preferred_skills=json.dumps(["Python", "FastAPI", "React"]),
+            preferred_roles=json.dumps([]),
+            preferred_skills=json.dumps([]),
             preferred_location_name="Dhaka, Bangladesh",
             preferred_latitude=23.8103,
             preferred_longitude=90.4125,
             alert_radius_km=10.0,
             min_match_score=70.0,
-            education=json.dumps([{
-                "degree": "BSc in Software Engineering",
-                "university": "Daffodil International University",
-                "graduation_year": 2026,
-                "cgpa": 3.75
-            }]),
-            skills=json.dumps(["Python", "FastAPI", "PostgreSQL", "React", "Git"]),
-            profile_completed=True
+            education=json.dumps([]),
+            experience=json.dumps([]),
+            projects=json.dumps([]),
+            certifications=json.dumps([]),
+            skills=json.dumps([]),
+            resume_url=None,
+            resume_filename=None,
+            resume_raw_text=None,
+            profile_completed=False
         )
         db.add(seeker)
+        db.commit()
+
+        # Prompt new seeker to complete setup & upload resume
+        create_notification(
+            db=db,
+            user_id=user.id,
+            notification_type=NotificationType.PROFILE_REMINDER,
+            title="Complete Your Profile & Upload Resume",
+            message="Welcome to JobHub! Please upload your resume and complete your profile setup to unlock AI job matching.",
+            link="/resume-upload"
+        )
     elif role == UserRole.RECRUITER:
         company_name = user_in.company_name or "Tech Ventures BD"
         company = db.query(Company).filter(Company.name == company_name).first()
@@ -94,8 +108,7 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             is_approved=True
         )
         db.add(recruiter)
-
-    db.commit()
+        db.commit()
 
     token = create_access_token(subject=user.id, role=user.role)
     return {
@@ -105,7 +118,8 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
             "id": user.id,
             "email": user.email,
             "role": user.role,
-            "full_name": user_in.full_name
+            "full_name": user_in.full_name,
+            "profile_completed": False if role == UserRole.JOB_SEEKER else True
         }
     }
 
@@ -126,8 +140,10 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         )
 
     full_name = "User"
+    profile_completed = True
     if user.role == UserRole.JOB_SEEKER and user.seeker_profile:
         full_name = user.seeker_profile.full_name
+        profile_completed = bool(user.seeker_profile.profile_completed)
     elif user.role == UserRole.RECRUITER and user.recruiter_profile:
         full_name = user.recruiter_profile.full_name
 
@@ -139,7 +155,8 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
             "id": user.id,
             "email": user.email,
             "role": user.role,
-            "full_name": full_name
+            "full_name": full_name,
+            "profile_completed": profile_completed
         }
     }
 
@@ -196,11 +213,29 @@ def get_current_user_profile(
 
     return {
         "id": user.id,
+        "supabase_uid": user.supabase_uid,
         "email": user.email,
         "role": user.role,
         "is_verified": user.is_verified,
         "profile": profile_data
     }
+
+@router.post("/supabase-sync")
+def supabase_sync(sync_in: SupabaseSyncRequest, db: Session = Depends(get_db)):
+    """
+    Explicitly synchronizes a user record after Supabase signup or email verification.
+    Guarantees user profile and role provisioning.
+    """
+    user_info = {
+        "sub": sync_in.supabase_uid,
+        "email": sync_in.email,
+        "role": sync_in.role or "JOB_SEEKER",
+        "full_name": sync_in.full_name or sync_in.email.split("@")[0],
+        "company_name": sync_in.company_name or "",
+        "email_confirmed": True,
+    }
+    user = auto_provision_supabase_user(db, user_info)
+    return get_current_user_profile(user=user, db=db)
 
 @router.post("/demo-login/{role}")
 def demo_login(role: str, db: Session = Depends(get_db)):
@@ -229,6 +264,10 @@ def demo_login(role: str, db: Session = Depends(get_db)):
     elif user.recruiter_profile:
         full_name = user.recruiter_profile.full_name
 
+    profile_completed = True
+    if user.role == UserRole.JOB_SEEKER and user.seeker_profile:
+        profile_completed = bool(user.seeker_profile.profile_completed)
+
     token = create_access_token(subject=user.id, role=user.role)
     return {
         "access_token": token,
@@ -237,6 +276,7 @@ def demo_login(role: str, db: Session = Depends(get_db)):
             "id": user.id,
             "email": user.email,
             "role": user.role,
-            "full_name": full_name
+            "full_name": full_name,
+            "profile_completed": profile_completed
         }
     }

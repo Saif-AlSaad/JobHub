@@ -99,7 +99,7 @@ def extract_skills_from_text(text: str) -> List[str]:
     return sorted(list(matched))
 
 def extract_profile_with_fallback(raw_text: str) -> Dict[str, Any]:
-    """Deterministic, high-accuracy rule-based extraction fallback."""
+    """Deterministic, high-accuracy rule-based extraction without inserting fake filler data."""
     lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
     
     # 1. Email extraction
@@ -108,115 +108,94 @@ def extract_profile_with_fallback(raw_text: str) -> Dict[str, Any]:
 
     # 2. Phone extraction (Bangladeshi & international format)
     phone_match = re.search(r'(\+?880[\s-]?)?01[3-9]\d{8}|\+?\d{1,3}[\s-]?\(?\d{3}\)?[\s-]?\d{3}[\s-]?\d{4}', raw_text)
-    phone = phone_match.group(0) if phone_match else "+880 1712-345678"
+    phone = phone_match.group(0) if phone_match else ""
 
     # 3. Name candidate (first line without contact details)
-    full_name = "Candidate"
+    full_name = ""
     for line in lines[:5]:
         if not re.search(r'@|http|\.com|\+?\d{4}', line) and len(line) < 40 and len(line) > 2:
             full_name = line
             break
 
-    # 4. Skills extraction
+    # 4. Skills extraction - only actual skills found in text
     skills = extract_skills_from_text(raw_text)
-    if not skills:
-        skills = ["Python", "JavaScript", "SQL", "Git"]
 
-    # 5. Education detection
+    # 5. Education detection - only actual education keywords found in text
     education = []
-    edu_keywords = ["daffodil", "brac", "buet", "north south", "nsu", "aiub", "iut", "university", "college", "bachelor", "bsc", "b.sc", "b.tech", "master"]
-    found_edu = False
+    edu_keywords = ["daffodil", "brac", "buet", "north south", "nsu", "aiub", "iut", "university", "college", "bachelor", "bsc", "b.sc", "b.tech", "master", "diploma"]
     for line in lines:
         line_lower = line.lower()
         if any(kw in line_lower for kw in edu_keywords):
-            degree = "BSc in Software Engineering" if "software" in line_lower else ("BSc in Computer Science" if "computer" in line_lower else "BSc in Engineering")
-            uni = "Daffodil International University"
-            if "buet" in line_lower: uni = "BUET"
-            elif "brac" in line_lower: uni = "BRAC University"
-            elif "north south" in line_lower or "nsu" in line_lower: uni = "North South University"
-            elif "aiub" in line_lower: uni = "American International University-Bangladesh"
+            degree = "BSc in Software Engineering" if "software" in line_lower else ("BSc in Computer Science" if "computer" in line_lower else ("Bachelor Degree" if "bachelor" in line_lower or "bsc" in line_lower else line[:40]))
+            uni = "Daffodil International University" if "daffodil" in line_lower else ("BUET" if "buet" in line_lower else ("BRAC University" if "brac" in line_lower else ("North South University" if "north south" in line_lower or "nsu" in line_lower else ("AIUB" if "aiub" in line_lower else ""))))
             
+            # graduation year detection if present
+            year_match = re.search(r'\b(20[1-3]\d)\b', line)
+            grad_year = int(year_match.group(1)) if year_match else None
+            
+            # CGPA detection if present
+            cgpa_match = re.search(r'cgpa[:\s]*([0-4]\.\d{1,2})', line_lower)
+            cgpa_val = float(cgpa_match.group(1)) if cgpa_match else None
+
             education.append({
                 "degree": degree,
                 "university": uni,
-                "graduation_year": 2026,
-                "cgpa": 3.75
+                "graduation_year": grad_year,
+                "cgpa": cgpa_val
             })
-            found_edu = True
             break
-            
-    if not found_edu:
-        education.append({
-            "degree": "BSc in Software Engineering",
-            "university": "Daffodil International University",
-            "graduation_year": 2026,
-            "cgpa": 3.68
-        })
 
-    # 6. Projects detection
+    # 6. Projects detection - only if explicitly in text
     projects = []
     proj_pattern = re.compile(r'(?:Project|System|App|Platform|Portal|Tracker|Engine|Hub)\b', re.IGNORECASE)
     for i, line in enumerate(lines):
         if proj_pattern.search(line) and len(line) < 60:
-            desc = lines[i+1] if i+1 < len(lines) else "Built full-stack application with automated testing and modern UI."
+            desc = lines[i+1] if i+1 < len(lines) else ""
             projects.append({
                 "title": line.strip("•- "),
                 "description": desc,
-                "tech_stack": ["Python", "FastAPI", "React", "PostgreSQL"],
-                "link": "https://github.com/candidate/project"
+                "tech_stack": [],
+                "link": ""
             })
             if len(projects) >= 2:
                 break
-                
-    if not projects:
-        projects = [
-            {
-                "title": "AI Smart Placement Portal",
-                "description": "Developed full-stack web application with intelligent candidate-job semantic matching and distance calculations.",
-                "tech_stack": ["Python", "FastAPI", "React", "PostgreSQL"],
-                "link": "https://github.com/candidate/smart-placement"
-            },
-            {
-                "title": "E-Commerce REST Microservices",
-                "description": "Architected modular microservices backend with JWT security, Docker containers, and Redis caching.",
-                "tech_stack": ["Node.js", "Docker", "MongoDB", "Express"],
-                "link": "https://github.com/candidate/microservices"
-            }
-        ]
 
-    # 7. Experience detection
-    experience = [
-        {
-            "title": "Software Engineering Intern",
-            "company": "TechNova Labs",
-            "duration": "Jun 2025 - Dec 2025",
-            "description": "Assisted in building REST APIs, optimized database queries, and implemented responsive frontend interfaces."
-        }
-    ]
-
-    # 8. Certifications
-    certifications = [
-        {"title": "Meta Front-End Developer Professional Certificate", "issuer": "Coursera", "year": 2025},
-        {"title": "AWS Certified Cloud Practitioner", "issuer": "Amazon Web Services", "year": 2026}
-    ]
+    # 7. Location detection if mentioned in resume
+    detected_location = ""
+    loc_keywords = ["savar", "banani", "mohakhali", "dhanmondi", "uttara", "gulshan", "dhaka", "chittagong", "sylhet", "rajshahi"]
+    for kw in loc_keywords:
+        if kw in raw_text.lower():
+            detected_location = kw.title() + (", Dhaka" if kw in ["savar", "banani", "mohakhali", "dhanmondi", "uttara", "gulshan"] else ", Bangladesh")
+            break
 
     return {
         "full_name": full_name,
-        "email": email or "student@diu.edu.bd",
+        "email": email,
         "phone": phone,
-        "headline": "Junior Software Engineer | Recent Graduate",
+        "headline": "",
         "education": education,
         "skills": skills,
-        "experience": experience,
+        "experience": [],
         "projects": projects,
-        "certifications": certifications,
-        "preferred_location_name": "Dhaka, Bangladesh"
+        "certifications": [],
+        "preferred_location_name": detected_location
     }
 
 def parse_resume_to_profile(raw_text: str) -> Dict[str, Any]:
     """Extracts structured career profile from resume using LLM with deterministic NLP fallback."""
     if not raw_text or len(raw_text.strip()) < 10:
-        return extract_profile_with_fallback("Sample Software Engineering Graduate Resume")
+        return {
+            "full_name": "",
+            "email": "",
+            "phone": "",
+            "headline": "",
+            "education": [],
+            "skills": [],
+            "experience": [],
+            "projects": [],
+            "certifications": [],
+            "preferred_location_name": ""
+        }
 
     # Attempt LLM extraction if client available
     prompt = f"""Extract the career profile details from this resume text into this exact JSON schema:

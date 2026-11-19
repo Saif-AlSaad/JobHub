@@ -24,6 +24,13 @@ class UserLogin(BaseModel):
     email: str
     password: str
 
+class SupabaseSyncRequest(BaseModel):
+    supabase_uid: str
+    email: str
+    role: Optional[str] = "JOB_SEEKER"
+    full_name: Optional[str] = None
+    company_name: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     email: str
@@ -275,7 +282,9 @@ class ResumeExtractionReview(BaseModel):
     experience: List[Dict[str, Any]] = []
     projects: List[Dict[str, Any]] = []
     certifications: List[Dict[str, Any]] = []
-    preferred_location_name: Optional[str] = "Dhaka, Bangladesh"
+    preferred_location_name: Optional[str] = None
+    preferred_job_types: Optional[List[str]] = []
+    preferred_roles: Optional[List[str]] = []
 
 class JobExtractionReview(BaseModel):
     title: str

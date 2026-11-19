@@ -23,10 +23,14 @@
 ## 📖 Table of Contents
 - [✨ Overview](#-overview)
 - [👥 Team Collaboration & Quick Commands for Each Member](#-team-collaboration--quick-commands-for-each-member)
-- [🚀 Quick Start (How to Run the Project)](#-quick-start-how-to-run-the-project)
-  - [Method 1: One-Click Launcher (Windows)](#method-1-one-click-launcher-windows-easiest)
-  - [Method 2: Step-by-Step Manual Run](#method-2-step-by-step-manual-run)
-  - [Method 3: Docker Compose](#method-3-docker-compose)
+- [🚀 Quick Start: How to Start the Project](#-quick-start-how-to-start-the-project)
+  - [📋 Prerequisites](#-prerequisites)
+  - [⚡ Method 1: One-Click Startup (Windows — Fastest)](#-method-1-one-click-startup-windows--fastest)
+  - [🛠️ Method 2: Step-by-Step Manual Startup (Database, Backend & Frontend)](#-method-2-step-by-step-manual-startup-database-backend--frontend)
+    - [1. Database Setup & Seeding](#1-database-setup--seeding)
+    - [2. Backend Setup (FastAPI)](#2-backend-setup-fastapi)
+    - [3. Frontend Setup (React + Vite)](#3-frontend-setup-react--vite)
+  - [🐳 Method 3: Full-Stack Docker Compose](#-method-3-full-stack-docker-compose)
 - [🔑 Demo Login Accounts](#-demo-login-accounts)
 - [📁 Project Structure](#-project-structure)
 - [🌟 Key Features](#-key-features)
@@ -39,6 +43,7 @@
 - [🛠️ Tech Stack & Architecture](#-tech-stack--architecture)
 - [🔌 API Endpoints & Documentation](#-api-endpoints--documentation)
 - [⚙️ Configuration & Environment Variables](#-configuration--environment-variables)
+- [⚡ Supabase Integration & Setup Guide (PostgreSQL, Auth & Storage)](#-supabase-integration--setup-guide-postgresql-auth--storage)
 - [🌱 Database Reseeding](#-database-reseeding)
 
 ---
@@ -120,73 +125,183 @@ When a feature is finished and ready to merge into production:
 
 ---
 
-## 🚀 Quick Start (How to Run the Project)
+## 🚀 Quick Start: How to Start the Project
 
-### Prerequisites
-Make sure you have installed:
-- **Python**: `v3.11` or higher
-- **Node.js**: `v18.0` or higher & `npm`
+JobHub supports **two operating modes**:
+1. ☁️ **Cloud Mode (Supabase PostgreSQL)**: Full production-like environment with hosted PostgreSQL, authentication, and Supabase Storage for candidate resumes and recruiter company logos.
+2. 💻 **Offline / Local Mode (SQLite)**: Instant, zero-config local mode using SQLite and local disk storage (`backend/uploads/`).
 
 ---
 
-### Method 1: One-Click Launcher (Windows — Easiest)
+### 📋 Prerequisites
+Make sure you have installed on your system:
+- **Python**: `v3.11` or higher (verified on 3.11, 3.12, and 3.14)
+- **Node.js**: `v18.0` or higher (with `npm`)
+- **Git**
 
-Simply double-click [`start-all.bat`](file:///e:/VSCode/JobHuBB/start-all.bat) or run from your terminal:
+---
+
+### ⚡ Method 1: One-Click Startup (Windows — Fastest)
+
+If you have already installed dependencies at least once, double-click [`start-all.bat`](file:///e:/VSCode/JobHuBB/start-all.bat) or run from your terminal:
 
 ```cmd
 .\start-all.bat
 ```
 
 > [!TIP]
-> This automatically starts the **FastAPI backend** (Port 8000) and the **Vite React frontend** (Port 5173) in two dedicated terminal windows.
+> **What this does automatically:**
+> 1. Activates Python `venv` and starts the **FastAPI backend** on [http://localhost:8000](http://localhost:8000).
+> 2. Starts the **Vite React frontend** on [http://localhost:5173](http://localhost:5173).
+> 3. Automatically opens your default web browser to the JobHub portal.
+> 4. Prints demo account credentials directly in your terminal.
+
+*Need to start services separately?*
+- Backend only: double-click [`run-backend.bat`](file:///e:/VSCode/JobHuBB/run-backend.bat)
+- Frontend only: double-click [`run-frontend.bat`](file:///e:/VSCode/JobHuBB/run-frontend.bat)
 
 ---
 
-### Method 2: Step-by-Step Manual Run
+### 🛠️ Method 2: Step-by-Step Manual Startup (Database, Backend & Frontend)
 
-#### 1️⃣ Start the Backend
-Open a terminal in the project root:
-```powershell
-# Navigate into backend directory
-cd backend
+Follow these 3 steps to configure and launch each tier of JobHub:
 
-# Create virtual environment (if not already created)
-python -m venv venv
+#### 1. Database Setup & Seeding
 
-# Activate virtual environment
-.\venv\Scripts\activate
+Choose either **Supabase PostgreSQL** (Cloud) or **Local SQLite** (Offline):
 
-# Install dependencies (first time only)
-pip install -r requirements.txt
+<details open>
+<summary><b>Option A: Hosted Supabase PostgreSQL (Recommended)</b></summary>
 
-# Run the FastAPI server
-python -m uvicorn app.main:app --reload --port 8000
-```
-- **Backend API**: [http://localhost:8000](http://localhost:8000)
-- **Interactive Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+1. **Configure Environment Variables**:
+   In the project root, ensure `.env` (or `backend/.env`) contains your Supabase credentials:
+   ```env
+   # Transaction Pooler URI (Port 6543 with sslmode=require)
+   DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require"
 
-#### 2️⃣ Start the Frontend
-Open a second terminal window:
-```powershell
-# Navigate into frontend directory
-cd frontend
+   # Supabase Project Credentials
+   SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+   SUPABASE_ANON_KEY="your-anon-publishable-key"
+   SUPABASE_SERVICE_ROLE_KEY="your-service-role-secret-key"
+   SUPABASE_JWT_SECRET="your-jwt-secret"
+   ```
 
-# Install dependencies (first time only)
-npm install
+   > [!IMPORTANT]
+   > **Password Characters**: If your database password contains characters like `@`, URL-encode it (e.g. replace `@` with `%40`). JobHub automatically sanitizes bracket notation and resolves PostgreSQL drivers.
 
-# Launch Vite development server
-npm run dev
-```
-- **Web Application**: [http://localhost:5173](http://localhost:5173)
+2. **Run Schema Migration & Seeding**:
+   Open a terminal, activate your virtual environment, and run the automated migration tool:
+   ```powershell
+   cd backend
+   .\venv\Scripts\activate
+   python migrate_to_supabase.py --seed
+   ```
+   *This automatically generates all 12 relational tables with foreign keys and indexes on your Supabase PostgreSQL instance, verifies connectivity, and seeds 12 companies, 32 jobs, 20 candidate profiles, and live demo accounts.*
+
+3. **Verify Storage Buckets (One-Time Setup in Supabase Dashboard)**:
+   In your Supabase project, go to **Storage > Buckets** and ensure the two buckets exist:
+   - `resumes` — Set to **Private** (candidate CVs are accessed securely via backend-generated signed URLs).
+   - `company-logos` — Set to **Public** (recruiter brand logos displayed publicly across job cards).
+</details>
+
+<details>
+<summary><b>Option B: Local SQLite (Zero-Config Offline Mode)</b></summary>
+
+If you want to run completely offline without setting up Supabase:
+1. Leave `DATABASE_URL` as default in `.env`:
+   ```env
+   DATABASE_URL="sqlite:///./job_hub.db"
+   ```
+2. Seed the local database:
+   ```powershell
+   cd backend
+   .\venv\Scripts\activate
+   python seed_data.py
+   ```
+   *Uploaded resumes and company logos will automatically be saved to `backend/uploads/` on your local drive.*
+</details>
 
 ---
 
-### Method 3: Docker Compose
-If you have **Docker Desktop** installed, run the full containerized stack (PostgreSQL + pgvector, Backend, Frontend):
+#### 2. Backend Setup (FastAPI)
+
+1. **Navigate to the backend directory**:
+   ```bash
+   cd backend
+   ```
+
+2. **Create a virtual environment** (first time only):
+   ```bash
+   python -m venv venv
+   ```
+
+3. **Activate the virtual environment**:
+   - **Windows (PowerShell / CMD)**:
+     ```powershell
+     .\venv\Scripts\activate
+     ```
+   - **macOS / Linux**:
+     ```bash
+     source venv/bin/activate
+     ```
+
+4. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+5. **Start the FastAPI backend server**:
+   ```bash
+   python -m uvicorn app.main:app --reload --port 8000
+   ```
+
+6. **Verify Backend Health**:
+   - **API Base**: [http://localhost:8000](http://localhost:8000)
+   - **Interactive Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
+   - **Alternative ReDoc UI**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
+#### 3. Frontend Setup (React + Vite)
+
+1. **Open a new terminal window** and navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. **Install Node.js dependencies** (first time only):
+   ```bash
+   npm install
+   ```
+
+3. **Configure Frontend Environment Variables**:
+   Verify or create `frontend/.env`:
+   ```env
+   VITE_API_BASE_URL="http://localhost:8000/api/v1"
+   VITE_SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+   VITE_SUPABASE_ANON_KEY="your-anon-publishable-key"
+   ```
+   *(If running purely on local SQLite, only `VITE_API_BASE_URL` is required).*
+
+4. **Launch the Vite development server**:
+   ```bash
+   npm run dev
+   ```
+
+5. **Open the Web Application**:
+   - **JobHub Web Portal**: [http://localhost:5173](http://localhost:5173)
+
+---
+
+### 🐳 Method 3: Full-Stack Docker Compose
+
+If you have **Docker Desktop** installed, run the full containerized stack (PostgreSQL + pgvector, Backend, Frontend) with a single command:
 
 ```bash
 docker-compose up --build
 ```
+- **Web Portal**: [http://localhost:5173](http://localhost:5173)
+- **Backend API & Swagger Docs**: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
@@ -391,14 +506,119 @@ Environment variables can be customized in `.env` (or `backend/.env`):
 
 | Variable | Default Value | Description |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `sqlite:///./job_hub.db` | Database connection string (SQLite or PostgreSQL) |
-| `JWT_SECRET` | `super-secret-key-job-hub-prototype-2026-secure-jwt` | Secret key for signing JWT tokens |
+| `DATABASE_URL` | `sqlite:///./job_hub.db` | Database connection string (SQLite fallback or Supabase PostgreSQL Pooler URI) |
+| `SUPABASE_URL` | `""` | Supabase Project API URL (e.g. `https://xyz.supabase.co`) |
+| `SUPABASE_ANON_KEY` | `""` | Supabase Public / Anon API Key |
+| `SUPABASE_SERVICE_ROLE_KEY` | `""` | Supabase Service Role Key (for admin storage management) |
+| `SUPABASE_JWT_SECRET` | `""` | Supabase JWT Secret for server-side token validation |
+| `SUPABASE_RESUMES_BUCKET` | `"resumes"` | Supabase Storage bucket for candidate CVs |
+| `SUPABASE_LOGOS_BUCKET` | `"company-logos"` | Supabase Storage bucket for recruiter brand logos |
+| `JWT_SECRET` | `super-secret-key-job-hub-prototype-2026-secure-jwt` | Secret key for signing local demo JWT tokens |
 | `FRONTEND_URL` | `http://localhost:5173` | Allowed CORS origin for web client |
 | `GEMINI_API_KEY` | `""` | Optional Google Gemini API key for advanced AI features |
 | `WEIGHT_SEMANTIC`| `0.40` | AI match weight for TF-IDF semantic description similarity |
 | `WEIGHT_SKILL` | `0.30` | AI match weight for required & preferred skills overlap |
 | `WEIGHT_EXP_EDU` | `0.15` | AI match weight for education and experience level |
 | `WEIGHT_LOCATION`| `0.15` | AI match weight for geographic proximity |
+
+For the frontend (Vite), configure in `frontend/.env`:
+
+| Variable | Default Value | Description |
+| :--- | :--- | :--- |
+| `VITE_API_BASE_URL` | `http://localhost:8000/api/v1` | Backend FastAPI endpoint |
+| `VITE_SUPABASE_URL` | `""` | Supabase Project API URL |
+| `VITE_SUPABASE_ANON_KEY` | `""` | Supabase Public / Anon API Key |
+
+---
+
+## ⚡ Supabase Integration & Setup Guide (PostgreSQL, Auth & Storage)
+
+JobHub features built-in **Dual-Mode Architecture**: it runs with zero configuration on local SQLite and local storage when offline or for local demonstrations, and seamlessly transitions to **Supabase Cloud** when environment credentials are provided.
+
+### Step 1: Create Your Supabase Project
+1. Log in to [Supabase](https://supabase.com) and click **"New Project"**.
+2. Give your project a name (e.g. `JobHub`) and create a strong database password (save this password safely!).
+3. Choose your closest region (e.g. `ap-south-1` South Asia - Mumbai, or Singapore).
+
+---
+
+### Step 2: Retrieve Credentials from Supabase Dashboard
+
+Here is exactly where each credential is found in the Supabase Dashboard:
+
+| Credential | Location in Supabase Dashboard | Description / Format |
+| :--- | :--- | :--- |
+| **Project ID & Region** | **Project Settings** > **General** | e.g. `atgpfccgwadlzvyrloke`, region `ap-south-1` |
+| **Project URL** | **Project Settings** > **API** (or General) | `https://[PROJECT_REF].supabase.co` |
+| **Database Pooler URI** | Top Header **"Connect"** button OR **Project Settings** > **Database** > **Connection Pooling** | Transaction Mode (Port `6543`), URI format: `postgresql://postgres.[PROJECT_REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require` |
+| **Publishable / Anon Key** | **Project Settings** > **API Keys** > **Publishable key** | Key starting with `sb_publishable_...` (or legacy `eyJ...`). Safe for frontend browser use. |
+| **Secret / Service Role Key** | **Project Settings** > **API Keys** > **Secret keys** | Key starting with `sb_secret_...` (or legacy `eyJ...`). Used securely by the FastAPI backend. |
+| **JWT Secret** | **Project Settings** > **JWT Keys** > **Legacy JWT Secret** tab | Base64-encoded secret string used by FastAPI to verify Supabase JWT tokens. |
+
+> [!WARNING]
+> **Password Encoding in Database URI**: If your database password contains characters like `@`, `#`, `%`, or `:`, URL-encode them in your URI (e.g. replace `@` with `%40`). JobHub automatically strips literal square brackets (`:[pwd]@`) and resolves psycopg2 dialect compatibility.
+
+---
+
+### Step 3: Create Storage Buckets
+In the Supabase Dashboard, navigate to **Storage > Buckets** and create two buckets:
+1. `resumes` — Set to **Private** (candidate CV documents are accessed securely via 7-day signed URLs generated by the backend).
+2. `company-logos` — Set to **Public** (allows instant public rendering of recruiter company logos across job cards).
+
+---
+
+### Step 4: Populate Environment Files
+
+Update root `.env` (or `backend/.env`):
+```ini
+# Database Connection (Supabase Transaction Pooler, Port 6543)
+DATABASE_URL="postgresql://postgres.[PROJECT_REF]:[YOUR_PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?sslmode=require"
+
+# Supabase API & Auth Keys
+SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+SUPABASE_ANON_KEY="sb_publishable_..."
+SUPABASE_SERVICE_ROLE_KEY="sb_secret_..."
+SUPABASE_JWT_SECRET="your-base64-jwt-secret-string"
+
+# Storage Bucket Names
+SUPABASE_RESUMES_BUCKET="resumes"
+SUPABASE_LOGOS_BUCKET="company-logos"
+```
+
+Update `frontend/.env`:
+```ini
+VITE_API_BASE_URL="http://localhost:8000/api/v1"
+VITE_SUPABASE_URL="https://[PROJECT_REF].supabase.co"
+VITE_SUPABASE_ANON_KEY="sb_publishable_..."
+```
+
+---
+
+### Step 5: Migrate Schema & Seed Initial Data
+Run the automated schema generator and seed tool:
+```powershell
+cd backend
+.\venv\Scripts\activate
+python migrate_to_supabase.py --seed
+```
+
+**What this script performs:**
+1. Verifies the pooler connection to your Supabase PostgreSQL instance.
+2. Auto-creates all **12 relational tables** with indexes and foreign keys:
+   - `users`, `companies`, `recruiter_profiles`, `job_seeker_profiles`
+   - `jobs`, `applications`, `match_records`
+   - `notifications`, `notification_preferences`
+   - `conversations`, `messages`, `admin_reports`
+3. Inspects and prints all verified active tables.
+4. Seeds 12 Bangladesh tech companies, 32 realistic job postings, 20 candidate profiles, sample applications, match scores, and conversations.
+
+---
+
+### Step 6: Verify Everything is Working
+1. **Backend Verification**: Start backend with `python -m uvicorn app.main:app --reload --port 8000` and visit [http://localhost:8000/docs](http://localhost:8000/docs).
+2. **Frontend Verification**: Start frontend with `npm run dev` and open [http://localhost:5173](http://localhost:5173).
+3. **Database Verification**: Open your Supabase Dashboard > **Table Editor** to view all populated tables and live data.
+4. **Storage Verification**: Upload a candidate resume or recruiter logo to confirm files are stored in Supabase buckets.
 
 ---
 

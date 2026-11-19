@@ -338,9 +338,19 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
-              <span>{error}</span>
+            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex flex-col gap-1.5 animate-in fade-in duration-150">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+                <span>{error}</span>
+              </div>
+              {(error.toLowerCase().includes('verif') || error.toLowerCase().includes('confirm')) && (
+                <Link
+                  to={`/verify-email?email=${encodeURIComponent(email)}&role=JOB_SEEKER`}
+                  className="ml-6 text-[11px] font-semibold text-teal-800 underline hover:text-teal-900"
+                >
+                  Verify or Resend Email &rarr;
+                </Link>
+              )}
             </div>
           )}
 
@@ -504,9 +514,19 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2.5 animate-in fade-in duration-150">
-              <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
-              <span>{error}</span>
+            <div className="p-3.5 bg-red-50/90 border border-red-200 text-red-700 text-xs rounded-xl flex flex-col gap-1.5 animate-in fade-in duration-150">
+              <div className="flex items-center gap-2.5">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-500" />
+                <span>{error}</span>
+              </div>
+              {(error.toLowerCase().includes('verif') || error.toLowerCase().includes('confirm')) && (
+                <Link
+                  to={`/verify-email?email=${encodeURIComponent(email)}&role=RECRUITER`}
+                  className="ml-6 text-[11px] font-semibold text-amber-800 underline hover:text-amber-900"
+                >
+                  Verify or Resend Work Email &rarr;
+                </Link>
+              )}
             </div>
           )}
 

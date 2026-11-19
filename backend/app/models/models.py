@@ -1,9 +1,13 @@
 import datetime
 from sqlalchemy import (
-    Column, Integer, String, Boolean, Float, Text, DateTime, ForeignKey, Enum, Table
+    Column, Integer, String, Boolean, Float, Text, DateTime, ForeignKey, Enum, Table, UniqueConstraint
 )
 from sqlalchemy.orm import relationship
 from app.database import Base
+
+def get_utc_now():
+    """Generates timezone-aware UTC datetime compatible with Python 3.12+ and SQLAlchemy."""
+    return datetime.datetime.now(datetime.timezone.utc)
 
 class UserRole(str):
     JOB_SEEKER = "JOB_SEEKER"
@@ -29,18 +33,20 @@ class NotificationType(str):
     HIRED = "HIRED"
     MESSAGE = "MESSAGE"
     PROFILE_REMINDER = "PROFILE_REMINDER"
+    SYSTEM = "SYSTEM"
 
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, index=True)
+    supabase_uid = Column(String(64), unique=True, index=True, nullable=True)  # Bridges Supabase Auth UUID
     email = Column(String(255), unique=True, index=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=True)  # Nullable for OAuth/Supabase Auth users
     role = Column(String(50), default=UserRole.JOB_SEEKER, nullable=False)
-    is_verified = Column(Boolean, default=True)
+    is_verified = Column(Boolean, default=False)  # False until email is verified
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     seeker_profile = relationship("JobSeekerProfile", back_populates="user", uselist=False, cascade="all, delete-orphan")
@@ -63,7 +69,7 @@ class Company(Base):
     size = Column(String(50), default="50-200 employees")
     founded_year = Column(Integer, default=2018)
     is_verified = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
 
     # Relationships
     recruiters = relationship("RecruiterProfile", back_populates="company")
@@ -80,8 +86,8 @@ class RecruiterProfile(Base):
     phone = Column(String(50), nullable=True)
     avatar_url = Column(Text, nullable=True)
     is_approved = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     user = relationship("User", back_populates="recruiter_profile")
@@ -123,8 +129,8 @@ class JobSeekerProfile(Base):
     resume_filename = Column(String(255), nullable=True)
     resume_raw_text = Column(Text, nullable=True)
     profile_completed = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     user = relationship("User", back_populates="seeker_profile")
@@ -162,8 +168,8 @@ class Job(Base):
     education_level = Column(String(100), default="BSc in Computer Science or Software Engineering")
     deadline = Column(DateTime, nullable=True)
     status = Column(String(50), default="ACTIVE")  # ACTIVE, PAUSED, CLOSED
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     recruiter = relationship("RecruiterProfile", back_populates="jobs")
@@ -174,6 +180,9 @@ class Job(Base):
 
 class Application(Base):
     __tablename__ = "applications"
+    __table_args__ = (
+        UniqueConstraint('job_id', 'seeker_id', name='uq_job_seeker_application'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
@@ -184,8 +193,8 @@ class Application(Base):
     notes = Column(Text, nullable=True)
     cover_note = Column(Text, nullable=True)
     resume_used = Column(String(255), nullable=True)
-    applied_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    applied_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     job = relationship("Job", back_populates="applications")
@@ -193,6 +202,9 @@ class Application(Base):
 
 class MatchRecord(Base):
     __tablename__ = "match_records"
+    __table_args__ = (
+        UniqueConstraint('job_id', 'seeker_id', name='uq_job_seeker_match'),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="CASCADE"), nullable=False)
@@ -207,7 +219,7 @@ class MatchRecord(Base):
     explanation = Column(Text, default='[]')    # JSON array of bullet points
     distance_km = Column(Float, nullable=True)
     is_nearby = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
 
     # Relationships
     job = relationship("Job", back_populates="matches")
@@ -224,7 +236,7 @@ class Notification(Base):
     link = Column(String(255), nullable=True)
     data_json = Column(Text, default='{}')
     is_read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
 
     # Relationships
     user = relationship("User", back_populates="notifications")
@@ -249,8 +261,8 @@ class Conversation(Base):
     job_id = Column(Integer, ForeignKey("jobs.id", ondelete="SET NULL"), nullable=True)
     seeker_id = Column(Integer, ForeignKey("job_seeker_profiles.id", ondelete="CASCADE"), nullable=False)
     recruiter_id = Column(Integer, ForeignKey("recruiter_profiles.id", ondelete="CASCADE"), nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
+    updated_at = Column(DateTime, default=get_utc_now, onupdate=get_utc_now)
 
     # Relationships
     job = relationship("Job", back_populates="conversations")
@@ -266,7 +278,7 @@ class Message(Base):
     sender_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     content = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
 
     # Relationships
     conversation = relationship("Conversation", back_populates="messages")
@@ -281,4 +293,4 @@ class AdminReport(Base):
     reported_user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     reason = Column(Text, nullable=False)
     status = Column(String(50), default="PENDING")
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    created_at = Column(DateTime, default=get_utc_now)
