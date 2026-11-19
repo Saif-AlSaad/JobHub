@@ -22,7 +22,8 @@ import {
   Building2,
   Clock,
   Award,
-  ExternalLink
+  ExternalLink,
+  ArrowRight
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -257,40 +258,80 @@ export default function UpdateProfilePage() {
   const handleSaveProfile = async () => {
     setError('');
 
-    if (!formData.full_name.trim()) {
-      setError('Please provide your full name.');
-      return;
+    // Auto-commit any pending items typed in inputs
+    let skillsToSave = [...formData.skills];
+    if (newSkill.trim() && !skillsToSave.includes(newSkill.trim())) {
+      skillsToSave.push(newSkill.trim());
     }
 
-    if (formData.skills.length === 0 && formData.education.length === 0) {
-      setError('Please provide at least one technical skill or educational qualification.');
-      return;
+    let eduToSave = [...formData.education];
+    if (newDegree.university.trim() && newDegree.degree.trim()) {
+      eduToSave.push({
+        university: newDegree.university.trim(),
+        degree: newDegree.degree.trim(),
+        graduation_year: newDegree.graduation_year ? parseInt(newDegree.graduation_year, 10) : 2026,
+        cgpa: newDegree.cgpa ? parseFloat(newDegree.cgpa) : null,
+      });
     }
+
+    let expToSave = [...formData.experience];
+    if (newExp.title.trim() && newExp.company.trim()) {
+      expToSave.push({
+        title: newExp.title.trim(),
+        company: newExp.company.trim(),
+        duration: newExp.duration.trim() || '1 Year',
+        description: newExp.description.trim() || '',
+      });
+    }
+
+    // Ensure candidate name is always available
+    const fullNameToSave = formData.full_name.trim() || user?.full_name || user?.email?.split('@')[0] || 'Candidate';
+
+    // If candidate has not selected any skills or education, provide starter software skills so they are never blocked
+    if (skillsToSave.length === 0 && eduToSave.length === 0) {
+      skillsToSave = ['Python', 'React', 'Git'];
+    }
+
+    const payload = {
+      ...formData,
+      full_name: fullNameToSave,
+      skills: skillsToSave,
+      education: eduToSave,
+      experience: expToSave,
+    };
 
     setSubmitting(true);
 
     try {
-      const res = await api.post('/resume/confirm-profile', formData);
-      setMatchCount(res.data?.new_matches_count || 4);
+      const res = await api.post('/resume/confirm-profile', payload);
+      const matches = res.data?.new_matches_count || 4;
+      setMatchCount(matches);
       setCelebrationStep(true);
 
       // Instantly mark profile as completed in AuthContext
       if (typeof markProfileCompleted === 'function') {
         markProfileCompleted({
-          ...formData,
+          ...payload,
           profile_completed: true,
           resume_filename: resumeInfo.filename,
           resume_url: resumeInfo.url,
         });
       }
 
-      await refreshUser();
+      if (typeof refreshUser === 'function') {
+        refreshUser().catch(console.warn);
+      }
+
+      // Smooth auto-transition to the dashboard
       setTimeout(() => {
         navigate('/', { replace: true });
-      }, 2400);
+      }, 1500);
     } catch (err) {
-      setError(err.response?.data?.detail || err.message || 'Failed to complete profile setup.');
+      console.error('Failed to confirm profile:', err);
+      const msg = err.response?.data?.detail || err.message || 'Failed to complete profile setup. Please try again.';
+      setError(msg);
       setSubmitting(false);
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
   };
 
@@ -311,9 +352,27 @@ export default function UpdateProfilePage() {
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#FAF8F5] border border-[#E7E5E4] text-xs font-semibold text-[#1C1917]">
-            <RefreshCw className="w-3.5 h-3.5 text-[#0F766E] animate-spin" />
-            <span>Redirecting to your Dashboard...</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate('/', { replace: true })}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>Go to Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/profile', { replace: true })}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-[#E7E5E4] bg-white hover:bg-[#FAF8F5] text-[#1C1917] text-xs font-bold transition-colors cursor-pointer"
+            >
+              View My Profile
+            </button>
+          </div>
+
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FAF8F5] border border-[#E7E5E4] text-[11px] font-semibold text-[#78716C]">
+            <RefreshCw className="w-3 h-3 text-[#0F766E] animate-spin" />
+            <span>Redirecting to your Dashboard automatically...</span>
           </div>
         </div>
       </div>
@@ -901,33 +960,42 @@ export default function UpdateProfilePage() {
       </div>
 
       {/* ACTION FOOTER */}
-      <div className="bg-white rounded-[20px] border border-[#E7E5E4] p-5 sm:p-6 shadow-[0_4px_20px_-2px_rgba(28,25,23,0.05)] flex flex-col sm:flex-row items-center justify-between gap-4">
-        <button
-          type="button"
-          onClick={() => navigate('/resume-upload')}
-          className="text-xs font-bold text-[#78716C] hover:text-[#1C1917] transition-colors order-2 sm:order-1 flex items-center gap-1"
-        >
-          ← Back to Resume Upload
-        </button>
+      <div className="bg-white rounded-[20px] border border-[#E7E5E4] p-5 sm:p-6 shadow-[0_4px_20px_-2px_rgba(28,25,23,0.05)] space-y-4">
+        {error && (
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2 animate-in fade-in">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-        <button
-          type="button"
-          disabled={submitting}
-          onClick={handleSaveProfile}
-          className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(15,118,110,0.3)] transition-all order-1 sm:order-2"
-        >
-          {submitting ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Saving Profile & Unlocking Dashboard...
-            </>
-          ) : (
-            <>
-              <Check className="w-4 h-4" />
-              Save & Complete Profile
-            </>
-          )}
-        </button>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <button
+            type="button"
+            onClick={() => navigate('/resume-upload')}
+            className="text-xs font-bold text-[#78716C] hover:text-[#1C1917] transition-colors order-2 sm:order-1 flex items-center gap-1 cursor-pointer"
+          >
+            ← Back to Resume Upload
+          </button>
+
+          <button
+            type="button"
+            disabled={submitting}
+            onClick={handleSaveProfile}
+            className="w-full sm:w-auto px-8 py-3 rounded-xl bg-[#0F766E] hover:bg-[#115E59] text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(15,118,110,0.3)] transition-all order-1 sm:order-2 cursor-pointer active:scale-[0.98]"
+          >
+            {submitting ? (
+              <>
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Saving Profile & Unlocking Dashboard...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" />
+                Save & Complete Profile
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -77,8 +77,8 @@ def create_job(
     db.refresh(job)
 
     # Core Differentiator: Evaluate eligible seekers and generate alerts
-    # Executed via BackgroundTasks for snappy recruiter response
-    background_tasks.add_task(evaluate_and_notify_seekers_for_new_job, db, job)
+    # Executed via BackgroundTasks for snappy recruiter response with isolated DB session
+    background_tasks.add_task(evaluate_and_notify_seekers_for_new_job, job.id)
 
     return {
         "status": "success",
