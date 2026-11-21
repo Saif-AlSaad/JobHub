@@ -58,24 +58,22 @@ def init_db():
     """Initializes all database tables and ensures critical unique indexes on the configured engine."""
     Base.metadata.create_all(bind=engine)
     from sqlalchemy import text
-    with engine.begin() as conn:
+    
+    is_sqlite = engine.url.drivername.startswith("sqlite")
+    boolean_default = "0" if is_sqlite else "FALSE"
+    
+    statements = [
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_match ON match_records (job_id, seeker_id)",
+        "CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_application ON applications (job_id, seeker_id)",
+        "ALTER TABLE users ADD COLUMN IF NOT EXISTS supabase_uid VARCHAR(64)" if not is_sqlite else "ALTER TABLE users ADD COLUMN supabase_uid VARCHAR(64)",
+        f"ALTER TABLE recruiter_profiles ADD COLUMN IF NOT EXISTS profile_completed BOOLEAN DEFAULT {boolean_default}" if not is_sqlite else f"ALTER TABLE recruiter_profiles ADD COLUMN profile_completed BOOLEAN DEFAULT {boolean_default}",
+        "ALTER TABLE recruiter_profiles ADD COLUMN IF NOT EXISTS skills TEXT DEFAULT '[]'" if not is_sqlite else "ALTER TABLE recruiter_profiles ADD COLUMN skills TEXT DEFAULT '[]'",
+    ]
+
+    for stmt in statements:
         try:
-            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_match ON match_records (job_id, seeker_id)"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_job_seeker_application ON applications (job_id, seeker_id)"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE users ADD COLUMN supabase_uid VARCHAR(64)"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE recruiter_profiles ADD COLUMN profile_completed BOOLEAN DEFAULT 0"))
-        except Exception:
-            pass
-        try:
-            conn.execute(text("ALTER TABLE recruiter_profiles ADD COLUMN skills TEXT DEFAULT '[]'"))
+            with engine.connect() as conn:
+                conn.execute(text(stmt))
+                conn.commit()
         except Exception:
             pass

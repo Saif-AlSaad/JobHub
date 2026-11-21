@@ -42,6 +42,8 @@ def get_conversations(
             Message.is_read == False
         ).count()
 
+        other_party = (c.seeker.full_name if c.seeker else "Candidate") if current_user.role == UserRole.RECRUITER else (c.recruiter.full_name if c.recruiter else "Recruiter")
+
         results.append({
             "id": c.id,
             "job_id": c.job_id,
@@ -49,6 +51,7 @@ def get_conversations(
             "company_name": c.job.company.name if (c.job and c.job.company) else (c.recruiter.company.name if (c.recruiter and c.recruiter.company) else "Employer"),
             "seeker_name": c.seeker.full_name if c.seeker else "Candidate",
             "recruiter_name": c.recruiter.full_name if c.recruiter else "Recruiter",
+            "other_party_name": other_party,
             "updated_at": c.updated_at.isoformat(),
             "unread_count": unread,
             "last_message": {
