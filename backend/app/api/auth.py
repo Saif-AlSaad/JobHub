@@ -325,6 +325,8 @@ def demo_login(role: str, db: Session = Depends(get_db)):
     profile_completed = True
     if user.role == UserRole.JOB_SEEKER and user.seeker_profile:
         profile_completed = bool(user.seeker_profile.profile_completed)
+    elif user.role == UserRole.RECRUITER and user.recruiter_profile:
+        profile_completed = bool(user.recruiter_profile.profile_completed)
 
     token = create_access_token(subject=user.id, role=user.role)
     return {

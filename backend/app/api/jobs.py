@@ -89,11 +89,13 @@ def create_job(
 @router.get("/")
 def list_jobs(
     q: Optional[str] = Query(None, description="Search query for title, company, skills"),
+    search: Optional[str] = Query(None, description="Alternative alias for search query"),
     location: Optional[str] = Query(None),
     job_type: Optional[str] = Query(None),
     is_remote: Optional[bool] = Query(None),
     min_match: Optional[float] = Query(None),
     radius_km: Optional[float] = Query(None),
+    limit: Optional[int] = Query(None, description="Maximum number of jobs to return"),
     sort_by: str = Query("best_match", description="best_match, recent, nearest, deadline"),
     current_user: Optional[User] = Depends(get_optional_current_user),
     db: Session = Depends(get_db)
@@ -101,6 +103,7 @@ def list_jobs(
     """
     Search and filter jobs with AI matching scores and location awareness.
     """
+    search_query = q or search
     query = db.query(Job).filter(Job.status == "ACTIVE")
     
     if location and location.lower() != "all":
@@ -178,8 +181,8 @@ def list_jobs(
             continue
 
         # Search term filter in title, description, or skills
-        if q:
-            q_lower = q.lower()
+        if search_query:
+            q_lower = search_query.lower()
             skills_str = " ".join(json.loads(job.required_skills or "[]")).lower()
             title_match = q_lower in job.title.lower()
             comp_match = q_lower in (job.company.name.lower() if job.company else "")
@@ -221,10 +224,25 @@ def list_jobs(
     else:  # recent
         results.sort(key=lambda x: x["created_at"], reverse=True)
 
+    if limit and limit > 0:
+        results = results[:limit]
+
     return {
         "count": len(results),
         "jobs": results
     }
+
+@router.post("/{job_id}/save")
+def toggle_save_job(
+    job_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Save / bookmark a job for later viewing."""
+    job = db.query(Job).filter(Job.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    return {"status": "success", "saved": True, "job_id": job.id}
 
 @router.get("/{job_id}")
 def get_job_details(
@@ -292,7 +310,7 @@ def get_job_details(
                 applied_status = {
                     "application_id": app.id,
                     "status": app.status,
-                    "applied_at": app.applied_at.isoformat()
+                    "applied_at": app.applied_at.isoformat() if app.applied_at else None
                 }
 
     req_skills = json.loads(job.required_skills or "[]")

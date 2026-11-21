@@ -155,6 +155,12 @@ function getMockFallbackResponse(config) {
 
   // Applications
   if (url.includes('/applications')) {
+    if (url.includes('/withdraw')) {
+      return { data: { status: 'success', message: 'Application withdrawn successfully (Demo Mode)' } };
+    }
+    if (method === 'put' && url.includes('/status')) {
+      return { data: { status: 'success', message: 'Status updated successfully (Demo Mode)' } };
+    }
     if (method === 'post') {
       const savedUser = localStorage.getItem('jobhub_mock_user');
       const user = savedUser ? JSON.parse(savedUser) : null;

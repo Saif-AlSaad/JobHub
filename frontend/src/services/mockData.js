@@ -588,6 +588,41 @@ export const MOCK_RECRUITER_SUMMARY = {
       applied_at: '2026-10-14T09:15:00Z',
     },
   ],
+  top_candidates: [
+    {
+      application_id: 501,
+      candidate_name: 'Tanvir Ahmed',
+      seeker_name: 'Tanvir Ahmed',
+      university: 'BUET CSE Graduate',
+      cgpa: 3.88,
+      job_title: 'Junior Full-Stack AI Engineer',
+      match_score: 94,
+      status: 'SHORTLISTED',
+      applied_at: '2026-10-12T10:00:00Z',
+    },
+    {
+      application_id: 502,
+      candidate_name: 'Nusrat Jahan',
+      seeker_name: 'Nusrat Jahan',
+      university: 'DIU Software Engineering',
+      cgpa: 3.82,
+      job_title: 'Frontend React Developer Intern',
+      match_score: 89,
+      status: 'INTERVIEW',
+      applied_at: '2026-10-13T14:20:00Z',
+    },
+    {
+      application_id: 503,
+      candidate_name: 'Fahim Morshed',
+      seeker_name: 'Fahim Morshed',
+      university: 'NSU Computer Science',
+      cgpa: 3.75,
+      job_title: 'Software Engineer - Backend Cloud',
+      match_score: 83,
+      status: 'VIEWED',
+      applied_at: '2026-10-14T09:15:00Z',
+    },
+  ],
 };
 
 export const MOCK_ADMIN_SUMMARY = {

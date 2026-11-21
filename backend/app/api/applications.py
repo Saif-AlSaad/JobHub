@@ -214,7 +214,7 @@ def update_application_status(
         raise HTTPException(status_code=404, detail="Application not found")
 
     new_status = update_in.status.upper()
-    valid_statuses = ["APPLIED", "VIEWED", "SHORTLISTED", "INTERVIEW", "HIRED", "REJECTED"]
+    valid_statuses = ["APPLIED", "VIEWED", "SHORTLISTED", "INTERVIEW", "HIRED", "REJECTED", "WITHDRAWN"]
     if new_status not in valid_statuses:
         raise HTTPException(status_code=400, detail="Invalid status value")
 
@@ -253,4 +253,29 @@ def update_application_status(
         "status": "success",
         "message": f"Candidate status updated to {new_status}",
         "new_status": new_status
+    }
+
+@router.patch("/{app_id}/withdraw")
+def withdraw_application(
+    app_id: int,
+    seeker: JobSeekerProfile = Depends(get_current_seeker),
+    db: Session = Depends(get_db)
+):
+    """Candidate withdraws their own application."""
+    app = db.query(Application).filter(
+        Application.id == app_id,
+        Application.seeker_id == seeker.id
+    ).first()
+    if not app:
+        raise HTTPException(status_code=404, detail="Application not found or unauthorized")
+
+    app.status = "WITHDRAWN"
+    app.notes = "Application withdrawn by candidate"
+    app.updated_at = datetime.datetime.utcnow()
+    db.commit()
+
+    return {
+        "status": "success",
+        "message": "Application withdrawn successfully",
+        "new_status": "WITHDRAWN"
     }

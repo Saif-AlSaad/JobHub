@@ -121,6 +121,47 @@ def auto_provision_supabase_user(db: Session, user_info: Dict[str, Any]) -> User
         if not user.supabase_uid:
             user.supabase_uid = supabase_uid
         user.is_verified = True
+
+        # Ensure notification preferences exist
+        if not db.query(NotificationPreference).filter_by(user_id=user.id).first():
+            pref = NotificationPreference(
+                user_id=user.id,
+                email_alerts=True,
+                in_app_alerts=True,
+                min_match_score=70.0,
+                alert_radius_km=10.0,
+            )
+            db.add(pref)
+
+        # Ensure role-specific profile exists
+        if user.role == UserRole.JOB_SEEKER and not user.seeker_profile:
+            seeker = JobSeekerProfile(
+                user_id=user.id,
+                full_name=full_name,
+                headline="",
+                preferred_job_types=json.dumps(["Internship", "Full-time"]),
+                preferred_roles=json.dumps([]),
+                preferred_skills=json.dumps([]),
+                education=json.dumps([]),
+                experience=json.dumps([]),
+                projects=json.dumps([]),
+                certifications=json.dumps([]),
+                skills=json.dumps([]),
+                profile_completed=False,
+            )
+            db.add(seeker)
+        elif user.role == UserRole.RECRUITER and not user.recruiter_profile:
+            recruiter = RecruiterProfile(
+                user_id=user.id,
+                full_name=full_name,
+                designation="",
+                phone="",
+                skills=json.dumps([]),
+                profile_completed=False,
+                is_approved=True,
+            )
+            db.add(recruiter)
+
         db.commit()
         db.refresh(user)
         return user

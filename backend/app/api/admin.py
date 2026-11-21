@@ -128,10 +128,12 @@ def list_recruiters(
             "id": r.id,
             "user_id": r.user_id,
             "full_name": r.full_name,
+            "email": r.user.email if r.user else "",
             "designation": r.designation,
             "phone": r.phone,
             "is_approved": r.is_approved,
             "company_name": r.company.name if r.company else "Independent Recruiter",
+            "location_name": r.company.location_name if (r.company and r.company.location_name) else "Dhaka, Bangladesh",
             "created_at": r.created_at.isoformat()
         })
     return results

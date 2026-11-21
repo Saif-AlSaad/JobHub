@@ -96,7 +96,8 @@ def compute_hybrid_match(
     exp_edu_score = min(100.0, max(40.0, exp_edu_score))
 
     # 4. Location & Job Type Fit (15%)
-    alert_radius = float(seeker_profile.get("alert_radius_km", 10.0))
+    raw_radius = seeker_profile.get("alert_radius_km")
+    alert_radius = float(raw_radius) if raw_radius is not None else 10.0
     loc_fit = calculate_location_fit(
         seeker_lat=seeker_profile.get("preferred_latitude"),
         seeker_lon=seeker_profile.get("preferred_longitude"),

@@ -56,11 +56,15 @@ def get_recruiter_dashboard(
     ranked_candidates = []
     for a in applications:
         seeker = a.seeker
+        if not seeker:
+            continue
         breakdown = json.loads(a.match_breakdown or "{}")
+        candidate_name = seeker.full_name or "Candidate"
         ranked_candidates.append({
             "application_id": a.id,
-            "seeker_name": seeker.full_name,
-            "seeker_headline": seeker.headline,
+            "seeker_name": candidate_name,
+            "candidate_name": candidate_name,
+            "seeker_headline": seeker.headline or "",
             "job_title": a.job.title if a.job else "Software Engineer",
             "job_id": a.job_id,
             "match_score": a.match_score,

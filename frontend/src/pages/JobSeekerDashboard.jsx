@@ -79,11 +79,16 @@ export default function JobSeekerDashboard() {
     );
   }
 
-  const { candidate_name, first_name, stats, top_matches, nearby_opportunities, recent_applications } = data;
+  const candidate_name = data?.candidate_name || 'Candidate';
+  const first_name = data?.first_name || 'Candidate';
+  const stats = data?.stats || {};
+  const top_matches = data?.top_matches || [];
+  const nearby_opportunities = data?.nearby_opportunities || [];
+  const recent_applications = data?.recent_applications || [];
 
   const hubs = ['All', 'Savar', 'Banani', 'Mohakhali', 'Dhanmondi', 'Uttara'];
 
-  const filteredNearby = nearby_opportunities.filter(job => {
+  const filteredNearby = (nearby_opportunities || []).filter(job => {
     const matchesRadius = (job.distance_km == null || job.distance_km <= radiusFilter);
     const matchesHub = selectedHub === 'All' || (job.location_name && job.location_name.toLowerCase().includes(selectedHub.toLowerCase()));
     return matchesRadius && matchesHub;

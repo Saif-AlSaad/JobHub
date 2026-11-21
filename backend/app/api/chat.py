@@ -121,6 +121,13 @@ def get_messages(
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
+    # Authorize: only participants or admin can access conversation messages
+    if current_user.role != UserRole.ADMIN:
+        seeker_uid = conv.seeker.user_id if conv.seeker else None
+        recruiter_uid = conv.recruiter.user_id if conv.recruiter else None
+        if current_user.id != seeker_uid and current_user.id != recruiter_uid:
+            raise HTTPException(status_code=403, detail="Unauthorized access to this conversation")
+
     # Mark incoming messages as read
     db.query(Message).filter(
         Message.conversation_id == conv_id,
@@ -154,6 +161,13 @@ async def send_message(
     if not conv:
         raise HTTPException(status_code=404, detail="Conversation not found")
 
+    # Authorize: only participants or admin can send message in this conversation
+    seeker_uid = conv.seeker.user_id if conv.seeker else None
+    recruiter_uid = conv.recruiter.user_id if conv.recruiter else None
+    if current_user.role != UserRole.ADMIN:
+        if current_user.id != seeker_uid and current_user.id != recruiter_uid:
+            raise HTTPException(status_code=403, detail="Unauthorized to message in this conversation")
+
     message = Message(
         conversation_id=conv_id,
         sender_id=current_user.id,
@@ -166,31 +180,32 @@ async def send_message(
     db.refresh(message)
 
     # Determine recipient
-    recipient_user_id = conv.recruiter.user_id if current_user.id == conv.seeker.user_id else conv.seeker.user_id
+    recipient_user_id = recruiter_uid if current_user.id == seeker_uid else seeker_uid
     
     # Broadcast via WebSocket if recipient is online
-    await manager.send_personal_message({
-        "type": "NEW_MESSAGE",
-        "conversation_id": conv_id,
-        "message": {
-            "id": message.id,
-            "sender_id": message.sender_id,
-            "content": message.content,
-            "created_at": message.created_at.isoformat()
-        }
-    }, user_id=recipient_user_id)
+    if recipient_user_id:
+        await manager.send_personal_message({
+            "type": "NEW_MESSAGE",
+            "conversation_id": conv_id,
+            "message": {
+                "id": message.id,
+                "sender_id": message.sender_id,
+                "content": message.content,
+                "created_at": message.created_at.isoformat()
+            }
+        }, user_id=recipient_user_id)
 
-    # Send Notification
-    sender_name = current_user.seeker_profile.full_name if current_user.seeker_profile else (current_user.recruiter_profile.full_name if current_user.recruiter_profile else "A user")
-    job_title = conv.job.title if conv.job else "a job"
-    create_notification(
-        db=db,
-        user_id=recipient_user_id,
-        notification_type=NotificationType.MESSAGE,
-        title="New Message",
-        message=f"{sender_name} sent you a message regarding {job_title}.",
-        link=f"/messages?conversation_id={conv_id}"
-    )
+        # Send Notification
+        sender_name = current_user.seeker_profile.full_name if current_user.seeker_profile else (current_user.recruiter_profile.full_name if current_user.recruiter_profile else "A user")
+        job_title = conv.job.title if conv.job else "a job"
+        create_notification(
+            db=db,
+            user_id=recipient_user_id,
+            notification_type=NotificationType.MESSAGE,
+            title="New Message",
+            message=f"{sender_name} sent you a message regarding {job_title}.",
+            link=f"/messages?conversation_id={conv_id}"
+        )
 
     return {
         "id": message.id,

@@ -63,7 +63,7 @@ export default function RecruiterDashboard() {
     if (!data?.top_candidates?.length) return;
     const header = ['Candidate Name', 'University', 'Role Applied', 'CGPA', 'Match Score %', 'Status'].join(',');
     const rows = data.top_candidates.map(c => 
-      `"${c.candidate_name}","${c.university || 'DIU Graduate'}","${c.job_title}","${c.cgpa || 3.8}","${Math.round(c.match_score)}%","${c.status}"`
+      `"${c.candidate_name || c.seeker_name || 'Candidate'}","${c.university || 'DIU Graduate'}","${c.job_title}","${c.cgpa || 3.8}","${Math.round(c.match_score)}%","${c.status}"`
     );
     const csvContent = 'data:text/csv;charset=utf-8,' + [header, ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -79,7 +79,7 @@ export default function RecruiterDashboard() {
   const filteredCandidates = useMemo(() => {
     if (!data?.top_candidates) return [];
     return data.top_candidates.filter(c => {
-      const name = (c.candidate_name || '').toLowerCase();
+      const name = (c.candidate_name || c.seeker_name || '').toLowerCase();
       const role = (c.job_title || '').toLowerCase();
       const uni = (c.university || '').toLowerCase();
       const query = candidateSearch.toLowerCase();
@@ -333,7 +333,7 @@ export default function RecruiterDashboard() {
                   return (
                     <tr key={cand.application_id} className="hover:bg-[#FAF8F5] transition-colors">
                       <td className="py-3.5 px-4 font-bold text-[#1C1917]">
-                        <div>{cand.candidate_name}</div>
+                        <div>{cand.candidate_name || cand.seeker_name || 'Candidate'}</div>
                         <div className="text-[11px] text-[#78716C] font-normal">{cand.university || 'DIU Graduate'}</div>
                       </td>
                       <td className="py-3.5 px-4 font-semibold text-[#1C1917]">

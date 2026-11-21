@@ -37,16 +37,16 @@ def extract_text_from_file(file_bytes: bytes, filename: str) -> str:
                     extracted = page.extract_text()
                     if extracted:
                         text += extracted + "\n"
-        except Exception as e:
-            text = f"Error reading PDF: {e}"
+        except Exception:
+            text = ""
     elif lower_name.endswith(".docx"):
         try:
             doc = docx.Document(io.BytesIO(file_bytes))
             for para in doc.paragraphs:
                 if para.text:
                     text += para.text + "\n"
-        except Exception as e:
-            text = f"Error reading DOCX: {e}"
+        except Exception:
+            text = ""
     else:
         # Fallback to UTF-8 decoded text
         try:

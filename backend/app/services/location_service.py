@@ -81,15 +81,16 @@ def calculate_location_fit(
         }
     
     distance = haversine_distance(seeker_lat, seeker_lon, job_lat, job_lon)
-    is_nearby = distance <= alert_radius_km
+    safe_radius = max(0.1, float(alert_radius_km) if alert_radius_km is not None else 10.0)
+    is_nearby = distance <= safe_radius
 
     # Proximity grading
     if distance <= 2.0:
         score = 100.0
-    elif distance <= alert_radius_km:
+    elif distance <= safe_radius:
         # Scale smoothly between 100 and 80
-        score = 100.0 - ((distance / alert_radius_km) * 20.0)
-    elif distance <= (alert_radius_km * 2):
+        score = 100.0 - ((distance / safe_radius) * 20.0)
+    elif distance <= (safe_radius * 2):
         score = 65.0
     else:
         score = 40.0

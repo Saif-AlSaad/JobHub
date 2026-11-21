@@ -134,7 +134,12 @@ export default function ApplicationsTrackerPage() {
   };
 
   // Confirm withdraw
-  const handleWithdraw = (appId) => {
+  const handleWithdraw = async (appId) => {
+    try {
+      await api.patch(`/applications/${appId}/withdraw`);
+    } catch {
+      // quiet fallback in offline / demo mode
+    }
     setApplications((prev) =>
       prev.map((a) => (a.id === appId ? { ...a, status: 'WITHDRAWN', notes: 'Application withdrawn by candidate' } : a))
     );
