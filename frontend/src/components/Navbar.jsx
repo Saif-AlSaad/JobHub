@@ -174,15 +174,14 @@ export default function Navbar() {
             </Link>
           )}
 
-          {/* 1-Click Demo Persona Switcher */}
+          {/* Persona Switcher */}
           <div className="relative" ref={demoRef}>
             <button
               onClick={() => setDemoOpen(!demoOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-[10px] bg-white border border-[#E7E5E4] hover:bg-[#F3EFEA] text-xs font-medium text-[#1C1917] shadow-xs transition-colors"
-              title="Switch demo persona"
+              title="Switch persona"
             >
               <span className="w-2 h-2 rounded-full bg-[#0F766E] animate-pulse"></span>
-              <span className="hidden sm:inline text-[#78716C]">Demo:</span>
               <span className="font-bold text-[#0F766E]">
                 {role === 'JOB_SEEKER' ? 'Job Seeker' : role === 'RECRUITER' ? 'Recruiter' : 'Admin'}
               </span>

@@ -185,7 +185,7 @@ export default function LoginPage() {
                 </button>
                 <div className="text-center">
                   <span className="text-[11px] text-[#78716C] font-medium">
-                    1-Click Demo Available: <strong className="text-[#1C1917] font-semibold">Sarah Rahman</strong> (DIU Graduate)
+                    1-Click Login: <strong className="text-[#1C1917] font-semibold">Sarah Rahman</strong> (DIU Graduate)
                   </span>
                 </div>
               </div>
@@ -256,7 +256,7 @@ export default function LoginPage() {
                 </button>
                 <div className="text-center">
                   <span className="text-[11px] text-[#78716C] font-medium">
-                    1-Click Demo Available: <strong className="text-[#1C1917] font-semibold">TechNova Labs</strong> (Sabrina Rahman)
+                    1-Click Login: <strong className="text-[#1C1917] font-semibold">TechNova Labs</strong> (Sabrina Rahman)
                   </span>
                 </div>
               </div>
@@ -373,7 +373,7 @@ export default function LoginPage() {
                   ) : (
                     <>
                       <Sparkles className="w-3 h-3 text-[#0F766E]" />
-                      <span>Fill demo credentials</span>
+                      <span>Fill credentials</span>
                     </>
                   )}
                 </button>
@@ -432,7 +432,7 @@ export default function LoginPage() {
                 onClick={() => prefill('sarah.rahman@jobhub.io', 'password123')}
                 className="text-[11px] text-[#78716C] hover:text-[#0F766E] font-medium transition-colors"
               >
-                Reset demo
+                Reset fields
               </button>
             </div>
 
@@ -549,7 +549,7 @@ export default function LoginPage() {
                   ) : (
                     <>
                       <Sparkles className="w-3 h-3 text-[#F97316]" />
-                      <span>Fill demo credentials</span>
+                      <span>Fill credentials</span>
                     </>
                   )}
                 </button>
@@ -608,7 +608,7 @@ export default function LoginPage() {
                 onClick={() => prefill('recruiter@technova.io', 'password123')}
                 className="text-[11px] text-[#78716C] hover:text-[#F97316] font-medium transition-colors"
               >
-                Reset demo
+                Reset fields
               </button>
             </div>
 
