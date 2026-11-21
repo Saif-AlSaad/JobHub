@@ -3,10 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { Send, MessageSquare, Briefcase, Sparkles } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import EmptyState from '../components/EmptyState';
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const { fetchUnreadCount } = useNotifications();
   const [searchParams] = useSearchParams();
   const requestedConvId = searchParams.get('conversation_id');
 
@@ -16,8 +18,40 @@ export default function MessagesPage() {
   const [inputText, setInputText] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [isNearBottom, setIsNearBottom] = useState(true);
 
   const messagesEndRef = useRef(null);
+  const messageContainerRef = useRef(null);
+  const isNearBottomRef = useRef(true);
+  const shouldScrollToBottomRef = useRef(true);
+
+  const scrollToBottom = (behavior = 'smooth') => {
+    const container = messageContainerRef.current;
+    if (container) {
+      if (typeof container.scrollTo === 'function') {
+        container.scrollTo({
+          top: container.scrollHeight,
+          behavior,
+        });
+      } else {
+        container.scrollTop = container.scrollHeight;
+      }
+    }
+  };
+
+  const handleScroll = () => {
+    const container = messageContainerRef.current;
+    if (!container) return;
+    const threshold = 120;
+    const near = container.scrollHeight - container.scrollTop - container.clientHeight <= threshold;
+    isNearBottomRef.current = near;
+    setIsNearBottom((prev) => (prev !== near ? near : prev));
+  };
+
+  const handleSelectConv = (conv) => {
+    if (activeConv?.id === conv.id) return;
+    setActiveConv(conv);
+  };
 
   const fetchConversations = async () => {
     try {
@@ -43,7 +77,27 @@ export default function MessagesPage() {
   const fetchMessages = async (convId) => {
     try {
       const res = await api.get(`/chat/conversations/${convId}/messages`);
-      setMessages(res.data);
+      setMessages((prev) => {
+        // Prevent re-rendering and jump if messages haven't changed
+        if (
+          prev.length === res.data.length &&
+          prev.length > 0 &&
+          prev[prev.length - 1]?.id === res.data[res.data.length - 1]?.id
+        ) {
+          return prev;
+        }
+        return res.data;
+      });
+
+      // Clear unread count for this conversation in the local sidebar
+      setConversations((prev) =>
+        prev.map((c) => (c.id === convId && c.unread_count > 0 ? { ...c, unread_count: 0 } : c))
+      );
+
+      // Refresh global message notification badges across Navbar and Sidebar
+      if (typeof fetchUnreadCount === 'function') {
+        fetchUnreadCount();
+      }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
@@ -55,14 +109,25 @@ export default function MessagesPage() {
 
   useEffect(() => {
     if (activeConv) {
+      shouldScrollToBottomRef.current = true;
+      isNearBottomRef.current = true;
+      setIsNearBottom(true);
       fetchMessages(activeConv.id);
       const interval = setInterval(() => fetchMessages(activeConv.id), 5000);
       return () => clearInterval(interval);
     }
-  }, [activeConv]);
+  }, [activeConv?.id]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messages.length === 0) return;
+    if (shouldScrollToBottomRef.current || isNearBottomRef.current) {
+      const behavior = shouldScrollToBottomRef.current ? 'auto' : 'smooth';
+      const timer = setTimeout(() => {
+        scrollToBottom(behavior);
+        shouldScrollToBottomRef.current = false;
+      }, 50);
+      return () => clearTimeout(timer);
+    }
   }, [messages]);
 
   const handleSendMessage = async (e) => {
@@ -75,13 +140,26 @@ export default function MessagesPage() {
 
     try {
       const res = await api.post(`/chat/conversations/${activeConv.id}/messages`, { content });
+      shouldScrollToBottomRef.current = true;
+      isNearBottomRef.current = true;
+      setIsNearBottom(true);
       setMessages((prev) => [...prev, res.data]);
+
+      setConversations((prev) =>
+        prev.map((c) =>
+          c.id === activeConv.id
+            ? { ...c, last_message: { content }, updated_at: new Date().toISOString() }
+            : c
+        )
+      );
     } catch (err) {
       alert('Failed to send message.');
     } finally {
       setSending(false);
     }
   };
+
+  const isRecruiter = user?.role === 'RECRUITER';
 
   if (loading) {
     return <div className="max-w-[1280px] mx-auto py-16 text-center text-xs text-secondary animate-pulse">Loading messaging center...</div>;
@@ -93,9 +171,13 @@ export default function MessagesPage() {
         <EmptyState
           icon={MessageSquare}
           title="No Active Conversations"
-          description="When you apply for opportunities or reach out to recruiters, direct messaging will appear here."
-          actionLabel="Find Opportunities"
-          actionLink="/jobs"
+          description={
+            isRecruiter
+              ? "When applicants connect or you initiate discussions with candidates, channels will appear here."
+              : "When you apply for opportunities or reach out to recruiters, direct messaging will appear here."
+          }
+          actionLabel={isRecruiter ? "Review Dashboard" : "Find Opportunities"}
+          actionLink={isRecruiter ? "/" : "/jobs"}
         />
       </div>
     );
@@ -115,22 +197,42 @@ export default function MessagesPage() {
           <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
             {conversations.map((conv) => {
               const isActive = activeConv?.id === conv.id;
+              const otherParty = conv.other_party_name 
+                || (isRecruiter ? conv.seeker_name : conv.recruiter_name)
+                || conv.participant?.full_name 
+                || 'Direct Channel';
+
+              const lastMsgText = typeof conv.last_message === 'object' && conv.last_message !== null
+                ? conv.last_message.content
+                : (typeof conv.last_message === 'string' ? conv.last_message : 'Channel opened');
+
+              const formattedTime = conv.updated_at 
+                ? new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                : '';
+
               return (
                 <div
                   key={conv.id}
-                  onClick={() => setActiveConv(conv)}
+                  onClick={() => handleSelectConv(conv)}
                   className={`p-4 cursor-pointer transition-colors ${
                     isActive ? 'bg-white border-l-4 border-l-[#4F46E5]' : 'hover:bg-slate-100'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-bold text-xs text-[#0F172A] line-clamp-1">{conv.other_party_name}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="font-bold text-xs text-[#0F172A] line-clamp-1">{otherParty}</p>
+                      {conv.unread_count > 0 && !isActive && (
+                        <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-white text-[10px] font-bold inline-flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
+                          {conv.unread_count > 9 ? '9+' : conv.unread_count}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-[#64748B] flex-shrink-0">
-                      {new Date(conv.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {formattedTime}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#4F46E5] font-semibold mt-0.5 line-clamp-1">{conv.job_title}</p>
-                  <p className="text-[11px] text-[#64748B] mt-1 line-clamp-1">{conv.last_message || 'Channel opened'}</p>
+                  <p className="text-[11px] text-[#4F46E5] font-semibold mt-0.5 line-clamp-1">{conv.job_title || 'General Inquiry'}</p>
+                  <p className="text-[11px] text-[#64748B] mt-1 line-clamp-1">{lastMsgText}</p>
                 </div>
               );
             })}
@@ -138,14 +240,21 @@ export default function MessagesPage() {
         </div>
 
         {/* Right: Message Window */}
-        <div className="flex-1 flex flex-col bg-white">
+        <div className="flex-1 flex flex-col bg-white relative">
           
           {/* Persistent Job Context Header */}
           {activeConv && (
             <div className="p-4 border-b border-[#E2E8F0] bg-slate-50 flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-[#0F172A]">{activeConv.other_party_name}</h3>
-                <p className="text-xs text-[#4F46E5] font-semibold">{activeConv.job_title} · {activeConv.company_name}</p>
+                <h3 className="text-sm font-bold text-[#0F172A]">
+                  {activeConv.other_party_name 
+                    || (isRecruiter ? activeConv.seeker_name : activeConv.recruiter_name)
+                    || activeConv.participant?.full_name 
+                    || 'Direct Channel'}
+                </h3>
+                <p className="text-xs text-[#4F46E5] font-semibold">
+                  {activeConv.job_title || 'General Inquiry'} {activeConv.company_name ? `· ${activeConv.company_name}` : ''}
+                </p>
               </div>
 
               <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ECFEFF] text-[#0E7490] border border-[#A5F3FC] text-xs font-bold">
@@ -156,9 +265,16 @@ export default function MessagesPage() {
           )}
 
           {/* Messages Feed */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#F8FAFC]">
+          <div
+            ref={messageContainerRef}
+            onScroll={handleScroll}
+            className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#F8FAFC]"
+          >
             {messages.map((msg) => {
-              const isMine = msg.sender_id === user?.id;
+              const isMine = msg.sender_id === user?.id || msg.is_me;
+              const msgTime = msg.created_at 
+                ? new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : '';
               return (
                 <div
                   key={msg.id}
@@ -174,13 +290,29 @@ export default function MessagesPage() {
                     {msg.content}
                   </div>
                   <span className="text-[10px] text-[#64748B] mt-1 px-1">
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {msgTime}
                   </span>
                 </div>
               );
             })}
             <div ref={messagesEndRef} />
           </div>
+
+          {/* Jump to latest button if user scrolled up */}
+          {!isNearBottom && (
+            <button
+              type="button"
+              onClick={() => {
+                isNearBottomRef.current = true;
+                setIsNearBottom(true);
+                scrollToBottom('smooth');
+              }}
+              className="absolute bottom-20 right-8 bg-white border border-[#E2E8F0] shadow-md hover:bg-slate-50 text-[#4F46E5] text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 transition-all cursor-pointer z-10"
+            >
+              <span>Jump to latest</span>
+              <span>↓</span>
+            </button>
+          )}
 
           {/* Input Box */}
           <form onSubmit={handleSendMessage} className="p-4 border-t border-[#E2E8F0] bg-white flex items-center gap-3">

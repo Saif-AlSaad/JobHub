@@ -42,6 +42,8 @@ def get_conversations(
             Message.is_read == False
         ).count()
 
+        other_party = (c.seeker.full_name if c.seeker else "Candidate") if current_user.role == UserRole.RECRUITER else (c.recruiter.full_name if c.recruiter else "Recruiter")
+
         results.append({
             "id": c.id,
             "job_id": c.job_id,
@@ -49,6 +51,7 @@ def get_conversations(
             "company_name": c.job.company.name if (c.job and c.job.company) else (c.recruiter.company.name if (c.recruiter and c.recruiter.company) else "Employer"),
             "seeker_name": c.seeker.full_name if c.seeker else "Candidate",
             "recruiter_name": c.recruiter.full_name if c.recruiter else "Recruiter",
+            "other_party_name": other_party,
             "updated_at": c.updated_at.isoformat(),
             "unread_count": unread,
             "last_message": {
@@ -59,6 +62,38 @@ def get_conversations(
             } if last_msg else None
         })
     return results
+
+@router.get("/unread-count")
+def get_unread_count(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Returns the total count of unread incoming chat messages for the current user.
+    """
+    if current_user.role == UserRole.JOB_SEEKER:
+        seeker = current_user.seeker_profile
+        if not seeker:
+            return {"unread_count": 0}
+        conv_ids = [c[0] for c in db.query(Conversation.id).filter(Conversation.seeker_id == seeker.id).all()]
+    elif current_user.role == UserRole.RECRUITER:
+        recruiter = current_user.recruiter_profile
+        if not recruiter:
+            return {"unread_count": 0}
+        conv_ids = [c[0] for c in db.query(Conversation.id).filter(Conversation.recruiter_id == recruiter.id).all()]
+    else:
+        conv_ids = [c[0] for c in db.query(Conversation.id).all()]
+
+    if not conv_ids:
+        return {"unread_count": 0}
+
+    count = db.query(Message).filter(
+        Message.conversation_id.in_(conv_ids),
+        Message.sender_id != current_user.id,
+        Message.is_read == False
+    ).count()
+
+    return {"unread_count": count}
 
 @router.post("/start")
 def start_conversation(

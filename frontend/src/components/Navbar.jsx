@@ -9,14 +9,15 @@ import {
   Sparkles,
   ExternalLink,
   MapPin,
-  Clock
+  Clock,
+  MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
 
 export default function Navbar() {
   const { user, logout, demoLogin, isProfileComplete } = useAuth();
-  const { unreadCount, notifications, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
+  const { unreadCount, unreadMessageCount, notifications, fetchNotifications, markAsRead, markAllAsRead } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -64,7 +65,7 @@ export default function Navbar() {
     { to: '/', label: 'Dashboard', end: true },
     { to: '/jobs', label: 'Explore' },
     { to: '/applications', label: 'Applications' },
-    { to: '/messages', label: 'Messages' },
+    { to: '/messages', label: 'Messages', badge: unreadMessageCount },
     { to: '/profile', label: 'Profile' },
   ];
 
@@ -72,14 +73,14 @@ export default function Navbar() {
     { to: '/', label: 'Overview', end: true },
     { to: '/recruiter/post-job', label: 'Post Job' },
     { to: '/jobs', label: 'Explore' },
-    { to: '/messages', label: 'Messages' },
+    { to: '/messages', label: 'Messages', badge: unreadMessageCount },
     { to: '/profile', label: 'Company Profile' },
   ];
 
   const adminNav = [
     { to: '/', label: 'Analytics', end: true },
     { to: '/jobs', label: 'Explore Jobs' },
-    { to: '/messages', label: 'Messages' },
+    { to: '/messages', label: 'Messages', badge: unreadMessageCount },
   ];
 
   let navItems = seekerNav;
@@ -128,13 +129,18 @@ export default function Navbar() {
                     key={item.to}
                     to={item.to}
                     end={item.end}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs transition-all duration-150 ${
+                    className={`px-3.5 py-1.5 rounded-lg text-xs transition-all duration-150 relative inline-flex items-center gap-1.5 ${
                       isActive
                         ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold shadow-xs'
                         : 'text-[#78716C] hover:text-[#0F766E] hover:bg-[#F3EFEA] font-medium'
                     }`}
                   >
-                    {item.label}
+                    <span>{item.label}</span>
+                    {item.badge > 0 && (
+                      <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-[10px] font-bold text-white inline-flex items-center justify-center shadow-xs animate-pulse">
+                        {item.badge > 9 ? '9+' : item.badge}
+                      </span>
+                    )}
                   </NavLink>
                 );
               })
@@ -231,6 +237,23 @@ export default function Navbar() {
               </div>
             )}
           </div>
+
+          {/* Messages Quick Action Button with Notification Badge */}
+          <Link
+            to="/messages"
+            aria-label="Direct Messages"
+            className={`w-9 h-9 rounded-[10px] border border-[#E7E5E4] bg-white hover:bg-[#F3EFEA] text-[#1C1917] flex items-center justify-center transition-colors relative shadow-xs ${
+              location.pathname === '/messages' ? 'border-[#0F766E] text-[#0F766E]' : ''
+            }`}
+            title="Direct Messages"
+          >
+            <MessageSquare className="w-4 h-4 text-[#78716C]" />
+            {unreadMessageCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-[10px] font-bold text-white flex items-center justify-center shadow-xs animate-pulse">
+                {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+              </span>
+            )}
+          </Link>
 
           {/* Notification Button */}
           <div className="relative" ref={notifRef}>
@@ -392,11 +415,16 @@ export default function Navbar() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs whitespace-nowrap transition-colors relative inline-flex items-center gap-1.5 ${
                   isActive ? 'bg-[#CCFBF1] text-[#0F766E] font-semibold' : 'text-[#78716C] hover:text-[#0F766E]'
                 }`}
               >
-                {item.label}
+                <span>{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-[10px] font-bold text-white inline-flex items-center justify-center shadow-xs animate-pulse">
+                    {item.badge > 9 ? '9+' : item.badge}
+                  </span>
+                )}
               </NavLink>
             );
           })

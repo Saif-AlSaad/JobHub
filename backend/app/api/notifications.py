@@ -2,7 +2,7 @@ import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.models.models import Notification, NotificationPreference, User
+from app.models.models import Notification, NotificationPreference, User, Conversation, Message, UserRole
 from app.auth.deps import get_current_user
 from app.schemas.schemas import NotificationPreferenceUpdate
 
@@ -40,12 +40,47 @@ def get_unread_count(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Quick count for notification bell badge."""
+    """Quick count for notification bell badge and unread chat messages."""
     count = db.query(Notification).filter(
         Notification.user_id == current_user.id,
         Notification.is_read == False
     ).count()
-    return {"unread_count": count}
+
+    # Calculate unread chat messages for this user
+    msg_count = 0
+    try:
+        if current_user.role == UserRole.JOB_SEEKER:
+            seeker = current_user.seeker_profile
+            if seeker:
+                conv_ids = [c[0] for c in db.query(Conversation.id).filter(Conversation.seeker_id == seeker.id).all()]
+                if conv_ids:
+                    msg_count = db.query(Message).filter(
+                        Message.conversation_id.in_(conv_ids),
+                        Message.sender_id != current_user.id,
+                        Message.is_read == False
+                    ).count()
+        elif current_user.role == UserRole.RECRUITER:
+            recruiter = current_user.recruiter_profile
+            if recruiter:
+                conv_ids = [c[0] for c in db.query(Conversation.id).filter(Conversation.recruiter_id == recruiter.id).all()]
+                if conv_ids:
+                    msg_count = db.query(Message).filter(
+                        Message.conversation_id.in_(conv_ids),
+                        Message.sender_id != current_user.id,
+                        Message.is_read == False
+                    ).count()
+        else:
+            msg_count = db.query(Message).filter(
+                Message.sender_id != current_user.id,
+                Message.is_read == False
+            ).count()
+    except Exception:
+        pass
+
+    return {
+        "unread_count": count,
+        "unread_message_count": msg_count
+    }
 
 @router.put("/{notif_id}/read")
 def mark_notification_read(
