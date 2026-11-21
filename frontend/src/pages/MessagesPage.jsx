@@ -3,10 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { Send, MessageSquare, Briefcase, Sparkles } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import EmptyState from '../components/EmptyState';
 
 export default function MessagesPage() {
   const { user } = useAuth();
+  const { fetchUnreadCount } = useNotifications();
   const [searchParams] = useSearchParams();
   const requestedConvId = searchParams.get('conversation_id');
 
@@ -86,6 +88,16 @@ export default function MessagesPage() {
         }
         return res.data;
       });
+
+      // Clear unread count for this conversation in the local sidebar
+      setConversations((prev) =>
+        prev.map((c) => (c.id === convId && c.unread_count > 0 ? { ...c, unread_count: 0 } : c))
+      );
+
+      // Refresh global message notification badges across Navbar and Sidebar
+      if (typeof fetchUnreadCount === 'function') {
+        fetchUnreadCount();
+      }
     } catch (err) {
       console.error('Failed to fetch messages:', err);
     }
@@ -207,7 +219,14 @@ export default function MessagesPage() {
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-bold text-xs text-[#0F172A] line-clamp-1">{otherParty}</p>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <p className="font-bold text-xs text-[#0F172A] line-clamp-1">{otherParty}</p>
+                      {conv.unread_count > 0 && !isActive && (
+                        <span className="min-w-[16px] h-4 px-1 rounded-full bg-[#F97316] text-white text-[10px] font-bold inline-flex items-center justify-center flex-shrink-0 animate-pulse shadow-xs">
+                          {conv.unread_count > 9 ? '9+' : conv.unread_count}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-[10px] text-[#64748B] flex-shrink-0">
                       {formattedTime}
                     </span>

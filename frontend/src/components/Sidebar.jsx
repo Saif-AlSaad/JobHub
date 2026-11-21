@@ -20,7 +20,7 @@ import { useNotifications } from '../context/NotificationContext';
 
 export default function Sidebar() {
   const { user } = useAuth();
-  const { unreadCount } = useNotifications();
+  const { unreadCount, unreadMessageCount } = useNotifications();
 
   const role = user?.role || 'JOB_SEEKER';
 
@@ -28,7 +28,7 @@ export default function Sidebar() {
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
     { to: '/jobs', label: 'Find Jobs', icon: Briefcase },
     { to: '/applications', label: 'Applications', icon: FileText },
-    { to: '/messages', label: 'Messages', icon: MessageSquare },
+    { to: '/messages', label: 'Messages', icon: MessageSquare, badge: unreadMessageCount },
     { to: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
     { to: '/profile', label: 'Career Profile & AI', icon: User },
   ];
@@ -37,14 +37,14 @@ export default function Sidebar() {
     { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/recruiter/post-job', label: 'Post New Job', icon: PlusCircle },
     { to: '/jobs', label: 'Browse All Jobs', icon: Briefcase },
-    { to: '/messages', label: 'Messages', icon: MessageSquare },
+    { to: '/messages', label: 'Messages', icon: MessageSquare, badge: unreadMessageCount },
     { to: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
   ];
 
   const adminLinks = [
     { to: '/', label: 'Analytics Dashboard', icon: BarChart3, end: true },
     { to: '/jobs', label: 'All Jobs', icon: Briefcase },
-    { to: '/messages', label: 'Messages', icon: MessageSquare },
+    { to: '/messages', label: 'Messages', icon: MessageSquare, badge: unreadMessageCount },
     { to: '/notifications', label: 'Notifications', icon: Bell, badge: unreadCount },
   ];
 
@@ -86,8 +86,8 @@ export default function Sidebar() {
                   <span>{item.label}</span>
                 </div>
                 {item.badge > 0 && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-[#F97316] text-white shadow-xs">
-                    {item.badge}
+                  <span className="min-w-[16px] h-4 px-1 text-[10px] font-bold rounded-full bg-[#F97316] text-white shadow-xs inline-flex items-center justify-center animate-pulse">
+                    {item.badge > 9 ? '9+' : item.badge}
                   </span>
                 )}
               </NavLink>

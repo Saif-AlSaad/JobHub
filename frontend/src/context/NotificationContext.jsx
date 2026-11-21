@@ -8,13 +8,20 @@ export const NotificationProvider = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
   const [loading, setLoading] = useState(false);
 
   const fetchUnreadCount = useCallback(async () => {
     if (!user) return;
     try {
       const res = await api.get('/notifications/unread-count');
-      setUnreadCount(res.data.unread_count);
+      setUnreadCount(res.data.unread_count ?? 0);
+      if (res.data.unread_message_count !== undefined) {
+        setUnreadMessageCount(res.data.unread_message_count);
+      } else {
+        const chatRes = await api.get('/chat/unread-count');
+        setUnreadMessageCount(chatRes.data.unread_count ?? 0);
+      }
     } catch (err) {
       console.error('Error fetching unread count:', err);
     }
@@ -57,16 +64,21 @@ export const NotificationProvider = ({ children }) => {
     }
   };
 
-  // Periodic polling for notifications
+  const markMessagesAsRead = useCallback(() => {
+    setUnreadMessageCount(0);
+  }, []);
+
+  // Periodic polling for notifications and unread messages
   useEffect(() => {
     if (!user) {
       setNotifications([]);
       setUnreadCount(0);
+      setUnreadMessageCount(0);
       return;
     }
 
     fetchUnreadCount();
-    const interval = setInterval(fetchUnreadCount, 15000); // 15 seconds
+    const interval = setInterval(fetchUnreadCount, 6000); // 6 seconds
     return () => clearInterval(interval);
   }, [user, fetchUnreadCount]);
 
@@ -75,11 +87,14 @@ export const NotificationProvider = ({ children }) => {
       value={{
         notifications,
         unreadCount,
+        unreadMessageCount,
         loading,
         fetchNotifications,
         fetchUnreadCount,
         markAsRead,
         markAllAsRead,
+        markMessagesAsRead,
+        setUnreadMessageCount,
       }}
     >
       {children}
