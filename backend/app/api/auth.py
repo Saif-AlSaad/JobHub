@@ -181,24 +181,26 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)):
         )
 
     authenticated = False
-    if user.password_hash == "supabase_auth_managed":
-        # Validate against Supabase Auth API
-        if settings.SUPABASE_URL and settings.SUPABASE_ANON_KEY:
-            try:
-                import requests
-                sb_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/token?grant_type=password"
-                sb_resp = requests.post(
-                    sb_url,
-                    json={"email": credentials.email.lower(), "password": credentials.password},
-                    headers={"apikey": settings.SUPABASE_ANON_KEY, "Content-Type": "application/json"},
-                    timeout=8
-                )
-                if sb_resp.status_code == 200:
-                    authenticated = True
-            except Exception:
-                pass
-    else:
+    if user.password_hash and user.password_hash != "supabase_auth_managed":
         authenticated = verify_password(credentials.password, user.password_hash)
+
+    # If local check fails or user is managed by Supabase Auth, attempt Supabase verification
+    if not authenticated and settings.SUPABASE_URL and settings.SUPABASE_ANON_KEY:
+        try:
+            import requests
+            sb_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/token?grant_type=password"
+            sb_resp = requests.post(
+                sb_url,
+                json={"email": credentials.email.lower(), "password": credentials.password},
+                headers={"apikey": settings.SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+                timeout=8
+            )
+            if sb_resp.status_code == 200:
+                authenticated = True
+                user.password_hash = hash_password(credentials.password)
+                db.commit()
+        except Exception:
+            pass
 
     if not authenticated:
         raise HTTPException(
