@@ -172,7 +172,34 @@ def register(user_in: UserRegister, db: Session = Depends(get_db)):
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == credentials.email.lower()).first()
-    if not user or not verify_password(credentials.password, user.password_hash):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    authenticated = False
+    if user.password_hash == "supabase_auth_managed":
+        # Validate against Supabase Auth API
+        if settings.SUPABASE_URL and settings.SUPABASE_ANON_KEY:
+            try:
+                import requests
+                sb_url = f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/token?grant_type=password"
+                sb_resp = requests.post(
+                    sb_url,
+                    json={"email": credentials.email.lower(), "password": credentials.password},
+                    headers={"apikey": settings.SUPABASE_ANON_KEY, "Content-Type": "application/json"},
+                    timeout=8
+                )
+                if sb_resp.status_code == 200:
+                    authenticated = True
+            except Exception:
+                pass
+    else:
+        authenticated = verify_password(credentials.password, user.password_hash)
+
+    if not authenticated:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
