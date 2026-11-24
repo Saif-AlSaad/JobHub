@@ -1,6 +1,7 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from app.config import settings
 from app.database import get_db
 from app.models.models import User, UserRole, JobSeekerProfile, RecruiterProfile, Company, NotificationPreference, NotificationType
 from app.schemas.schemas import UserRegister, UserLogin, Token, SupabaseSyncRequest
